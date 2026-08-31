@@ -22,7 +22,6 @@ apps — filter by platform, score, genre, year, and more.
 |---|---|
 | `cmd/collector` | scraping / data-collection service |
 | `cmd/search-api` | title search service |
-| `internal/db/migrations` | Postgres schema |
 | `etl/spark` | raw-data cleaning job |
 | `etl/dbt` | warehouse transformation models |
 | `etl/airflow/dags` | pipeline orchestration |

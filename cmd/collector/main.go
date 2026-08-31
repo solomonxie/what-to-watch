@@ -7,6 +7,6 @@ import "fmt"
 
 func main() {
 	// TODO: scrape title/availability/score data on a schedule and
-	// persist results via internal/db (see internal/db/migrations/0001_init.sql).
+	// persist results via Postgres.
 	fmt.Println("what-to-watch: collector (scaffold, not yet implemented)")
 }
