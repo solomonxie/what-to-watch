@@ -15,7 +15,6 @@ apps — filter by platform, score, genre, year, and more.
 - **ETL** (`etl/`) — Spark cleans/dedupes raw scraped rows, dbt models
   them into a queryable warehouse layer (normalizing scores across
   sources), and Airflow orchestrates the nightly run of both.
-- **Infra** (`infra/cdk`) — AWS CDK (Go) for deployment.
 
 ## Layout
 
@@ -27,7 +26,6 @@ apps — filter by platform, score, genre, year, and more.
 | `etl/spark` | raw-data cleaning job |
 | `etl/dbt` | warehouse transformation models |
 | `etl/airflow/dags` | pipeline orchestration |
-| `infra/cdk` | AWS deployment (Go CDK) |
 
 ## Status
 
@@ -38,7 +36,6 @@ implemented (see the `TODO`s throughout).
 ## Local dev
 
 ```sh
-docker compose up -d          # Postgres
 go run ./cmd/collector
 go run ./cmd/search-api
 ```
