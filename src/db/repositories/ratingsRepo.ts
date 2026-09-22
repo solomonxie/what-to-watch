@@ -1,0 +1,42 @@
+import { eq } from 'drizzle-orm';
+import { db, ensureMigrated } from '../client';
+import { userRatings } from '../schema';
+
+export async function getUserRatingForTitle(titleId: string) {
+  await ensureMigrated();
+  const rows = await db
+    .select()
+    .from(userRatings)
+    .where(eq(userRatings.titleId, titleId))
+    .limit(1);
+  return rows[0];
+}
+
+export async function setUserRating(
+  titleId: string,
+  rating: number,
+  reviewText?: string,
+) {
+  await ensureMigrated();
+  const existing = await getUserRatingForTitle(titleId);
+  const now = Date.now();
+  if (existing) {
+    await db
+      .update(userRatings)
+      .set({ rating, reviewText, updatedAt: now })
+      .where(eq(userRatings.id, existing.id));
+  } else {
+    await db.insert(userRatings).values({
+      titleId,
+      rating,
+      reviewText,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+}
+
+export async function getAllUserRatings() {
+  await ensureMigrated();
+  return db.select().from(userRatings);
+}

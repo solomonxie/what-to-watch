@@ -1,44 +1,26 @@
 # What to Watch
 
-Find something to watch faster, by making movies/shows genuinely
-searchable and filterable instead of scrolling five different streaming
-apps — filter by platform, score, genre, year, and more.
+Cross-platform (iOS/Android) React Native app for deciding what to watch — fuzzy search, per-streaming-platform rankings, and filters (rating, watch count, genre, year, region, language, cast) across your own notes/ratings and metadata pulled from TMDB/OMDb/IMDb.
 
-## How it works
+## Stack
 
-- **Collector** (`cmd/collector`) — scrapes title metadata, streaming
-  availability, and scores (IMDb, Rotten Tomatoes, ...) from providers
-  on a schedule and writes them to Postgres.
-- **Search API** (`cmd/search-api`) — serves fast, filterable search
-  against that same database (platform, score, genre, year...) for the
-  frontend.
-- **ETL** (`etl/`) — Spark cleans/dedupes raw scraped rows, dbt models
-  them into a queryable warehouse layer (normalizing scores across
-  sources), and Airflow orchestrates the nightly run of both.
-- **Infra** (`infra/cdk`) — AWS CDK (Go) for deployment.
+Bare React Native (TypeScript), React Navigation, Zustand, op-sqlite + Drizzle ORM, react-native-keychain, Fuse.js.
 
-## Layout
+## Structure
 
-| Path | What |
-|---|---|
-| `cmd/collector` | scraping / data-collection service |
-| `cmd/search-api` | title search service |
-| `internal/db/migrations` | Postgres schema |
-| `etl/spark` | raw-data cleaning job |
-| `etl/dbt` | warehouse transformation models |
-| `etl/airflow/dags` | pipeline orchestration |
-| `infra/cdk` | AWS deployment (Go CDK) |
-
-## Status
-
-Scaffold only — service entrypoints, one migration, and one file per ETL
-tool are in place; scraping/search/transformation logic is not yet
-implemented (see the `TODO`s throughout).
+- `src/providers` — TMDB/OMDb/IMDb metadata providers + merge/normalization
+- `src/db` — local SQLite schema, client, repositories
+- `src/state` — filter/sort and settings stores
+- `src/screens`, `src/components` — Home (sections + persistent search + settings) and Show Detail
+- `src/native` — iCloud sync bridge (iOS only; Android placeholder)
+- `deprecated/` — archived earlier backend scaffold, unused
 
 ## Local dev
 
 ```sh
-docker compose up -d          # Postgres
-go run ./cmd/collector
-go run ./cmd/search-api
+npm install
+cd ios && pod install && cd ..
+npm run ios       # or: npm run android
 ```
+
+Add a TMDB and/or OMDb API key in the app's Settings section to enable metadata, ratings, and platform rankings.
