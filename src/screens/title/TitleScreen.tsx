@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
+  Image,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { imdbUrl, platformUrl, tmdbUrl } from '../../config/links';
 import {
   getRatingsForTitle,
   getTitleById,
@@ -32,12 +35,11 @@ import { isProviderActive } from '../../providers/providerRegistry';
 import { useSettingsStore } from '../../state/settingsStore';
 import { DEFAULT_REGION } from '../../config/platforms';
 import {
-  Chip,
-  ChipRow,
   EmptyState,
   Poster,
   SectionLabel,
   Segmented,
+  FLOATING_CLEARANCE,
 } from '../../ui/components';
 import { joinMeta, mediaLabel, year } from '../../ui/format';
 import { space, type, useColors } from '../../ui/theme';
@@ -59,6 +61,7 @@ const SOURCE: Record<string, string> = {
 };
 
 const STATUSES: { value: WatchStatus; label: string }[] = [
+  { value: 'toWatch', label: 'To watch' },
   { value: 'watching', label: 'Watching' },
   { value: 'completed', label: 'Watched' },
   { value: 'dropped', label: 'Dropped' },
@@ -98,15 +101,15 @@ export function TitleScreen({ route }: Props) {
     setTitle(t ?? null);
     setRatings(r);
     setProviders(p.filter(x => x.region === region));
-    return t;
+    return { title: t, missingLogos: p.some(x => !x.logoPath) };
   }, [titleId, region]);
 
   const load = useCallback(async () => {
     setError(false);
-    const cached = await readCache();
+    const { title: cached, missingLogos } = await readCache();
     // Titles from rankings lack cast/availability until fetched once.
     const ref = parseTitleId(titleId);
-    if (cached && cached.castNames != null) return;
+    if (cached && cached.castNames != null && !missingLogos) return;
     if (!ref || !(await isProviderActive('tmdb'))) {
       if (!cached) setError(true);
       return;
@@ -191,6 +194,8 @@ export function TitleScreen({ route }: Props) {
         </View>
       ) : null}
 
+      <OpenIn title={title} providers={providers} />
+
       <WatchStatus titleId={titleId} />
       <MyRating titleId={titleId} />
 
@@ -205,28 +210,91 @@ export function TitleScreen({ route }: Props) {
         </>
       ) : null}
 
-      {providers.length ? (
-        <>
-          <SectionLabel>{`Where to watch · ${region}`}</SectionLabel>
-          <ChipRow>
-            {providers.map(p => (
-              <Chip
-                key={`${p.platformId}-${p.availabilityType}`}
-                label={
-                  p.availabilityType === 'flatrate'
-                    ? p.platformName
-                    : `${p.platformName} · ${p.availabilityType}`
-                }
-                selected={false}
-                onPress={() => {}}
-              />
-            ))}
-          </ChipRow>
-        </>
-      ) : null}
-
       <Notes titleId={titleId} />
     </ScrollView>
+  );
+}
+
+function OpenIn({ title, providers }: { title: Title; providers: Provider[] }) {
+  const c = useColors();
+  const streaming = Array.from(
+    new Map(
+      providers
+        .filter(
+          p =>
+            p.availabilityType === 'flatrate' || p.availabilityType === 'free',
+        )
+        .map(p => [p.platformId, p]),
+    ).values(),
+  );
+  const ref = parseTitleId(title.id);
+  const links = [
+    ...streaming.map(p => ({
+      key: p.platformId,
+      label: p.platformName,
+      logo: p.logoPath,
+      url: platformUrl(p.platformId, title.title, p.link),
+    })),
+    ...(title.imdbId
+      ? [{ key: 'imdb', label: 'IMDb', logo: null, url: imdbUrl(title.imdbId) }]
+      : []),
+    ...(ref
+      ? [
+          {
+            key: 'tmdb',
+            label: 'TMDB',
+            logo: null,
+            url: tmdbUrl(ref.mediaType, ref.tmdbId),
+          },
+        ]
+      : []),
+  ].filter(l => l.url);
+
+  if (links.length === 0) return null;
+  return (
+    <>
+      <SectionLabel>{streaming.length ? 'Watch on' : 'More on'}</SectionLabel>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.links}
+      >
+        {links.map(l => (
+          <Pressable
+            key={l.key}
+            onPress={() => Linking.openURL(l.url!)}
+            style={({ pressed }) => [styles.link, pressed && styles.pressed]}
+          >
+            {l.logo ? (
+              <Image source={{ uri: l.logo }} style={styles.logo} />
+            ) : (
+              <View
+                style={[
+                  styles.logo,
+                  styles.badge,
+                  l.key === 'imdb' ? styles.imdbBadge : styles.tmdbBadge,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.badgeText,
+                    l.key === 'imdb' ? styles.imdbText : styles.tmdbText,
+                  ]}
+                >
+                  {l.label}
+                </Text>
+              </View>
+            )}
+            <Text
+              style={[styles.linkLabel, { color: c.secondary }]}
+              numberOfLines={1}
+            >
+              {l.label}
+            </Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+    </>
   );
 }
 
@@ -415,8 +483,19 @@ function Notes({ titleId }: { titleId: string }) {
 }
 
 const styles = StyleSheet.create({
+  links: { paddingHorizontal: space.l, gap: space.l },
+  link: { alignItems: 'center', width: 60, gap: 6 },
+  pressed: { opacity: 0.6 },
+  logo: { width: 52, height: 52, borderRadius: 12 },
+  badge: { alignItems: 'center', justifyContent: 'center' },
+  badgeText: { fontSize: 13, fontWeight: '800' },
+  imdbBadge: { backgroundColor: '#F5C518' },
+  tmdbBadge: { backgroundColor: '#0D253F' },
+  imdbText: { color: '#000000' },
+  tmdbText: { color: '#01B4E4' },
+  linkLabel: { fontSize: 11 },
   fill: { flex: 1 },
-  content: { paddingBottom: 64 },
+  content: { paddingBottom: FLOATING_CLEARANCE + 24 },
   hero: {
     flexDirection: 'row',
     gap: space.l,
