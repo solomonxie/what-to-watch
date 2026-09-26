@@ -1,13 +1,11 @@
 import React, {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
 import {
-  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -32,6 +30,7 @@ import {
   Chip,
   ChipRow,
   EmptyState,
+  FilterButton,
   FLOATING_CLEARANCE,
   PosterGrid,
   SectionLabel,
@@ -155,20 +154,6 @@ export function DiscoverScreen({ navigation }: Props) {
     setRefreshing(false);
   };
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      // React Navigation's header API takes a render function.
-      // eslint-disable-next-line react/no-unstable-nested-components
-      headerRight: () => (
-        <Pressable onPress={() => navigation.navigate('Filters')} hitSlop={8}>
-          <Text style={[styles.headerButton, { color: c.accent }]}>
-            {activeFilters ? `Filters · ${activeFilters}` : 'Filters'}
-          </Text>
-        </Pressable>
-      ),
-    });
-  }, [navigation, activeFilters, c.accent]);
-
   const items = useMemo(() => {
     if (!feed) return [];
     const withMeta = feed.items.map(i => ({
@@ -274,21 +259,30 @@ export function DiscoverScreen({ navigation }: Props) {
       }
     >
       {platforms.length > 0 ? (
-        <ChipRow scroll>
-          <Chip
-            label="All"
-            selected={!scope}
-            onPress={() => selectScope(ALL)}
+        <View style={styles.scopeRow}>
+          <FilterButton
+            count={activeFilters}
+            onPress={() => navigation.navigate('Filters')}
           />
-          {platforms.map(p => (
-            <Chip
-              key={p.id}
-              label={p.name}
-              selected={p.id === scope?.id}
-              onPress={() => selectScope(p.id)}
-            />
-          ))}
-        </ChipRow>
+          <View style={[styles.divider, { backgroundColor: c.separator }]} />
+          <View style={styles.scopeChips}>
+            <ChipRow scroll>
+              <Chip
+                label="All"
+                selected={!scope}
+                onPress={() => selectScope(ALL)}
+              />
+              {platforms.map(p => (
+                <Chip
+                  key={p.id}
+                  label={p.name}
+                  selected={p.id === scope?.id}
+                  onPress={() => selectScope(p.id)}
+                />
+              ))}
+            </ChipRow>
+          </View>
+        </View>
       ) : null}
       {feed ? (
         <View style={styles.labelRow}>
@@ -312,7 +306,13 @@ export function DiscoverScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   content: { paddingBottom: FLOATING_CLEARANCE },
-  headerButton: { fontSize: 17 },
+  scopeRow: { flexDirection: 'row', alignItems: 'center' },
+  divider: {
+    width: StyleSheet.hairlineWidth,
+    height: 24,
+    marginLeft: space.l,
+  },
+  scopeChips: { flex: 1 },
   labelRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',

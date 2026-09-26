@@ -55,6 +55,46 @@ export function Chip({
   );
 }
 
+/** Pinned lead chip for a scrolling chip row; filled once filters apply. */
+export function FilterButton({
+  count,
+  onPress,
+}: {
+  count: number;
+  onPress: () => void;
+}) {
+  const c = useColors();
+  const on = count > 0;
+  const fg = on ? c.background : c.text;
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={on ? `Filters, ${count} active` : 'Filters'}
+      style={({ pressed }) => [
+        styles.filterButton,
+        {
+          backgroundColor: on ? c.text : 'transparent',
+          borderColor: on ? c.text : c.separator,
+        },
+        pressed && styles.pressed,
+      ]}
+    >
+      <View style={styles.filterIcon}>
+        {[14, 10, 6].map(w => (
+          <View
+            key={w}
+            style={[styles.filterLine, { width: w, backgroundColor: fg }]}
+          />
+        ))}
+      </View>
+      <Text style={[styles.chipText, { color: fg }]}>
+        {on ? `Filters · ${count}` : 'Filters'}
+      </Text>
+    </Pressable>
+  );
+}
+
 export function ChipRow({
   children,
   scroll,
@@ -368,6 +408,18 @@ const styles = StyleSheet.create({
   },
   chip: { paddingVertical: 7, paddingHorizontal: 14, borderRadius: 18 },
   chipText: { fontSize: 15, fontWeight: '500' },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginLeft: space.l,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 18,
+    borderWidth: 1,
+  },
+  filterIcon: { gap: 2.5, alignItems: 'center' },
+  filterLine: { height: 1.5, borderRadius: 1 },
   chipScroll: { paddingHorizontal: space.l, gap: space.s },
   chipWrap: {
     flexDirection: 'row',
