@@ -120,14 +120,16 @@ export function Segmented<T extends string>({
   options,
   value,
   onChange,
+  style,
 }: {
   options: { value: T; label: string }[];
   value: T | null;
   onChange: (value: T) => void;
+  style?: StyleProp<ViewStyle>;
 }) {
   const c = useColors();
   return (
-    <View style={[styles.segmented, { backgroundColor: c.chip }]}>
+    <View style={[styles.segmented, { backgroundColor: c.chip }, style]}>
       {options.map(opt => {
         const on = opt.value === value;
         return (
