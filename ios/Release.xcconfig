@@ -1,0 +1,2 @@
+#include "Pods/Target Support Files/Pods-WhatToWatch/Pods-WhatToWatch.release.xcconfig"
+#include "Signing.xcconfig"
