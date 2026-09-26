@@ -2,232 +2,259 @@
 
 Product reasoning: `DESIGN.md`. Glyphs: `uiux` skill `notation.md`. Width 60.
 
+Principles: content first (posters, not forms) · one job per screen · system
+components (native tabs, header search, form sheets, grouped lists) · light +
+dark from one token set · no instructions on screen that a control can imply.
+
 ## Screen map
 
 ```
-   Launch
-     │
-     ▼
- ┌ Home ───────────┐──tap card──▶ Show Detail
- │ search bar ─────┼──type──▶ Search overlay ──tap──▶ Show Detail
- │ Filters & Sort ─┼──tap──▶ Filter sheet
- │ Settings (inline)│
- └─────────────────┘◀──back──── Show Detail
+            ┌──────────── native tab bar ────────────┐
+            │  Discover        Library       Settings│
+            └────┬───────────────┬──────────────┬────┘
+                 │               │              │
+   search ◀──────┤               │              ├──▶ API key (push)
+   Filters sheet ◀┤               │              └──▶ Region (push)
+                 ▼               ▼
+              Title ◀────────────┘              (Title pushes inside
+                                                 the tab it came from)
 ```
 
-Home is one scroll page; Settings stays inline at the bottom (few rows, no page earned). Filter = sheet (list filter, not a form field — per `mobile.md`).
-
-## Home
+## Discover (tab 1)
 
 ```
-RECENTLY WATCHED
-┌────┐┌────┐┌────┐
-│    ││    ││    │                 ← poster cards, h-scroll
-└────┘└────┘└────┘
-Dune: Part Two  Severance  The Be…  ← 1 line, truncate
-
-MY RATINGS & REVIEWS
-┌────┐┌────┐
-│    ││    │
-└────┘└────┘
-Dune: Pa…  Past Lives
-8.5 ★      9.0 ★
-
-[ Filters & Sort · 3 ]  ( Reset )   ← count = non-default filters
-
-NETFLIX                                     ⟳ ← refresh
-Most Popular
-┌────┐┌────┐┌────┐┌────┐
-│    ││    ││    ││    │
-└────┘└────┘└────┘└────┘
-Wednesday  The Night…  Squid G…
-#1         #2          #3            ← original rank kept when filtered
-
-APPLE TV+
-…
-
-SETTINGS
-…
-─────────────────────────────────
-│ 🔍 Search titles, cast, genres  │ ← pinned bottom
+Discover                                    Filters·2  ← header right,
+┌──────────────────────────────────────────────────┐     count if active
+│ 🔍 Movies, shows, cast                            │ ← native search
+└──────────────────────────────────────────────────┘
+[[Netflix]] ( Apple TV+ ) ( Disney+ ) ( Max ) →      ← enabled platforms
+                                                       h-scroll, 1 selected
+MOST POPULAR · US
+┌──────────┐ ┌──────────┐ ┌──────────┐
+│1         │ │2         │ │3         │  ← rank badge
+│  poster  │ │  poster  │ │  poster  │    2:3, radius 10
+│          │ │          │ │          │
+└──────────┘ └──────────┘ └──────────┘
+Wednesday    3 Body Pro…  Squid Game    ← 1 line
+★ 8.4 · TV   ★ 7.5 · TV   ★ 7.9 · TV    ← secondary
+…                                         pull to refresh
 ```
 
-### States (per platform section)
+States (grid area):
 
 ```
-no TMDB key  Add a TMDB API key in Settings to see Netflix rankings.
-loading      ⟳ Loading Netflix…
-error        ⚠ Couldn't load Netflix rankings.      ( Retry )
-filtered 0   No Netflix titles match your filters.  ( Reset filters )
-populated    (row above)
+no key     Connect TMDB to see what's streaming.   [[ Connect ]] → Settings/TMDB
+loading    ⟳ (centered)
+error      Couldn't load Netflix.                   [ Try again ]
+filtered   Nothing matches your filters.            [ Clear filters ]
+no plats   Pick your services in Settings.          [ Choose ]
 ```
 
-Recently Watched / My Ratings empty copy unchanged from code.
-
-## Filter sheet
+### Search (header search focused)
 
 ```
-▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
-Filters & Sort                          ( Reset )  ( Done )
-
-SORT
-[ POPULAR | Rating | Year | Title ]   [ ↓ High first ]  ← ↑/↓; hidden for Popular
-
-RATING (0-100)
-┌──────┐  to  ┌──────┐
-│ 60   │      │ 100  │
-└──────┘      └──────┘
-
-WATCHED AT LEAST
-[−]  0  [+]                              ← times
-
-YEAR
-┌──────┐  to  ┌──────┐
-│ 2000 │      │ 2026 │
-└──────┘      └──────┘
-
-GENRE                                     ← from cached titles
-[Action] [COMEDY] [Drama] [Sci-Fi] [Thriller] …   wrap
-
-COUNTRY OF ORIGIN
-[US] [GB] [KR] [JP] [FR] …                ← codes present in cache
-
-LANGUAGE
-[EN] [KO] [JA] [ES] …
-
-CAST
-┌──────────────────────────────────┐
-│ Actor name                       │     ← comma-separated, contains-match
-└──────────────────────────────────┘
-```
-
-Chip selected = filled dark, white text. Chip lists show only values present in cached titles; empty list → `Open a few titles first.` in grey.
-
-Multi-select within a group = OR; across groups = AND.
-
-## Search overlay
-
-```
-│ dune▌                         │
-─────────────────────────────────
+│ 🔍 three body▌                         Cancel │
 IN YOUR LIBRARY
-┌────┐┌────┐┌────┐
-│    ││    ││    │
-└────┘└────┘└────┘
-Dune   Dune: Pa…
-
-ONLINE (TMDB)
-Dune: Part Two · 2024 · Movie        ›
-Dune · 2021 · Movie                  ›
-Dune: Prophecy · 2024 · TV           ›
+┌──┐ 3 Body Problem
+│  │ 2024 · TV · ★ 7.5                         ›
+└──┘
+ON TMDB
+┌──┐ Three-Body
+│  │ 2023 · TV                                  ›
+└──┘
+┌──┐ The Three-Body Problem
+│  │ 2022 · TV                                 ⟳   ← opening
+└──┘
 ```
 
 ```
-typing      online list debounced 400 ms
-loading     ⟳ Searching TMDB…
-no key      Add a TMDB API key in Settings to search online.
-error       ⚠ Online search failed.
-empty       No results for "xqzt"
-tap online  row shows ⟳ → fetch + cache → Show Detail
+typing   TMDB results debounced 350 ms, library results instant
+no key   ON TMDB · Connect TMDB to search everything.
+error    ON TMDB · ⚠ <provider message>   ( Retry )
+empty    No results for "xqzt"
 ```
 
-## Show Detail
+### Filters (form sheet, medium/large detents)
 
 ```
-┌────┐  Dune: Part Two
-│    │  2024 · 166 min · Movie
-│    │  Science Fiction, Adventure
-└────┘  US · EN
-Paul Atreides unites with Chani and the Fremen…
+▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+( Clear )            Filters                   ( Done )
+SORT
+[ POPULAR | Rating | Year | Title ]
+MINIMUM RATING
+( Any ) ( 6+ ) [[ 7+ ]] ( 8+ )                  ← chips, not fields
+YEAR
+( Any ) ( 2020s ) ( 2010s ) ( 2000s ) ( Older )
+GENRE
+( Action ) [[ Drama ]] ( Comedy ) ( Sci-Fi & Fantasy ) …
+LANGUAGE
+( EN ) ( KO ) ( JA ) ( ES ) …
+COUNTRY
+( US ) ( KR ) ( GB ) …
+CAST
+┌──────────────────────────────────────────┐
+│ Actor name                               │
+└──────────────────────────────────────────┘
+```
 
-[[ Mark watched ]]  ( Watching )  ( Dropped )
-Watched 2× · last Sep 25, 2026           ← after marking
+Applies live (no Apply button). Chip lists = values present in cache;
+empty → section hidden. Watch-count filter dropped from the sheet — Library
+covers "what have I watched".
+
+## Library (tab 2)
+
+```
+Library
+[ WATCHED | Watching | Rated ]
+┌──────────┐ ┌──────────┐ ┌──────────┐
+│        2×│ │          │ │       ★9 │  ← badge: times / my rating
+└──────────┘ └──────────┘ └──────────┘
+Dune: Par…   Severance    Past Lives
+```
+
+```
+empty watched   Titles you mark watched show up here.
+empty watching  Nothing in progress.
+empty rated     Rate a title to see it here.
+```
+
+## Title (pushed)
+
+```
+‹ Discover
+┌────────────┐  3 Body Problem
+│            │  2024 · TV · 60 min
+│   poster   │  Sci-Fi & Fantasy · Drama
+│            │  US · EN
+└────────────┘
+TMDB 7.5   IMDb 7.5   RT 78%              ← stat row, no chrome
+
+[ Watching | WATCHED | Dropped ]           ← segmented
+Watched 2× · Sep 25, 2026     Watched again  ← only when Watched
+
+MY RATING
+★★★★★★★★☆☆                     8 / 10    ← tap to set, saves instantly
+┌──────────────────────────────────────────┐
+│ Add a review…                            │ ← saves on blur
+└──────────────────────────────────────────┘
+
+Paul Atreides unites with Chani…          ← overview, 4 lines, "More"
 
 CAST
-Timothée Chalamet, Zendaya, Rebecca Ferguson, …
+Timothée Chalamet · Zendaya · Rebecca Ferguson · …
 
-NOTES …
-MY RATING & REVIEW …
-INTERNET REVIEWS & RATINGS
-[TMDB 8.2/10] [IMDb 8.5/10] [RT 92%]
-WHERE TO WATCH (US)
-[Max] [Apple TV (rent)]
+WHERE TO WATCH · US
+( Netflix ) ( Apple TV · rent )
+
+NOTES
+Watch with subtitles                              ← long-press delete
+┌──────────────────────────────────────────┐
+│ Add a note…                          Add │
+└──────────────────────────────────────────┘
 ```
 
 ```
-not cached   ⟳ Fetching details…  then renders
-fetch error  ⚠ Couldn't load this title.  ( Retry )
+not cached   ⟳ (centered) then renders
+error        Couldn't load this title.   [ Try again ]
 ```
 
-## Settings → Backup
-
-Replaces the old "Sync to iCloud" toggle and "Import / Export" block.
+## Settings (tab 3, grouped inset list)
 
 ```
+Settings
+DATA SOURCES
+╭────────────────────────────────────────────────╮
+│ TMDB                           Connected ✓   › │
+├────────────────────────────────────────────────┤
+│ OMDb                           Not set       › │
+╰────────────────────────────────────────────────╯
+TMDB powers search and rankings. OMDb adds IMDb & RT ratings.
+
+STREAMING
+╭────────────────────────────────────────────────╮
+│ Region                                  US   › │
+├────────────────────────────────────────────────┤
+│ Netflix                                    ─●  │
+│ Apple TV+                                  ─●  │
+│ Disney+                                    ○─  │
+│ …                                              │
+╰────────────────────────────────────────────────╯
+
 BACKUP ⓘ
-iCloud Drive                                         ─●
-Files → iCloud Drive → What to Watch · 4 min ago
-─────────────────────────────────────────────────────
-Export a copy…                                        ›  ← share sheet
-Import from file…                                     ›  ← picker → confirm
+╭────────────────────────────────────────────────╮
+│ iCloud Drive                               ─●  │
+│ Files → iCloud Drive → What to Watch · 4m ago  │
+├────────────────────────────────────────────────┤
+│ Export a copy…                               › │
+│ Import from file…                            › │
+╰────────────────────────────────────────────────╯
 ```
 
-ⓘ popover: "Your ratings, reviews, notes and watch history. API keys never leave this device, including in backups. A daily copy is also kept in Files → On My iPhone → What to Watch."
+iCloud row states unchanged from `platform-cloud-drive.md` (drive off /
+not entitled / not ready replace the location line; fix line accent).
 
-### iCloud row states
-
-```
-unsupported   (row hidden — Android / no native module)
-off           iCloud Drive                                 ○─
-              Files → iCloud Drive → What to Watch
-on, done      iCloud Drive                                 ─●
-              Files → iCloud Drive → What to Watch · 4 min ago
-on, working   iCloud Drive                                 ─●
-              ⟳ Backing up…
-on, failed    iCloud Drive                                 ─●
-              ⚠ Last backup failed: <native message>
-drive off     iCloud Drive                                 ○─·
-              iCloud Drive is off on this device
-              Settings → your name → iCloud → iCloud Drive → turn on   ← accent
-not entitled  iCloud Drive                                 ○─·
-              This build of the app isn't signed for iCloud
-not ready     iCloud Drive                                 ○─·
-              iCloud is still setting up — try again shortly
-```
-
-Re-checked on app foreground.
-
-### Import confirm
+### API key (pushed)
 
 ```
- ┌────────────────────────────────────────┐
- │  Replace your data with this file?     │
- │  Your current data is saved first to   │
- │  Files → On My iPhone → What to Watch. │
- │          ( Cancel )  [[ Replace ]]     │!
- └────────────────────────────────────────┘
-done   ⌐ Imported 12 ratings, 3 notes, 20 watched ¬      ← alert, one line
-error  ⚠ Import failed: <reason>
+‹ Settings              TMDB
+╭────────────────────────────────────────────────╮
+│ ••••••••••••••••••••••••••••            Show   │
+╰────────────────────────────────────────────────╯
+Get a free key at themoviedb.org → Settings → API.
+Use the short "API Key", not the Read Access Token.
+                  [[ Save ]]·                 ← disabled until changed
+( Remove key )!                               ← only when saved
 ```
 
-## Components & copy
+```
+saving    ⟳ Checking key…
+invalid   ⚠ TMDB rejected this key (401).     ← verified on save
+saved     ← pops back; row shows Connected ✓
+```
+
+### Region (pushed)
+
+```
+‹ Settings             Region
+United States                               ✓
+United Kingdom
+Canada
+…
+```
+
+## Tokens
+
+| Token | Light | Dark |
+|---|---|---|
+| background | #FFFFFF | #000000 |
+| grouped bg | #F2F2F7 | #000000 |
+| card | #FFFFFF | #1C1C1E |
+| text | #000000 | #FFFFFF |
+| secondary | #6C6C70 | #98989F |
+| separator | #C6C6C8 | #38383A |
+| accent | #0A84FF | #0A84FF |
+| chip | #EFEFF4 | #2C2C2E |
+| chip selected | text-colour bg, background-colour text | same |
+
+Type: large title (system), section label 13/600 uppercase secondary,
+body 17, meta 13. Spacing 4/8/12/16/24. Poster radius 10.
+
+## Copy
 
 | Key | String |
 |---|---|
-| filters.trigger | Filters & Sort |
-| filters.reset | Reset |
-| filters.chips.empty | Open a few titles first. |
-| platform.filteredEmpty | No {platform} titles match your filters. |
-| platform.error | Couldn't load {platform} rankings. |
-| search.online.header | Online (TMDB) |
-| search.online.noKey | Add a TMDB API key in Settings to search online. |
-| detail.markWatched | Mark watched |
-| backup.heading | Backup |
-| backup.icloud.location | Files → iCloud Drive → What to Watch |
-| backup.export | Export a copy… |
-| backup.import | Import from file… |
-| backup.import.confirm | Replace your data with this file? |
+| discover.noKey | Connect TMDB to see what's streaming. |
+| discover.noPlatforms | Pick your services in Settings. |
+| discover.filtered | Nothing matches your filters. |
+| search.placeholder | Movies, shows, cast |
+| search.noKey | Connect TMDB to search everything. |
+| title.watchedAgain | Watched again |
+| settings.sources.footer | TMDB powers search and rankings. OMDb adds IMDb & RT ratings. |
+| key.hint.tmdb | Get a free key at themoviedb.org → Settings → API. Use the short "API Key", not the Read Access Token. |
+| key.invalid | {provider} rejected this key ({status}). |
 
 ## Deviations from the `uiux` skill
 
-None.
+- Filters use a form sheet (a list filter, not a form field — allowed).
+- Key screen is a pushed page, not an in-place panel: a secret needs its own
+  focus and validation state.

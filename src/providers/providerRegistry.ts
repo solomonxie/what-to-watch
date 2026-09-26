@@ -4,7 +4,11 @@ import { imdbProvider } from './imdbProvider';
 import type { MetadataProvider } from './types';
 import type { ProviderId } from '../types/domain';
 
-const ALL_PROVIDERS: MetadataProvider[] = [tmdbProvider, omdbProvider, imdbProvider];
+const ALL_PROVIDERS: MetadataProvider[] = [
+  tmdbProvider,
+  omdbProvider,
+  imdbProvider,
+];
 
 export function getProvider(id: ProviderId): MetadataProvider {
   const provider = ALL_PROVIDERS.find(p => p.id === id);

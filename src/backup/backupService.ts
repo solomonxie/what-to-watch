@@ -2,7 +2,13 @@ import RNFS from 'react-native-fs';
 import { AppState, Share } from 'react-native';
 import { pick, keepLocalCopy } from '@react-native-documents/picker';
 import { db, withTransaction } from '../db/client';
-import { cachedTitles, settings, userNotes, userRatings, watchHistory } from '../db/schema';
+import {
+  cachedTitles,
+  settings,
+  userNotes,
+  userRatings,
+  watchHistory,
+} from '../db/schema';
 import { getAllNotes } from '../db/repositories/notesRepo';
 import { getAllUserRatings } from '../db/repositories/ratingsRepo';
 import { getAllWatchHistory } from '../db/repositories/watchHistoryRepo';
@@ -86,13 +92,19 @@ async function backupTo(
       await writeLocal(LOCAL_DAILY_NAME, payload);
       await pruneLocal();
     } else {
-      await ICloudDrive.writeBackup(datedFileName(new Date()), serialize(payload));
+      await ICloudDrive.writeBackup(
+        datedFileName(new Date()),
+        serialize(payload),
+      );
     }
     await setKv(KV.hash(dest), hash);
     await setKv(KV.at(dest), String(Date.now()));
     await setKv(KV.error(dest), '');
   } catch (error) {
-    await setKv(KV.error(dest), error instanceof Error ? error.message : String(error));
+    await setKv(
+      KV.error(dest),
+      error instanceof Error ? error.message : String(error),
+    );
     throw error;
   }
 }
@@ -106,8 +118,14 @@ export async function backupNow(options: { forceICloud?: boolean } = {}) {
   await backupTo('icloud', payload, options.forceICloud);
 }
 
-export async function getICloudBackupInfo(): Promise<{ lastAt: number | null; error: string | null }> {
-  const [at, error] = await Promise.all([getKv(KV.at('icloud')), getKv(KV.error('icloud'))]);
+export async function getICloudBackupInfo(): Promise<{
+  lastAt: number | null;
+  error: string | null;
+}> {
+  const [at, error] = await Promise.all([
+    getKv(KV.at('icloud')),
+    getKv(KV.error('icloud')),
+  ]);
   return { lastAt: at ? Number(at) : null, error: error || null };
 }
 
@@ -154,8 +172,12 @@ export async function pickBackupFile(): Promise<BackupPayload> {
     files: [{ uri: picked.uri, fileName: picked.name ?? 'import.json' }],
     destination: 'cachesDirectory',
   });
-  if (local.status !== 'success') throw new Error('Could not read the selected file');
-  const text = await RNFS.readFile(decodeURIComponent(local.localUri.replace(/^file:\/\//, '')), 'utf8');
+  if (local.status !== 'success')
+    throw new Error('Could not read the selected file');
+  const text = await RNFS.readFile(
+    decodeURIComponent(local.localUri.replace(/^file:\/\//, '')),
+    'utf8',
+  );
   return parsePayload(text);
 }
 
@@ -174,9 +196,11 @@ async function replaceAllData(payload: BackupPayload): Promise<void> {
   await withTransaction(async () => {
     const tx = db;
     await tx.delete(userNotes);
-    if (payload.notes.length) await tx.insert(userNotes).values(payload.notes.map(stripId));
+    if (payload.notes.length)
+      await tx.insert(userNotes).values(payload.notes.map(stripId));
     await tx.delete(userRatings);
-    if (payload.ratings.length) await tx.insert(userRatings).values(payload.ratings.map(stripId));
+    if (payload.ratings.length)
+      await tx.insert(userRatings).values(payload.ratings.map(stripId));
     await tx.delete(watchHistory);
     if (payload.watchHistory.length) {
       await tx.insert(watchHistory).values(payload.watchHistory.map(stripId));

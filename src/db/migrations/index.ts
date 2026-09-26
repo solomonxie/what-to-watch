@@ -2,7 +2,10 @@ import { INIT_STATEMENTS } from './0000_init';
 import { TITLE_FACETS_STATEMENTS } from './0001_title_facets';
 
 // Index + 1 = the PRAGMA user_version after that step runs.
-export const MIGRATIONS: string[][] = [INIT_STATEMENTS, TITLE_FACETS_STATEMENTS];
+export const MIGRATIONS: string[][] = [
+  INIT_STATEMENTS,
+  TITLE_FACETS_STATEMENTS,
+];
 
 export interface MigrationDb {
   execute(sql: string): Promise<{ rows?: Array<Record<string, unknown>> }>;

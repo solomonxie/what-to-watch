@@ -1,7 +1,10 @@
 import { and, eq, inArray } from 'drizzle-orm';
 import { db, ensureMigrated } from '../client';
 import { cachedTitles, cachedRatings, cachedWatchProviders } from '../schema';
-import type { NormalizedTitle, WatchProviderAvailability } from '../../types/domain';
+import type {
+  NormalizedTitle,
+  WatchProviderAvailability,
+} from '../../types/domain';
 
 export async function upsertTitle(title: NormalizedTitle): Promise<void> {
   await ensureMigrated();
@@ -44,7 +47,9 @@ export async function upsertTitle(title: NormalizedTitle): Promise<void> {
         ...Object.fromEntries(
           Object.entries(facets).filter(([, v]) => v !== undefined),
         ),
-        ...(title.runtimeMinutes ? { runtimeMinutes: title.runtimeMinutes } : {}),
+        ...(title.runtimeMinutes
+          ? { runtimeMinutes: title.runtimeMinutes }
+          : {}),
         fetchedAt: Date.now(),
       },
     });
@@ -87,7 +92,10 @@ export async function getAllCachedTitles() {
 
 export async function getRatingsForTitle(titleId: string) {
   await ensureMigrated();
-  return db.select().from(cachedRatings).where(eq(cachedRatings.titleId, titleId));
+  return db
+    .select()
+    .from(cachedRatings)
+    .where(eq(cachedRatings.titleId, titleId));
 }
 
 export async function getWatchProvidersForTitle(titleId: string) {
@@ -107,7 +115,10 @@ export async function replaceWatchProviders(
   await db
     .delete(cachedWatchProviders)
     .where(
-      and(eq(cachedWatchProviders.titleId, titleId), eq(cachedWatchProviders.region, region)),
+      and(
+        eq(cachedWatchProviders.titleId, titleId),
+        eq(cachedWatchProviders.region, region),
+      ),
     );
   if (providers.length === 0) return;
   const now = Date.now();

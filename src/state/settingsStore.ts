@@ -1,5 +1,9 @@
 import { create } from 'zustand';
-import { getSettings, updateSettings, type AppSettings } from '../db/repositories/settingsRepo';
+import {
+  getSettings,
+  updateSettings,
+  type AppSettings,
+} from '../db/repositories/settingsRepo';
 
 interface SettingsStore {
   settings: AppSettings | null;
@@ -7,6 +11,7 @@ interface SettingsStore {
   load: () => Promise<void>;
   togglePlatform: (platformId: string) => Promise<void>;
   setIcloudSyncEnabled: (enabled: boolean) => Promise<void>;
+  setRegion: (region: string) => Promise<void>;
 }
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
@@ -31,6 +36,11 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   setIcloudSyncEnabled: async (enabled: boolean) => {
     const settings = await updateSettings({ icloudSyncEnabled: enabled });
+    set({ settings });
+  },
+
+  setRegion: async (region: string) => {
+    const settings = await updateSettings({ defaultRegion: region });
     set({ settings });
   },
 }));

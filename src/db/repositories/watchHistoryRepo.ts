@@ -17,7 +17,8 @@ export async function recordWatch(titleId: string, status: WatchStatus) {
       .set({
         status,
         watchedAt: Date.now(),
-        rewatchCount: existing[0].rewatchCount + (status === 'completed' ? 1 : 0),
+        rewatchCount:
+          existing[0].rewatchCount + (status === 'completed' ? 1 : 0),
       })
       .where(eq(watchHistory.id, existing[0].id));
   } else {
