@@ -1,9 +1,16 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ProviderApiKeyForm } from './ProviderApiKeyForm';
 import { PlatformPreferenceToggles } from './PlatformPreferenceToggles';
 import { ICloudSyncToggle } from './ICloudSyncToggle';
 import { ImportExportControls } from './ImportExportControls';
+
+const BACKUP_INFO =
+  'Your ratings, reviews, notes and watch history. API keys never leave this device, including in backups. A daily copy is also kept in Files → On My iPhone → What to Watch.';
+
+function showBackupInfo() {
+  Alert.alert('Backup', BACKUP_INFO);
+}
 
 export function SettingsSection() {
   return (
@@ -23,6 +30,12 @@ export function SettingsSection() {
       />
 
       <PlatformPreferenceToggles />
+      <View style={styles.backupHeader}>
+        <Text style={styles.backupHeading}>Backup</Text>
+        <Pressable onPress={showBackupInfo} hitSlop={12}>
+          <Text style={styles.info}>ⓘ</Text>
+        </Pressable>
+      </View>
       <ICloudSyncToggle />
       <ImportExportControls />
     </View>
@@ -32,4 +45,7 @@ export function SettingsSection() {
 const styles = StyleSheet.create({
   section: { paddingHorizontal: 16, paddingBottom: 32, marginTop: 8 },
   heading: { fontSize: 20, fontWeight: '700', marginBottom: 16 },
+  backupHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
+  backupHeading: { fontSize: 15, fontWeight: '600' },
+  info: { fontSize: 15, color: '#007aff' },
 });
