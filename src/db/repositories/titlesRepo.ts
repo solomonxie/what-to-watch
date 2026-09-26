@@ -129,6 +129,8 @@ export async function replaceWatchProviders(
       platformName: p.platformName,
       region: p.region,
       availabilityType: p.availabilityType,
+      logoPath: p.logoPath,
+      link: p.link,
       fetchedAt: now,
     })),
   );

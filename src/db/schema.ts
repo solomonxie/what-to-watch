@@ -37,6 +37,8 @@ export const cachedWatchProviders = sqliteTable('cached_watch_providers', {
   platformName: text('platform_name').notNull(),
   region: text('region').notNull(),
   availabilityType: text('availability_type').notNull(),
+  logoPath: text('logo_path'),
+  link: text('link'),
   fetchedAt: integer('fetched_at').notNull(),
 });
 

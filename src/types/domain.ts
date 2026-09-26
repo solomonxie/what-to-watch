@@ -24,6 +24,8 @@ export interface WatchProviderAvailability {
   region: string;
   availabilityType: 'flatrate' | 'rent' | 'buy' | 'free';
   logoPath?: string;
+  /** TMDB's watch page for the title in this region. */
+  link?: string;
 }
 
 export interface ProviderSearchResult {
@@ -67,7 +69,7 @@ export interface ExternalReview {
   url?: string;
 }
 
-export type WatchStatus = 'watching' | 'completed' | 'dropped';
+export type WatchStatus = 'toWatch' | 'watching' | 'completed' | 'dropped';
 
 export interface FilterState {
   ratingRange: [number, number];

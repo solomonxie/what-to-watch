@@ -1,10 +1,12 @@
 import { INIT_STATEMENTS } from './0000_init';
 import { TITLE_FACETS_STATEMENTS } from './0001_title_facets';
+import { PROVIDER_LINKS_STATEMENTS } from './0002_provider_links';
 
 // Index + 1 = the PRAGMA user_version after that step runs.
 export const MIGRATIONS: string[][] = [
   INIT_STATEMENTS,
   TITLE_FACETS_STATEMENTS,
+  PROVIDER_LINKS_STATEMENTS,
 ];
 
 export interface MigrationDb {

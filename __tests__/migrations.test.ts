@@ -29,6 +29,7 @@ describe('runMigrations', () => {
     await runMigrations(f.db);
     expect(f.executed.some(s => s.startsWith('CREATE TABLE settings'))).toBe(false);
     expect(f.executed).toContain('ALTER TABLE cached_titles ADD COLUMN cast_names TEXT');
+    expect(f.executed).toContain("ALTER TABLE cached_watch_providers ADD COLUMN link TEXT");
     expect(f.version()).toBe(MIGRATIONS.length);
   });
 
