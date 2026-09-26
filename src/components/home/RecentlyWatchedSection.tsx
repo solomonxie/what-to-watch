@@ -5,10 +5,11 @@ import { getTitlesByIds } from '../../db/repositories/titlesRepo';
 import { TitleCard } from '../title/TitleCard';
 
 interface Props {
+  refreshKey: number;
   onSelectTitle: (titleId: string) => void;
 }
 
-export function RecentlyWatchedSection({ onSelectTitle }: Props) {
+export function RecentlyWatchedSection({ refreshKey, onSelectTitle }: Props) {
   const [items, setItems] = useState<
     Array<{ id: string; title: string; posterPath: string | null }>
   >([]);
@@ -19,7 +20,7 @@ export function RecentlyWatchedSection({ onSelectTitle }: Props) {
       const titles = await getTitlesByIds(history.map(h => h.titleId));
       setItems(titles);
     })();
-  }, []);
+  }, [refreshKey]);
 
   return (
     <View style={styles.section}>

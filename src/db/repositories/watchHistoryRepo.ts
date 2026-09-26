@@ -25,7 +25,7 @@ export async function recordWatch(titleId: string, status: WatchStatus) {
       titleId,
       status,
       watchedAt: Date.now(),
-      rewatchCount: 0,
+      rewatchCount: status === 'completed' ? 1 : 0,
     });
   }
 }
@@ -42,4 +42,20 @@ export async function getRecentlyWatched(limit = 20) {
 export async function getAllWatchHistory() {
   await ensureMigrated();
   return db.select().from(watchHistory);
+}
+
+export async function getWatchEntry(titleId: string) {
+  await ensureMigrated();
+  const rows = await db
+    .select()
+    .from(watchHistory)
+    .where(eq(watchHistory.titleId, titleId))
+    .limit(1);
+  return rows[0];
+}
+
+/** rewatch_count holds the number of completed viewings. */
+export async function getWatchCounts(): Promise<Map<string, number>> {
+  const rows = await getAllWatchHistory();
+  return new Map(rows.map(r => [r.titleId, r.rewatchCount]));
 }
