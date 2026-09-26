@@ -1,23 +1,83 @@
-import { open } from '@op-engineering/op-sqlite';
-import { drizzle } from 'drizzle-orm/op-sqlite';
+import { open, type DB } from '@op-engineering/op-sqlite';
+import { drizzle, type OPSQLiteDatabase } from 'drizzle-orm/op-sqlite';
 import * as schema from './schema';
-import { INIT_STATEMENTS } from './migrations/0000_init';
+import { runMigrations } from './migrations';
 
-const rawDb = open({ name: 'whattowatch.db' });
+type Schema = typeof schema;
 
-export const db = drizzle(rawDb, { schema });
+let rawDbInstance: DB | null = null;
+let ormInstance: OPSQLiteDatabase<Schema> | null = null;
 
-let migrated = false;
-
-export async function ensureMigrated(): Promise<void> {
-  if (migrated) return;
-  const hasTables = await rawDb.execute(
-    "SELECT name FROM sqlite_master WHERE type='table' AND name='settings'",
-  );
-  if (!hasTables.rows || hasTables.rows.length === 0) {
-    for (const statement of INIT_STATEMENTS) {
-      await rawDb.execute(statement);
-    }
+// Opening the native SQLite connection is deferred until first actual use
+// (inside ensureMigrated/a repository call) rather than at module load, so
+// importing this file never triggers a native call during JS bundle
+// evaluation/app startup.
+function getRawDb(): DB {
+  if (!rawDbInstance) {
+    rawDbInstance = open({ name: 'whattowatch.db' });
   }
-  migrated = true;
+  return rawDbInstance;
+}
+
+type Params = Parameters<DB['execute']>[1];
+
+// drizzle-orm's op-sqlite driver targets the pre-v15 op-sqlite API
+// (executeAsync / executeRawAsync / sync execute with rows._array).
+function drizzleClient(raw: DB) {
+  return {
+    executeAsync: (query: string, params?: Params) =>
+      raw.execute(query, params),
+    executeRawAsync: (query: string, params?: Params) =>
+      raw.executeRaw(query, params).then(r => r.rawRows),
+    execute: (query: string, params?: Params) => ({
+      rows: { _array: raw.executeSync(query, params).rows },
+    }),
+  };
+}
+
+function getOrm(): OPSQLiteDatabase<Schema> {
+  if (!ormInstance) {
+    ormInstance = drizzle(drizzleClient(getRawDb()) as unknown as DB, {
+      schema,
+    });
+  }
+  return ormInstance;
+}
+
+export const db: OPSQLiteDatabase<Schema> = new Proxy(
+  {} as OPSQLiteDatabase<Schema>,
+  {
+    get(_target, prop) {
+      const orm = getOrm();
+      const value = Reflect.get(orm as object, prop);
+      return typeof value === 'function' ? value.bind(orm) : value;
+    },
+  },
+);
+
+let migration: Promise<void> | null = null;
+
+export function ensureMigrated(): Promise<void> {
+  if (!migration) {
+    migration = runMigrations(getRawDb()).catch(error => {
+      migration = null;
+      throw error;
+    });
+  }
+  return migration;
+}
+
+// drizzle's op-sqlite transaction() is synchronous and commits before async
+// callbacks finish, so transactions are driven here instead.
+export async function withTransaction(fn: () => Promise<void>): Promise<void> {
+  await ensureMigrated();
+  const raw = getRawDb();
+  await raw.execute('BEGIN');
+  try {
+    await fn();
+    await raw.execute('COMMIT');
+  } catch (error) {
+    await raw.execute('ROLLBACK');
+    throw error;
+  }
 }
