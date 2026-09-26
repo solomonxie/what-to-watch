@@ -1,32 +1,32 @@
 import { NativeModules, Platform } from 'react-native';
 
-export type SyncStatus = 'idle' | 'syncing' | 'error' | 'disabled';
+export type ICloudStatus =
+  | 'unsupported'
+  | 'available'
+  | 'notEntitled'
+  | 'driveOff'
+  | 'notReady';
 
 interface NativeICloudSyncModule {
-  isAvailable(): Promise<boolean>;
-  getSyncStatus(): Promise<SyncStatus>;
-  setEnabled(enabled: boolean): Promise<void>;
-  syncNow(): Promise<void>;
+  status(): Promise<Exclude<ICloudStatus, 'unsupported'>>;
+  writeBackup(fileName: string, contents: string): Promise<void>;
+  readLatest(): Promise<string | null>;
 }
 
 const NativeModule: NativeICloudSyncModule | undefined =
   Platform.OS === 'ios' ? NativeModules.ICloudSyncModule : undefined;
 
-export const ICloudSyncModule: NativeICloudSyncModule = {
-  async isAvailable() {
-    if (Platform.OS !== 'ios' || !NativeModule) return false;
-    return NativeModule.isAvailable();
+export const ICloudDrive = {
+  async status(): Promise<ICloudStatus> {
+    if (!NativeModule) return 'unsupported';
+    return NativeModule.status();
   },
-  async getSyncStatus() {
-    if (Platform.OS !== 'ios' || !NativeModule) return 'disabled';
-    return NativeModule.getSyncStatus();
+  async writeBackup(fileName: string, contents: string): Promise<void> {
+    if (!NativeModule) throw new Error('iCloud Drive is not supported here');
+    return NativeModule.writeBackup(fileName, contents);
   },
-  async setEnabled(enabled: boolean) {
-    if (Platform.OS !== 'ios' || !NativeModule) return;
-    return NativeModule.setEnabled(enabled);
-  },
-  async syncNow() {
-    if (Platform.OS !== 'ios' || !NativeModule) return;
-    return NativeModule.syncNow();
+  async readLatest(): Promise<string | null> {
+    if (!NativeModule) return null;
+    return NativeModule.readLatest();
   },
 };

@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
-import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
-import { exportToFile } from '../../importExport/exportService';
-import { pickAndImportFile } from '../../importExport/importService';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { exportCopy, importPayload, pickBackupFile } from '../../backup/backupService';
+import { useSettingsStore } from '../../state/settingsStore';
+
+function isCancel(error: unknown) {
+  const code = (error as { code?: string })?.code;
+  return code === 'OPERATION_CANCELED' || /cancel/i.test(String(error));
+}
 
 export function ImportExportControls() {
-  const [includeApiKeys, setIncludeApiKeys] = useState(false);
   const [busy, setBusy] = useState(false);
+  const loadSettings = useSettingsStore(s => s.load);
 
   const onExport = async () => {
     setBusy(true);
     try {
-      await exportToFile({ includeApiKeys });
+      await exportCopy();
     } catch (error) {
       Alert.alert('Export failed', String(error));
     } finally {
@@ -21,43 +26,61 @@ export function ImportExportControls() {
   const onImport = async () => {
     setBusy(true);
     try {
-      await pickAndImportFile();
-      Alert.alert('Import complete');
+      const payload = await pickBackupFile();
+      Alert.alert(
+        'Replace your data with this file?',
+        'Your current data is saved first to Files → On My iPhone → What to Watch.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Replace',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                const n = await importPayload(payload);
+                await loadSettings();
+                Alert.alert(
+                  `Imported ${n.ratings} ratings, ${n.notes} notes, ${n.watched} watched`,
+                );
+              } catch (error) {
+                Alert.alert(`⚠ Import failed: ${error instanceof Error ? error.message : error}`);
+              }
+            },
+          },
+        ],
+      );
     } catch (error) {
-      Alert.alert('Import failed', String(error));
+      if (!isCancel(error)) {
+        Alert.alert(`⚠ Import failed: ${error instanceof Error ? error.message : error}`);
+      }
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <View style={styles.section}>
-      <Text style={styles.heading}>Import / Export</Text>
-
-      <Pressable style={styles.button} onPress={onExport} disabled={busy}>
-        <Text style={styles.buttonText}>Export app data</Text>
+    <View>
+      <Pressable style={styles.row} onPress={onExport} disabled={busy}>
+        <Text style={styles.label}>Export a copy…</Text>
+        <Text style={styles.chevron}>›</Text>
       </Pressable>
-
-      <View style={styles.checkboxRow}>
-        <Switch value={includeApiKeys} onValueChange={setIncludeApiKeys} />
-        <Text style={styles.checkboxLabel}>
-          Include API keys (plaintext, not recommended)
-        </Text>
-      </View>
-
-      <Pressable style={[styles.button, styles.buttonSecondary]} onPress={onImport} disabled={busy}>
-        <Text style={styles.buttonText}>Import app data</Text>
+      <Pressable style={styles.row} onPress={onImport} disabled={busy}>
+        <Text style={styles.label}>Import from file…</Text>
+        <Text style={styles.chevron}>›</Text>
       </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  section: { marginBottom: 16 },
-  heading: { fontSize: 15, fontWeight: '600', marginBottom: 8 },
-  button: { paddingVertical: 10, paddingHorizontal: 14, backgroundColor: '#333', borderRadius: 8, marginBottom: 8, alignSelf: 'flex-start' },
-  buttonSecondary: { backgroundColor: '#666' },
-  buttonText: { color: 'white', fontWeight: '600' },
-  checkboxRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 },
-  checkboxLabel: { fontSize: 12, color: '#888', flexShrink: 1 },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ccc',
+  },
+  label: { fontSize: 15, color: '#007aff' },
+  chevron: { fontSize: 18, color: '#bbb' },
 });
