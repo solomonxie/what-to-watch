@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: space.l,
-    paddingTop: space.xl,
+    paddingVertical: space.l,
   },
   title: { fontSize: 17, fontWeight: '600' },
   action: { fontSize: 17 },

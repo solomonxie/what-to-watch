@@ -287,6 +287,9 @@ export interface GridItem {
 
 export const GRID_COLUMNS = 3;
 
+/** Bottom padding so the floating search pill never covers content. */
+export const FLOATING_CLEARANCE = 88;
+
 export function usePosterWidth(): number {
   const { width } = useWindowDimensions();
   return (width - space.l * 2 - space.m * (GRID_COLUMNS - 1)) / GRID_COLUMNS;
