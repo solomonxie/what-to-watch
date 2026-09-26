@@ -65,3 +65,34 @@ First review on device: Settings buried the content, no platform rows (DB raw-ro
 - [x] T6.5 Title: stat row, status segmented, instant rating/review, notes — see `src/screens/title` — depends: T6.2
 - [x] T6.6 Settings: grouped list, API key page with verify, region page, backup rows — see `src/screens/settings` — depends: T6.2
 - [x] T6.7 Remove old home/detail/settings components; tsc/jest/eslint; device build — depends: T6.3-T6.6
+
+## Phase 7: Taste & recommendations
+
+The profile is the input everything else reads, so its model and store land first; the recommender is pure logic, testable before any UI.
+
+- [x] T7.1 Taxonomy (genres with movie/tv TMDB ids, languages, countries) + preferences store persisted in `app_kv` — see `src/config/taxonomy.ts`, `src/prefs` — depends: none
+- [x] T7.2 TMDB: generic discover with params, keyword search — see `src/providers/tmdbProvider.ts` — depends: none
+- [x] T7.3 Recommender: query plan + rank-weighted scoring + reasons (pure, unit-tested) — see `src/recs/recommender.ts` — depends: T7.1
+- [x] T7.4 Recs service: run plan, exclude watched/dropped, cache in kv, stale-while-revalidate — see `src/recs/recsService.ts` — depends: T7.2, T7.3
+- [x] T7.5 Draggable ranked list (PanResponder, no native deps) — see `src/ui/RankedList.tsx` — depends: none
+- [x] T7.6 Taste + Add-facet screens; For You tab; Settings row — see `src/screens/forYou`, `src/screens/taste`, UIUX "For You", "Taste" — depends: T7.1, T7.4, T7.5
+- [x] T7.8 "To watch" status: domain, title segmented, Library tab — see `src/screens/library`, `src/screens/title` — depends: none
+- [x] T7.7 Preferences in backup payload; live test for recs — see `src/backup`, `__tests__` — depends: T7.4
+
+## Phase 8: Reach & links
+
+Review feedback: search should be reachable from anywhere, titles should link out, and existing history elsewhere should come in.
+
+- [x] T8.1 Floating search pill over tabs + full-screen search modal — see `src/screens/search` — depends: none
+- [x] T8.2 Provider logo/link columns (migration 3); "Watch on / More on" icons — see `src/config/links.ts`, `src/screens/title` — depends: none
+- [x] T8.3 Library import: CSV formats, RSS feeds, TMDB matcher, merge rules, Import screen — see `src/libraryImport`, `src/screens/library/ImportScreen.tsx` — depends: none
+- [x] T8.4 Filters as card modal (form sheet laid out wrongly) — see `src/navigation` — depends: none
+- [x] T8.5 Unit + live tests for recs and import — see `__tests__` — depends: T8.3
+
+## Phase 9: One home
+
+Review feedback: no separate For You page — Discover shows popular by default and switches to picks once a taste exists.
+
+- [x] T9.1 Recs scoped per service (+ All), cache per scope — see `src/recs/recsService.ts` — depends: none
+- [x] T9.2 Discover feed: All chip, popular vs picks, stale-while-revalidate, reasons — see `src/screens/discover` — depends: T9.1
+- [x] T9.3 Remove For You tab; Taste only from Settings — see `src/navigation` — depends: T9.2
