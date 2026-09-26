@@ -14,6 +14,9 @@ export const cachedTitles = sqliteTable('cached_titles', {
   runtimeMinutes: integer('runtime_minutes'),
   mediaType: text('media_type').notNull(),
   primaryRatingScore: real('primary_rating_score'),
+  originalLanguage: text('original_language'),
+  originCountries: text('origin_countries', { mode: 'json' }).$type<string[]>(),
+  castNames: text('cast_names', { mode: 'json' }).$type<string[]>(),
   fetchedAt: integer('fetched_at').notNull(),
 });
 
@@ -86,4 +89,9 @@ export const settings = sqliteTable('settings', {
   filterDefaults: text('filter_defaults', { mode: 'json' }).$type<
     Record<string, unknown>
   >(),
+});
+
+export const appKv = sqliteTable('app_kv', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
 });
