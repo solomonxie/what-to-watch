@@ -131,6 +131,21 @@ export async function searchOnline(
   return tmdbProvider.searchTitles(query);
 }
 
+/** Cache a list result (discover/search) without an extra details request. */
+export async function cacheListTitle(
+  details: ProviderTitleDetails,
+  ratings: ProviderRating[],
+): Promise<string> {
+  const title = normalize(
+    [details],
+    ratings,
+    details.mediaType,
+    details.externalId,
+  );
+  await upsertTitle(title);
+  return title.id;
+}
+
 export async function refreshSearchIndex(): Promise<void> {
   buildSearchIndex(await getAllCachedTitles());
 }

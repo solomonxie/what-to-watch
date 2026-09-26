@@ -12,7 +12,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { getApiKey } from '../../secureStorage/apiKeyStore';
 import { PLATFORMS, DEFAULT_REGION } from '../../config/platforms';
 import { useSettingsStore } from '../../state/settingsStore';
-import { GroupedSection, Row } from '../../ui/components';
+import { usePrefsStore } from '../../prefs/prefsStore';
+import { FLOATING_CLEARANCE, GroupedSection, Row } from '../../ui/components';
 import { space, type, useColors } from '../../ui/theme';
 import { ICloudRow } from './ICloudRow';
 import { useImportExport } from './useImportExport';
@@ -28,17 +29,23 @@ export function SettingsScreen({ navigation }: Props) {
   const { settings, load, togglePlatform } = useSettingsStore();
   const [keys, setKeys] = useState({ tmdb: false, omdb: false });
   const { exportCopy, importFile, busy } = useImportExport();
+  const { prefs, load: loadPrefs } = usePrefsStore();
 
   useFocusEffect(
     useCallback(() => {
       if (!settings) load();
+      loadPrefs();
       Promise.all([getApiKey('tmdb'), getApiKey('omdb')]).then(([t, o]) =>
         setKeys({ tmdb: !!t, omdb: !!o }),
       );
-    }, [settings, load]),
+    }, [settings, load, loadPrefs]),
   );
 
   const enabled = new Set(settings?.enabledPlatformIds ?? []);
+  const tasteSummary = prefs?.genres.length
+    ? prefs.genres.slice(0, 2).join(', ') +
+      (prefs.genres.length > 2 ? ', …' : '')
+    : 'Not set';
 
   return (
     <ScrollView
@@ -80,6 +87,17 @@ export function SettingsScreen({ navigation }: Props) {
         ))}
       </GroupedSection>
 
+      <GroupedSection
+        header="Taste"
+        footer="Set tastes to turn Discover into picks for you. Leave empty for what's popular."
+      >
+        <Row
+          label="Taste"
+          value={tasteSummary}
+          onPress={() => navigation.navigate('Taste')}
+        />
+      </GroupedSection>
+
       <View style={styles.backupHeader}>
         <Text style={[type.section, { color: c.secondary }]}>BACKUP</Text>
         <Pressable
@@ -102,7 +120,7 @@ export function SettingsScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingBottom: 48 },
+  content: { paddingBottom: FLOATING_CLEARANCE },
   backupHeader: {
     flexDirection: 'row',
     gap: 6,

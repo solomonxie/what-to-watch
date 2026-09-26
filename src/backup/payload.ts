@@ -22,6 +22,8 @@ export interface BackupPayload {
   watchHistory: NoId<typeof watchHistory.$inferInsert>[];
   settings?: NoId<typeof settings.$inferInsert>;
   titles?: (typeof cachedTitles.$inferInsert)[];
+  /** Taste profile (JSON of Preferences). */
+  preferences?: unknown;
 }
 
 export class BackupVersionError extends Error {}
@@ -44,6 +46,7 @@ export function parsePayload(text: string): BackupPayload {
     watchHistory: data.watchHistory ?? [],
     settings: data.settings ?? undefined,
     titles: data.titles ?? [],
+    preferences: data.preferences ?? undefined,
   };
 }
 
