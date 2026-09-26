@@ -73,3 +73,10 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Per-developer signing (team id, bundle id)
+ios/Local.xcconfig
+
+# Local secrets
+.env
+.env.local

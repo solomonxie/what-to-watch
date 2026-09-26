@@ -1,0 +1,7 @@
+// Placeholders for a fresh clone. Put your own values in ios/Local.xcconfig (gitignored):
+//   DEVELOPMENT_TEAM = ABCDE12345
+//   PRODUCT_BUNDLE_IDENTIFIER = com.yourname.whattowatch
+DEVELOPMENT_TEAM =
+PRODUCT_BUNDLE_IDENTIFIER = com.whattowatch.app
+
+#include? "Local.xcconfig"
