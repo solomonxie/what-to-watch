@@ -9,36 +9,75 @@ dark from one token set · no instructions on screen that a control can imply.
 ## Screen map
 
 ```
-            ┌──────────── native tab bar ────────────┐
-            │  Discover        Library       Settings│
-            └────┬───────────────┬──────────────┬────┘
-                 │               │              │
-   search ◀──────┤               │              ├──▶ API key (push)
-   Filters sheet ◀┤               │              └──▶ Region (push)
-                 ▼               ▼
-              Title ◀────────────┘              (Title pushes inside
-                                                 the tab it came from)
+       ┌────────────── native tab bar ──────────────┐
+       │   Discover         Library         Settings │
+       └─────┬───────────────┬────────────────┬─────┘
+  search ◀───┤ (floating)    │                ├──▶ API key (push)
+  Filters ◀──┤               │                ├──▶ Region (push)
+             ▼               ▼                └──▶ Taste (push) ──▶ Add <facet>
+           Title ◀───────────┘                (Title pushes inside the tab it came from)
 ```
 
-## Discover (tab 1)
+## Taste (pushed from Settings)
 
 ```
-Discover                                    Filters·2  ← header right,
-┌──────────────────────────────────────────────────┐     count if active
-│ 🔍 Movies, shows, cast                            │ ← native search
-└──────────────────────────────────────────────────┘
-[[Netflix]] ( Apple TV+ ) ( Disney+ ) ( Max ) →      ← enabled platforms
-                                                       h-scroll, 1 selected
-MOST POPULAR · US
+‹ Settings                Taste
+[ BOTH | Movies | Shows ]
+Only on my services                               ─●
+GENRES                                     drag to rank
+╭────────────────────────────────────────────────╮
+│ 1  Science Fiction                        ✕  ≡ │ ← hold ≡ and drag
+│ 2  Thriller                               ✕  ≡ │
+│ 3  Drama                                  ✕  ≡ │
+├────────────────────────────────────────────────┤
+│ Add genre…                                   › │
+╰────────────────────────────────────────────────╯
+TOPICS         (same list)     Add topic…    › ← search TMDB keywords
+LANGUAGES      (same list)     Add language… ›
+COUNTRIES      (same list)     Add country…  ›
+```
+
+Drag: hold ≡ ▲▼ ⇒ row lifts (shadow), others slide; release ⇒ saved.
+Higher = stronger weight.
+
+### Add <facet> (pushed)
+
+```
+‹ Taste              Add genre
+│ 🔍 Filter                                     │   ← topics: searches TMDB
+Action                                          +
+Animation                                       +
+Comedy                                          ✓   ← already added, tap removes
+…
+```
+
+## Discover (tab 1, home)
+
+No taste set → what's popular. Any taste set (Settings → Taste) → picks for you.
+
+```
+Discover                                    Filters·2
+[[ All ]] ( Netflix ) ( Apple TV+ ) ( Max ) →        ← All = every enabled service
+PICKED FOR YOU                      Updated 12 min ago   ← or "Updating…"
 ┌──────────┐ ┌──────────┐ ┌──────────┐
-│1         │ │2         │ │3         │  ← rank badge
-│  poster  │ │  poster  │ │  poster  │    2:3, radius 10
-│          │ │          │ │          │
+│  poster  │ │  poster  │ │  poster  │
 └──────────┘ └──────────┘ └──────────┘
-Wednesday    3 Body Pro…  Squid Game    ← 1 line
-★ 8.4 · TV   ★ 7.5 · TV   ★ 7.9 · TV    ← secondary
-…                                         pull to refresh
+Past Lives   Parasite     Arrival
+Romance·KO   Thriller·KO  Sci-Fi       ← reasons
 ```
+
+```
+MOST POPULAR · US                                   ← no taste
+┌──────────┐ ┌──────────┐
+│1         │ │2         │               ← rank badge on a single service;
+└──────────┘ └──────────┘                 All interleaves services, no badge
+Wednesday    3 Body Pro…
+★ 8.4 · TV   ★ 7.5 · TV
+```
+
+Picks: cached result renders at once; refreshes in the background when > 6 h
+old or taste / services / region changed; pull to refresh forces. Filters apply
+on top of either mode.
 
 States (grid area):
 
@@ -48,12 +87,28 @@ loading    ⟳ (centered)
 error      Couldn't load Netflix.                   [ Try again ]
 filtered   Nothing matches your filters.            [ Clear filters ]
 no plats   Pick your services in Settings.          [ Choose ]
+no picks   Nothing matched your taste here. Try more genres in Settings → Taste.  [ Edit taste ]
+update err "Couldn't update · showing saved picks"   ← grid stays
 ```
 
-### Search (header search focused)
+### Search (floating pill → full-screen search)
+
+On every tab, floating above the tab bar (hidden while the keyboard is up):
 
 ```
-│ 🔍 three body▌                         Cancel │
+┌──────────────────────────────────────────────┐
+│  poster grid …                               │
+╭──────────────────────────────────────────────╮
+│ ⌕  Search movies, shows, cast                │ ← pill, shadow, 46pt
+╰──────────────────────────────────────────────╯
+ Discover     Library     Settings              ← native tab bar
+```
+
+tap ↓ ⇒ full-screen search (fade), field at the bottom above the keyboard,
+results fill upward; titles open inside the search stack. iOS 26's detached
+search tab would be the native form, but the target phone runs iOS 18.
+
+```
 IN YOUR LIBRARY
 ┌──┐ 3 Body Problem
 │  │ 2024 · TV · ★ 7.5                         ›
@@ -74,7 +129,7 @@ error    ON TMDB · ⚠ <provider message>   ( Retry )
 empty    No results for "xqzt"
 ```
 
-### Filters (form sheet, medium/large detents)
+### Filters (card modal)
 
 ```
 ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
@@ -105,7 +160,7 @@ covers "what have I watched".
 
 ```
 Library
-[ WATCHED | Watching | Rated ]
+[ TO WATCH | Watching | Watched | Rated ]      ← opens on To watch
 ┌──────────┐ ┌──────────┐ ┌──────────┐
 │        2×│ │          │ │       ★9 │  ← badge: times / my rating
 └──────────┘ └──────────┘ └──────────┘
@@ -113,6 +168,7 @@ Dune: Par…   Severance    Past Lives
 ```
 
 ```
+empty to watch  Save titles to watch later from any title page.
 empty watched   Titles you mark watched show up here.
 empty watching  Nothing in progress.
 empty rated     Rate a title to see it here.
@@ -129,7 +185,14 @@ empty rated     Rate a title to see it here.
 └────────────┘
 TMDB 7.5   IMDb 7.5   RT 78%              ← stat row, no chrome
 
-[ Watching | WATCHED | Dropped ]           ← segmented
+WATCH ON                                    ← "MORE ON" when not streaming
+┌────┐ ┌────┐ ┌────┐ ┌────┐
+│logo│ │logo│ │IMDb│ │TMDB│                ← streaming logos only for
+└────┘ └────┘ └────┘ └────┘                  services it streams on (flatrate/free)
+Netflix Max    IMDb   TMDB
+tap ⇒ platform search for the title (universal link → app), IMDb / TMDB page
+
+[ To watch | Watching | WATCHED | Dropped ]  ← segmented
 Watched 2× · Sep 25, 2026     Watched again  ← only when Watched
 
 MY RATING
@@ -143,9 +206,6 @@ Paul Atreides unites with Chani…          ← overview, 4 lines, "More"
 CAST
 Timothée Chalamet · Zendaya · Rebecca Ferguson · …
 
-WHERE TO WATCH · US
-( Netflix ) ( Apple TV · rent )
-
 NOTES
 Watch with subtitles                              ← long-press delete
 ┌──────────────────────────────────────────┐
@@ -156,6 +216,31 @@ Watch with subtitles                              ← long-press delete
 ```
 not cached   ⟳ (centered) then renders
 error        Couldn't load this title.   [ Try again ]
+```
+
+### Import (pushed from Library header "Import")
+
+```
+‹ Library               Import
+FROM A FILE
+╭────────────────────────────────────────────────╮
+│ Choose CSV…                                  › │
+╰────────────────────────────────────────────────╯
+Douban movie exports, IMDb ratings or watchlist, Letterboxd …
+FROM A LINK
+╭────────────────────────────────────────────────╮
+│ letterboxd.com/you or douban.com/people/you  Import │
+╰────────────────────────────────────────────────╯
+Reads the public feed: Letterboxd recent diary, Douban latest ~10 marks.
+```
+
+```
+reading   Reading…
+matching  Matching Douban titles · 45 / 120   [████░░░░]
+done      IMPORTED FROM DOUBAN  Added 110 of 120 · Watched 72 · To watch 38 · Ratings 60
+          NOT FOUND (10)  <title> <year> …
+error     ⚠ This is a book export (227 books). What to Watch imports movies and shows —
+            export your Douban movie (影视) list instead.
 ```
 
 ## Settings (tab 3, grouped inset list)
@@ -178,6 +263,11 @@ STREAMING
 │ Apple TV+                                  ─●  │
 │ Disney+                                    ○─  │
 │ …                                              │
+╰────────────────────────────────────────────────╯
+
+TASTE
+╭────────────────────────────────────────────────╮
+│ Taste                   Sci-Fi, Thriller, …  › │
 ╰────────────────────────────────────────────────╯
 
 BACKUP ⓘ
@@ -255,6 +345,6 @@ body 17, meta 13. Spacing 4/8/12/16/24. Poster radius 10.
 
 ## Deviations from the `uiux` skill
 
-- Filters use a form sheet (a list filter, not a form field — allowed).
+- Filters use a card modal (a list filter, not a form field — allowed). Detented form sheet dropped: it laid out wrongly on device.
 - Key screen is a pushed page, not an in-place panel: a secret needs its own
   focus and validation state.
