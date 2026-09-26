@@ -26,7 +26,10 @@ export interface MetadataProvider {
     mediaType?: MediaType,
   ): Promise<ProviderTitleDetails>;
   getCast(externalId: string, mediaType?: MediaType): Promise<CastMember[]>;
-  getRatings(externalId: string, mediaType?: MediaType): Promise<ProviderRating[]>;
+  getRatings(
+    externalId: string,
+    mediaType?: MediaType,
+  ): Promise<ProviderRating[]>;
   getWatchProviders(
     externalId: string,
     region: string,

@@ -1,19 +1,22 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { AppState, StyleSheet, Switch, Text, View } from 'react-native';
+import { AppState, StyleSheet, Text } from 'react-native';
 import { ICloudDrive, type ICloudStatus } from '../../native/ICloudSyncModule';
 import { useSettingsStore } from '../../state/settingsStore';
 import { backupNow, getICloudBackupInfo } from '../../backup/backupService';
+import { Row } from '../../ui/components';
+import { type, useColors } from '../../ui/theme';
 
 const LOCATION = 'Files → iCloud Drive → What to Watch';
 
-const BLOCKED: Partial<Record<ICloudStatus, { reason: string; fix?: string }>> = {
-  driveOff: {
-    reason: 'iCloud Drive is off on this device',
-    fix: 'Settings → your name → iCloud → iCloud Drive → turn on',
-  },
-  notEntitled: { reason: "This build of the app isn't signed for iCloud" },
-  notReady: { reason: 'iCloud is still setting up — try again shortly' },
-};
+const BLOCKED: Partial<Record<ICloudStatus, { reason: string; fix?: string }>> =
+  {
+    driveOff: {
+      reason: 'iCloud Drive is off on this device',
+      fix: 'Settings → your name → iCloud → iCloud Drive → turn on',
+    },
+    notEntitled: { reason: "This build of the app isn't signed for iCloud" },
+    notReady: { reason: 'iCloud is still setting up — try again shortly' },
+  };
 
 function ago(ms: number): string {
   const min = Math.floor((Date.now() - ms) / 60000);
@@ -24,11 +27,15 @@ function ago(ms: number): string {
   return `${Math.floor(h / 24)} d ago`;
 }
 
-export function ICloudSyncToggle() {
+export function ICloudRow() {
+  const c = useColors();
   const { settings, load, setIcloudSyncEnabled } = useSettingsStore();
   const [status, setStatus] = useState<ICloudStatus | null>(null);
   const [working, setWorking] = useState(false);
-  const [info, setInfo] = useState<{ lastAt: number | null; error: string | null }>({
+  const [info, setInfo] = useState<{
+    lastAt: number | null;
+    error: string | null;
+  }>({
     lastAt: null,
     error: null,
   });
@@ -69,50 +76,47 @@ export function ICloudSyncToggle() {
     }
   };
 
-  let subtitle: React.ReactNode;
+  let subtitle: string;
+  let subtitleColor = c.secondary;
+  let fix: string | undefined;
   if (blocked) {
-    subtitle = (
-      <>
-        <Text style={styles.note}>{blocked.reason}</Text>
-        {blocked.fix ? <Text style={styles.fix}>{blocked.fix}</Text> : null}
-      </>
-    );
+    subtitle = blocked.reason;
+    fix = blocked.fix;
   } else if (enabled && working) {
-    subtitle = <Text style={styles.note}>⟳ Backing up…</Text>;
+    subtitle = 'Backing up…';
   } else if (enabled && info.error) {
-    subtitle = <Text style={styles.error}>⚠ Last backup failed: {info.error}</Text>;
+    subtitle = `⚠ Last backup failed: ${info.error}`;
+    subtitleColor = c.danger;
   } else {
-    subtitle = (
-      <Text style={styles.note}>
-        {LOCATION}
-        {enabled && info.lastAt ? ` · ${ago(info.lastAt)}` : ''}
-      </Text>
-    );
+    subtitle = `${LOCATION}${
+      enabled && info.lastAt ? ` · ${ago(info.lastAt)}` : ''
+    }`;
   }
 
   return (
-    <View style={styles.row}>
-      <View style={styles.textCol}>
-        <Text style={styles.label}>iCloud Drive</Text>
-        {subtitle}
-      </View>
-      <Switch disabled={!!blocked || working} value={enabled} onValueChange={onToggle} />
-    </View>
+    <Row
+      label="iCloud Drive"
+      subtitle={
+        <>
+          <Text style={[type.meta, styles.line, { color: subtitleColor }]}>
+            {subtitle}
+          </Text>
+          {fix ? (
+            <Text style={[type.meta, styles.line, { color: c.accent }]}>
+              {fix}
+            </Text>
+          ) : null}
+        </>
+      }
+      toggle={{
+        value: enabled,
+        onChange: onToggle,
+        disabled: !!blocked || working,
+      }}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ccc',
-  },
-  textCol: { flex: 1, paddingRight: 12 },
-  label: { fontSize: 15, fontWeight: '600' },
-  note: { fontSize: 12, color: '#888', marginTop: 2 },
-  fix: { fontSize: 12, color: '#007aff', marginTop: 2 },
-  error: { fontSize: 12, color: '#c0392b', marginTop: 2 },
+  line: { marginTop: 2 },
 });

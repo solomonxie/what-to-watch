@@ -95,6 +95,8 @@ export function shouldWrite(hash: string, lastHash: string | null): boolean {
   return hash !== lastHash;
 }
 
-export function hasUserData(p: Pick<BackupPayload, 'notes' | 'ratings' | 'watchHistory'>) {
+export function hasUserData(
+  p: Pick<BackupPayload, 'notes' | 'ratings' | 'watchHistory'>,
+) {
   return p.notes.length + p.ratings.length + p.watchHistory.length > 0;
 }

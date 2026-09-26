@@ -7,6 +7,9 @@ export interface SearchableTitle {
   genres: string[];
   castNames?: string[] | null;
   posterPath?: string | null;
+  releaseDate?: string | null;
+  mediaType?: string;
+  primaryRatingScore?: number | null;
 }
 
 let fuse: Fuse<SearchableTitle> | null = null;

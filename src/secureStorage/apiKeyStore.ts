@@ -5,7 +5,8 @@ import {
 } from 'react-native-keychain';
 import type { ProviderId } from '../types/domain';
 
-const serviceFor = (providerId: ProviderId) => `whattowatch.apikey.${providerId}`;
+const serviceFor = (providerId: ProviderId) =>
+  `whattowatch.apikey.${providerId}`;
 
 export async function saveApiKey(
   providerId: ProviderId,

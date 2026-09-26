@@ -53,3 +53,15 @@ Independent of Phases 3-4 (touches only backup/settings/native files); runs in p
 
 - [x] T5.1 Unit tests for new filters + migration steps; `tsc`, `jest` green — see `__tests__` — depends: T4.1
 - [x] T5.2 Release build installed on physical iPhone — see `ios/` — depends: all above
+
+## Phase 6: Redesign
+
+First review on device: Settings buried the content, no platform rows (DB raw-row bug), dated look. Rebuild the UI on native tabs + a small token set; data layer unchanged.
+
+- [x] T6.1 Theme tokens (light/dark) + primitives: PosterCard, Chip, Segmented, GroupedSection/Row, EmptyState — see `src/ui` — depends: none
+- [x] T6.2 Navigation: native tabs (Discover / Library / Settings), per-tab stacks, header search, Filters form sheet — see `src/navigation` — depends: T6.1
+- [x] T6.3 Discover: platform pills, poster grid, states, search results — see `src/screens/discover` — depends: T6.2
+- [x] T6.4 Library: segmented watched/watching/rated grid — see `src/screens/library` — depends: T6.2
+- [x] T6.5 Title: stat row, status segmented, instant rating/review, notes — see `src/screens/title` — depends: T6.2
+- [x] T6.6 Settings: grouped list, API key page with verify, region page, backup rows — see `src/screens/settings` — depends: T6.2
+- [x] T6.7 Remove old home/detail/settings components; tsc/jest/eslint; device build — depends: T6.3-T6.6

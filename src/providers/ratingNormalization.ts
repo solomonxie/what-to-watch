@@ -15,10 +15,15 @@ export function normalizeRating(
     default:
       normalizedValue = raw.rawValue;
   }
-  return { ...raw, normalizedValue: Math.max(0, Math.min(100, normalizedValue)) };
+  return {
+    ...raw,
+    normalizedValue: Math.max(0, Math.min(100, normalizedValue)),
+  };
 }
 
-export function averageNormalizedScore(ratings: ProviderRating[]): number | undefined {
+export function averageNormalizedScore(
+  ratings: ProviderRating[],
+): number | undefined {
   if (ratings.length === 0) return undefined;
   const sum = ratings.reduce((acc, r) => acc + r.normalizedValue, 0);
   return Math.round((sum / ratings.length) * 10) / 10;
