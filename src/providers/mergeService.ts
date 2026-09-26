@@ -59,6 +59,11 @@ export function mergeTitleDetails(
     releaseDate: firstDefined(sorted, d => d.releaseDate),
     runtimeMinutes: firstDefined(sorted, d => d.runtimeMinutes),
     genres,
+    originalLanguage: firstDefined(sorted, d => d.originalLanguage),
+    originCountries: firstDefined(sorted, d =>
+      d.originCountries?.length ? d.originCountries : undefined,
+    ),
+    cast: firstDefined(sorted, d => (d.cast?.length ? d.cast : undefined)),
     imdbId: firstDefined(sorted, d => d.imdbId),
     tmdbId: firstDefined(sorted, d => d.tmdbId),
     omdbId: firstDefined(sorted, d => d.omdbId),

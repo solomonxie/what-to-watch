@@ -101,6 +101,7 @@ export const omdbProvider: MetadataProvider = {
       releaseDate: data.Released,
       runtimeMinutes: parseRuntime(data.Runtime),
       genres: data.Genre ? data.Genre.split(',').map(g => g.trim()) : [],
+      cast: data.Actors ? data.Actors.split(',').map(a => a.trim()) : undefined,
       mediaType: mediaTypeOf(data.Type),
       imdbId: data.imdbID,
       omdbId: data.imdbID,

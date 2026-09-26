@@ -8,6 +8,10 @@ export class ProviderHttpError extends Error {
   }
 }
 
+function redact(url: string): string {
+  return url.replace(/(api_?key=)[^&]+/gi, '$1…');
+}
+
 export async function fetchJson<T>(
   url: string,
   timeoutMs = 10000,
@@ -19,7 +23,7 @@ export async function fetchJson<T>(
     if (!response.ok) {
       throw new ProviderHttpError(
         response.status,
-        `Request to ${url} failed with ${response.status}`,
+        `Request to ${redact(url)} failed with ${response.status}`,
       );
     }
     return (await response.json()) as T;

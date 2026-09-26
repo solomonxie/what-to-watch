@@ -1,13 +1,19 @@
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { db, ensureMigrated } from '../client';
 import { cachedTitles, cachedRatings, cachedWatchProviders } from '../schema';
-import type { NormalizedTitle } from '../../types/domain';
+import type { NormalizedTitle, WatchProviderAvailability } from '../../types/domain';
 
 export async function upsertTitle(title: NormalizedTitle): Promise<void> {
   await ensureMigrated();
+  const facets = {
+    originalLanguage: title.originalLanguage,
+    originCountries: title.originCountries,
+    castNames: title.cast,
+  };
   await db
     .insert(cachedTitles)
     .values({
+      ...facets,
       id: title.id,
       tmdbId: title.tmdbId,
       omdbId: title.omdbId,
@@ -27,9 +33,18 @@ export async function upsertTitle(title: NormalizedTitle): Promise<void> {
       target: cachedTitles.id,
       set: {
         title: title.title,
+        originalTitle: title.originalTitle,
         overview: title.overview,
         posterPath: title.posterPath,
+        releaseDate: title.releaseDate,
+        genres: title.genres,
+        imdbId: title.imdbId,
         primaryRatingScore: title.primaryRatingScore,
+        // Discover results lack cast; keep what a full fetch stored.
+        ...Object.fromEntries(
+          Object.entries(facets).filter(([, v]) => v !== undefined),
+        ),
+        ...(title.runtimeMinutes ? { runtimeMinutes: title.runtimeMinutes } : {}),
         fetchedAt: Date.now(),
       },
     });
@@ -81,4 +96,29 @@ export async function getWatchProvidersForTitle(titleId: string) {
     .select()
     .from(cachedWatchProviders)
     .where(eq(cachedWatchProviders.titleId, titleId));
+}
+
+export async function replaceWatchProviders(
+  titleId: string,
+  region: string,
+  providers: WatchProviderAvailability[],
+): Promise<void> {
+  await ensureMigrated();
+  await db
+    .delete(cachedWatchProviders)
+    .where(
+      and(eq(cachedWatchProviders.titleId, titleId), eq(cachedWatchProviders.region, region)),
+    );
+  if (providers.length === 0) return;
+  const now = Date.now();
+  await db.insert(cachedWatchProviders).values(
+    providers.map(p => ({
+      titleId,
+      platformId: p.platformId,
+      platformName: p.platformName,
+      region: p.region,
+      availabilityType: p.availabilityType,
+      fetchedAt: now,
+    })),
+  );
 }
