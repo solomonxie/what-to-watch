@@ -15,6 +15,12 @@ import { getAllWatchHistory } from '../db/repositories/watchHistoryRepo';
 import { getSettings } from '../db/repositories/settingsRepo';
 import { getTitlesByIds } from '../db/repositories/titlesRepo';
 import { getKv, setKv } from '../db/repositories/kvRepo';
+import {
+  EMPTY_PREFS,
+  readPreferences,
+  writePreferences,
+  type Preferences,
+} from '../prefs/prefsStore';
 import { ICloudDrive } from '../native/ICloudSyncModule';
 import {
   LOCAL_DAILY_NAME,
@@ -60,6 +66,7 @@ export async function buildPayload(): Promise<BackupPayload> {
     watchHistory: history.map(stripId),
     settings: stripId(appSettings),
     titles,
+    preferences: await readPreferences(),
   };
 }
 
@@ -181,8 +188,13 @@ export async function pickBackupFile(): Promise<BackupPayload> {
   return parsePayload(text);
 }
 
-export async function importPayload(payload: BackupPayload) {
+/** Tier-1 copy taken before any operation that rewrites many rows. */
+export async function snapshotBeforeImport(): Promise<void> {
   await writeLocal(beforeImportFileName(new Date()), await buildPayload());
+}
+
+export async function importPayload(payload: BackupPayload) {
+  await snapshotBeforeImport();
   await replaceAllData(payload);
   await setKv(KV.restoreChecked, '1');
   return {
@@ -211,6 +223,12 @@ async function replaceAllData(payload: BackupPayload): Promise<void> {
     }
     for (const title of payload.titles ?? []) {
       await tx.insert(cachedTitles).values(title).onConflictDoNothing();
+    }
+    if (payload.preferences) {
+      await writePreferences({
+        ...EMPTY_PREFS,
+        ...(payload.preferences as Preferences),
+      });
     }
   });
 }

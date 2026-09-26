@@ -61,6 +61,7 @@ interface TmdbListItem {
   origin_country?: string[];
   vote_average?: number;
   vote_count?: number;
+  popularity?: number;
 }
 
 interface TmdbListResponse {
@@ -75,7 +76,7 @@ interface TmdbWatchProviderEntry {
 
 type TmdbRegionProviders = Partial<
   Record<'flatrate' | 'rent' | 'buy' | 'free', TmdbWatchProviderEntry[]>
->;
+> & { link?: string };
 
 interface TmdbDetailsResponse extends TmdbListItem {
   runtime?: number;
@@ -171,6 +172,7 @@ function toWatchProviders(
       region,
       availabilityType: type,
       logoPath: image(p.logo_path),
+      link: regionData.link,
     })),
   );
 }
@@ -234,23 +236,90 @@ export interface DiscoveredTitle {
   ratings: ProviderRating[];
 }
 
+export interface DiscoveredTitleMeta extends DiscoveredTitle {
+  popularity: number;
+  voteAverage: number;
+}
+
+export async function discoverTitles(
+  mediaType: MediaType,
+  params: Record<string, string>,
+): Promise<DiscoveredTitleMeta[]> {
+  const data = await get<TmdbListResponse>(`/discover/${mediaType}`, {
+    language: 'en-US',
+    sort_by: 'popularity.desc',
+    ...params,
+  });
+  return data.results
+    .filter(item => item.title || item.name)
+    .map(item => toListMeta(item, mediaType));
+}
+
 /** Most popular titles streamable (flatrate) on a platform in a region. */
 export async function discoverByPlatform(
   tmdbProviderId: number,
   region: string,
   mediaType: MediaType,
 ): Promise<DiscoveredTitle[]> {
-  const data = await get<TmdbListResponse>(`/discover/${mediaType}`, {
-    language: 'en-US',
-    sort_by: 'popularity.desc',
+  return discoverTitles(mediaType, {
     watch_region: region,
     with_watch_providers: String(tmdbProviderId),
     with_watch_monetization_types: 'flatrate',
   });
-  return data.results.map(item => ({
+}
+
+/** Search results with list-level details, so matches can be cached without another request. */
+export async function searchDetailed(
+  query: string,
+  language = 'en-US',
+): Promise<DiscoveredTitleMeta[]> {
+  const data = await get<TmdbListResponse>('/search/multi', {
+    query,
+    language,
+  });
+  return data.results
+    .filter(
+      r =>
+        (r.media_type === 'movie' || r.media_type === 'tv') &&
+        (r.title || r.name),
+    )
+    .map(r => toListMeta(r, r.media_type as MediaType));
+}
+
+export async function findByImdbId(
+  imdbId: string,
+): Promise<DiscoveredTitleMeta | null> {
+  const data = await get<{
+    movie_results: TmdbListItem[];
+    tv_results: TmdbListItem[];
+  }>(`/find/${imdbId}`, { external_source: 'imdb_id', language: 'en-US' });
+  if (data.movie_results[0]) return toListMeta(data.movie_results[0], 'movie');
+  if (data.tv_results[0]) return toListMeta(data.tv_results[0], 'tv');
+  return null;
+}
+
+function toListMeta(
+  item: TmdbListItem,
+  mediaType: MediaType,
+): DiscoveredTitleMeta {
+  return {
     details: toDetails(item, mediaType),
     ratings: tmdbRating(item.vote_average, item.vote_count),
-  }));
+    popularity: item.popularity ?? 0,
+    voteAverage: item.vote_average ?? 0,
+  };
+}
+
+export async function searchKeywords(
+  query: string,
+): Promise<Array<{ id: number; name: string }>> {
+  const data = await get<{ results: Array<{ id: number; name: string }> }>(
+    '/search/keyword',
+    {
+      query,
+    },
+  );
+  return data.results.slice(0, 20);
 }
 
 export const tmdbProvider: MetadataProvider = {
