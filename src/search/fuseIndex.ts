@@ -5,13 +5,14 @@ export interface SearchableTitle {
   title: string;
   originalTitle?: string | null;
   genres: string[];
+  castNames?: string[] | null;
   posterPath?: string | null;
 }
 
 let fuse: Fuse<SearchableTitle> | null = null;
 
 const OPTIONS: IFuseOptions<SearchableTitle> = {
-  keys: ['title', 'originalTitle', 'genres'],
+  keys: ['title', 'originalTitle', 'genres', 'castNames'],
   threshold: 0.35,
   ignoreLocation: true,
 };

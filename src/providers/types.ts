@@ -3,6 +3,7 @@ import type {
   ProviderSearchResult,
   ProviderTitleDetails,
   CastMember,
+  MediaType,
   ProviderRating,
   WatchProviderAvailability,
 } from '../types/domain';
@@ -20,11 +21,15 @@ export interface MetadataProvider {
     query: string,
     opts?: SearchOptions,
   ): Promise<ProviderSearchResult[]>;
-  getTitleDetails(externalId: string): Promise<ProviderTitleDetails>;
-  getCast(externalId: string): Promise<CastMember[]>;
-  getRatings(externalId: string): Promise<ProviderRating[]>;
+  getTitleDetails(
+    externalId: string,
+    mediaType?: MediaType,
+  ): Promise<ProviderTitleDetails>;
+  getCast(externalId: string, mediaType?: MediaType): Promise<CastMember[]>;
+  getRatings(externalId: string, mediaType?: MediaType): Promise<ProviderRating[]>;
   getWatchProviders(
     externalId: string,
     region: string,
+    mediaType?: MediaType,
   ): Promise<WatchProviderAvailability[]>;
 }

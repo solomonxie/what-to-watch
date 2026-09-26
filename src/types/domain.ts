@@ -46,6 +46,9 @@ export interface ProviderTitleDetails {
   runtimeMinutes?: number;
   genres: string[];
   mediaType: MediaType;
+  originalLanguage?: string;
+  originCountries?: string[];
+  cast?: string[];
   imdbId?: string;
   tmdbId?: string;
   omdbId?: string;
@@ -76,7 +79,8 @@ export interface FilterState {
   cast: string[];
 }
 
-export type SortKey = 'rating' | 'year' | 'title' | 'recentlyAdded';
+// 'popularity' keeps the source order (platform rank).
+export type SortKey = 'popularity' | 'rating' | 'year' | 'title';
 
 export interface SortState {
   key: SortKey;
