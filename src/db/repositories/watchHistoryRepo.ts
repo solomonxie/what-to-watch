@@ -60,3 +60,34 @@ export async function getWatchCounts(): Promise<Map<string, number>> {
   const rows = await getAllWatchHistory();
   return new Map(rows.map(r => [r.titleId, r.rewatchCount]));
 }
+
+const STATUS_RANK: Record<string, number> = {
+  toWatch: 0,
+  watching: 1,
+  dropped: 1,
+  completed: 2,
+};
+
+/** Adds an imported entry; never downgrades what's already recorded. Returns true if written. */
+export async function importWatch(
+  titleId: string,
+  status: WatchStatus,
+  watchedAt: number,
+): Promise<boolean> {
+  const existing = await getWatchEntry(titleId);
+  if (existing && STATUS_RANK[existing.status] >= STATUS_RANK[status])
+    return false;
+  const rewatchCount =
+    status === 'completed' ? Math.max(1, existing?.rewatchCount ?? 0) : 0;
+  if (existing) {
+    await db
+      .update(watchHistory)
+      .set({ status, watchedAt, rewatchCount })
+      .where(eq(watchHistory.id, existing.id));
+  } else {
+    await db
+      .insert(watchHistory)
+      .values({ titleId, status, watchedAt, rewatchCount });
+  }
+  return true;
+}

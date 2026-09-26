@@ -40,3 +40,21 @@ export async function getAllUserRatings() {
   await ensureMigrated();
   return db.select().from(userRatings);
 }
+
+/** Adds an imported rating unless the title is already rated. Returns true if written. */
+export async function importRating(
+  titleId: string,
+  rating: number,
+  reviewText: string | undefined,
+  at: number,
+): Promise<boolean> {
+  if (await getUserRatingForTitle(titleId)) return false;
+  await db.insert(userRatings).values({
+    titleId,
+    rating,
+    reviewText,
+    createdAt: at,
+    updatedAt: at,
+  });
+  return true;
+}

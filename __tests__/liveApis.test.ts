@@ -42,6 +42,15 @@ import { buildPayload, importPayload } from '../src/backup/backupService';
 import { applyFilters, DEFAULT_FILTERS } from '../src/state/filterStore';
 import { searchIndex } from '../src/search/fuseIndex';
 import { PLATFORMS } from '../src/config/platforms';
+import { writePreferences, EMPTY_PREFS } from '../src/prefs/prefsStore';
+import {
+  readRecsCache,
+  recsNeedRefresh,
+  refreshRecs,
+} from '../src/recs/recsService';
+import { parseImportCsv } from '../src/libraryImport/formats';
+import { runImport } from '../src/libraryImport/importService';
+import { getWatchEntry } from '../src/db/repositories/watchHistoryRepo';
 
 const keys: {
   tmdb: string | null;
@@ -132,5 +141,65 @@ live('live TMDB/OMDb end to end', () => {
     await importPayload(payload);
     expect(await getAllNotes()).toHaveLength(1);
     expect((await getAllUserRatings())[0].rating).toBe(8.5);
+  });
+
+  it('builds, caches and invalidates recommendations from a taste profile', async () => {
+    const prefs = {
+      ...EMPTY_PREFS,
+      genres: ['Science Fiction', 'Thriller'],
+      languages: ['ko', 'en'],
+      topics: [{ id: 4379, name: 'time travel' }],
+      onlyMyServices: false,
+    };
+    await writePreferences(prefs);
+    const recs = await refreshRecs(null);
+    expect(recs.items.length).toBeGreaterThan(10);
+    expect(recs.items.every(i => i.reasons.length > 0)).toBe(true);
+    const cached = await readRecsCache(null);
+    expect(cached?.items[0].id).toBe(recs.items[0].id);
+    expect(await recsNeedRefresh(cached, prefs, null)).toBe(false);
+    const netflix = await refreshRecs(PLATFORMS[0]);
+    expect(netflix.items.length).toBeGreaterThan(0);
+    expect(
+      await recsNeedRefresh(
+        await readRecsCache(PLATFORMS[0]),
+        prefs,
+        PLATFORMS[0],
+      ),
+    ).toBe(false);
+    expect(
+      await recsNeedRefresh(cached, { ...prefs, genres: ['Drama'] }, null),
+    ).toBe(true);
+    expect(await getTitleById(recs.items[0].id)).toBeDefined();
+  });
+
+  it('imports Douban and IMDb rows by matching TMDB', async () => {
+    const douban = parseImportCsv(
+      '标题,个人评分,打分日期,我的短评,上映日期,状态\n' +
+        '霸王别姬,5,2020-01-02,神作,1993-01-01(中国香港),看过\n' +
+        '肖申克的救赎 / The Shawshank Redemption,4,2020-01-03,,1994-09-10,看过\n' +
+        '千与千寻,,2020-01-04,,2001-07-20(日本),想看\n' +
+        '这部电影不存在九八七六,,,,2099,看过\n',
+    );
+    const imdb = parseImportCsv(
+      'Const,Your Rating,Date Rated,Title,Original Title,URL,Title Type,IMDb Rating,Runtime (mins),Year\n' +
+        'tt0903747,10,2020-01-01,Breaking Bad,,u,TV Series,9.5,49,2008\n',
+      'ratings.csv',
+    );
+    const progress: number[] = [];
+    const d = await runImport(douban, done => progress.push(done));
+    expect(d.imported).toBe(3);
+    expect(d.unmatched.map(e => e.titles[0])).toEqual([
+      '这部电影不存在九八七六',
+    ]);
+    expect(progress[progress.length - 1]).toBe(4);
+    expect((await getWatchEntry('movie:10997'))?.status).toBe('completed'); // Farewell My Concubine
+    expect((await getWatchEntry('movie:129'))?.status).toBe('toWatch'); // Spirited Away
+
+    const i = await runImport(imdb, () => {});
+    expect(i.imported).toBe(1);
+    expect((await getWatchEntry('tv:1396'))?.status).toBe('completed');
+    const again = await runImport(imdb, () => {});
+    expect(again.skipped).toBe(1);
   });
 });

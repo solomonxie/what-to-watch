@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import React, { useCallback, useLayoutEffect, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { getAllWatchHistory } from '../../db/repositories/watchHistoryRepo';
@@ -10,21 +10,30 @@ import {
   PosterGrid,
   Segmented,
   type GridItem,
+  FLOATING_CLEARANCE,
 } from '../../ui/components';
 import { joinMeta, mediaLabel, year } from '../../ui/format';
 import { space, useColors } from '../../ui/theme';
 import type { LibraryStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<LibraryStackParamList, 'LibraryHome'>;
-type Tab = 'watched' | 'watching' | 'rated';
+type Tab = 'toWatch' | 'watching' | 'watched' | 'rated';
 
 const TABS: { value: Tab; label: string }[] = [
-  { value: 'watched', label: 'Watched' },
+  { value: 'toWatch', label: 'To watch' },
   { value: 'watching', label: 'Watching' },
+  { value: 'watched', label: 'Watched' },
   { value: 'rated', label: 'Rated' },
 ];
 
+const STATUS_FOR_TAB: Record<Exclude<Tab, 'rated'>, string> = {
+  toWatch: 'toWatch',
+  watching: 'watching',
+  watched: 'completed',
+};
+
 const EMPTY: Record<Tab, string> = {
+  toWatch: 'Save titles to watch later from any title page.',
   watched: 'Titles you mark watched show up here.',
   watching: 'Nothing in progress.',
   rated: 'Rate a title to see it here.',
@@ -37,9 +46,7 @@ async function loadItems(tab: Tab): Promise<GridItem[]> {
           .sort((a, b) => b.updatedAt - a.updatedAt)
           .map(r => ({ titleId: r.titleId, badge: `★ ${r.rating}` }))
       : (await getAllWatchHistory())
-          .filter(
-            h => h.status === (tab === 'watched' ? 'completed' : 'watching'),
-          )
+          .filter(h => h.status === STATUS_FOR_TAB[tab])
           .sort((a, b) => b.watchedAt - a.watchedAt)
           .map(h => ({
             titleId: h.titleId,
@@ -69,8 +76,19 @@ async function loadItems(tab: Tab): Promise<GridItem[]> {
 
 export function LibraryScreen({ navigation }: Props) {
   const c = useColors();
-  const [tab, setTab] = useState<Tab>('watched');
+  const [tab, setTab] = useState<Tab>('toWatch');
   const [items, setItems] = useState<GridItem[] | null>(null);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      // eslint-disable-next-line react/no-unstable-nested-components
+      headerRight: () => (
+        <Pressable onPress={() => navigation.navigate('Import')} hitSlop={8}>
+          <Text style={[styles.headerButton, { color: c.accent }]}>Import</Text>
+        </Pressable>
+      ),
+    });
+  }, [navigation, c.accent]);
 
   useFocusEffect(
     useCallback(() => {
@@ -82,6 +100,7 @@ export function LibraryScreen({ navigation }: Props) {
     <ScrollView
       style={{ backgroundColor: c.background }}
       contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{ paddingBottom: FLOATING_CLEARANCE }}
     >
       <View style={styles.segment}>
         <Segmented
@@ -108,5 +127,6 @@ export function LibraryScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+  headerButton: { fontSize: 17 },
   segment: { paddingTop: space.s, paddingBottom: space.l },
 });
