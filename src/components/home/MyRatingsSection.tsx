@@ -5,12 +5,18 @@ import { getTitlesByIds } from '../../db/repositories/titlesRepo';
 import { TitleCard } from '../title/TitleCard';
 
 interface Props {
+  refreshKey: number;
   onSelectTitle: (titleId: string) => void;
 }
 
-export function MyRatingsSection({ onSelectTitle }: Props) {
+export function MyRatingsSection({ refreshKey, onSelectTitle }: Props) {
   const [items, setItems] = useState<
-    Array<{ id: string; title: string; posterPath: string | null; rating: number }>
+    Array<{
+      id: string;
+      title: string;
+      posterPath: string | null;
+      rating: number;
+    }>
   >([]);
 
   useEffect(() => {
@@ -27,7 +33,7 @@ export function MyRatingsSection({ onSelectTitle }: Props) {
           .filter((x): x is NonNullable<typeof x> => x !== null),
       );
     })();
-  }, []);
+  }, [refreshKey]);
 
   return (
     <View style={styles.section}>

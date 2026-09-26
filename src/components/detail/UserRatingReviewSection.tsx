@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { getUserRatingForTitle, setUserRating } from '../../db/repositories/ratingsRepo';
+import {
+  getUserRatingForTitle,
+  setUserRating,
+} from '../../db/repositories/ratingsRepo';
 
 interface Props {
   titleId: string;
@@ -37,7 +40,9 @@ export function UserRatingReviewSection({ titleId }: Props) {
             </Text>
           </Pressable>
         ))}
-        <Text style={styles.ratingValue}>{rating ? rating.toFixed(1) : '-'}</Text>
+        <Text style={styles.ratingValue}>
+          {rating ? rating.toFixed(1) : '-'}
+        </Text>
       </View>
       <TextInput
         style={styles.input}
@@ -56,11 +61,29 @@ export function UserRatingReviewSection({ titleId }: Props) {
 const styles = StyleSheet.create({
   section: { paddingHorizontal: 16, marginBottom: 20 },
   heading: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
-  starsRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 8 },
+  starsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 8,
+  },
   star: { fontSize: 20, color: '#ccc' },
   starFilled: { color: '#f5a623' },
   ratingValue: { marginLeft: 8, fontWeight: '600' },
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 8, minHeight: 60 },
-  button: { marginTop: 8, alignSelf: 'flex-start', paddingVertical: 6, paddingHorizontal: 12, backgroundColor: '#333', borderRadius: 6 },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 8,
+    minHeight: 60,
+  },
+  button: {
+    marginTop: 8,
+    alignSelf: 'flex-start',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#333',
+    borderRadius: 6,
+  },
   buttonText: { color: 'white', fontWeight: '600' },
 });

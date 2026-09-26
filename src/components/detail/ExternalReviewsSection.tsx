@@ -33,9 +33,7 @@ export function ExternalReviewsSection({ titleId }: Props) {
     <View style={styles.section}>
       <Text style={styles.heading}>Internet Reviews &amp; Ratings</Text>
       {ratings.length === 0 ? (
-        <Text style={styles.empty}>
-          No fetched ratings yet for this title.
-        </Text>
+        <Text style={styles.empty}>No fetched ratings yet for this title.</Text>
       ) : (
         <View style={styles.badges}>
           {ratings.map((r, i) => (
@@ -45,7 +43,11 @@ export function ExternalReviewsSection({ titleId }: Props) {
               </Text>
               <Text style={styles.badgeValue}>
                 {r.rawValue}
-                {r.scale === 'percent' ? '%' : r.scale === '0-10' ? '/10' : '/100'}
+                {r.scale === 'percent'
+                  ? '%'
+                  : r.scale === '0-10'
+                  ? '/10'
+                  : '/100'}
               </Text>
             </View>
           ))}
@@ -60,7 +62,12 @@ const styles = StyleSheet.create({
   heading: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
   empty: { color: '#888', fontSize: 13 },
   badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  badge: { backgroundColor: '#f5f5f5', borderRadius: 8, paddingVertical: 6, paddingHorizontal: 10 },
+  badge: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
   badgeSource: { fontSize: 11, color: '#888' },
   badgeValue: { fontSize: 15, fontWeight: '700' },
 });
