@@ -1,3 +1,5 @@
+import { Linking } from 'react-native';
+
 // TMDB doesn't expose platform-native title ids, so streaming links open the
 // platform's own search for the title (universal links hand off to the app).
 const PLATFORM_SEARCH: Record<string, (q: string) => string> = {
@@ -30,4 +32,51 @@ export function imdbUrl(imdbId: string) {
 
 export function tmdbUrl(mediaType: string, tmdbId: string) {
   return `https://www.themoviedb.org/${mediaType}/${tmdbId}`;
+}
+
+// Douban has no public API; its search resolves an IMDb id to the exact subject.
+function doubanSearchUrl(query: string) {
+  return `https://m.douban.com/search/?query=${encodeURIComponent(
+    query,
+  )}&type=movie`;
+}
+
+async function findDoubanSubject(query: string) {
+  try {
+    const res = await fetch(doubanSearchUrl(query));
+    const found = (await res.text()).match(/\/movie\/subject\/(\d+)/);
+    return found?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+const doubanUrls = new Map<string, Promise<string>>();
+
+async function resolveDoubanUrl(query: string) {
+  const subject = await findDoubanSubject(query);
+  if (!subject) return doubanSearchUrl(query);
+  const app = `douban://douban.com/movie/${subject}`;
+  if (await Linking.canOpenURL(app).catch(() => false)) return app;
+  return `https://m.douban.com/movie/subject/${subject}/`;
+}
+
+/**
+ * Douban app if installed, else its mobile page, else its search.
+ * Cached per title; call early so a tap doesn't wait on the lookup.
+ */
+export function doubanUrl(
+  imdbId: string | null | undefined,
+  title: string,
+  year?: string,
+): Promise<string> {
+  const query = imdbId ?? `${title} ${year ?? ''}`.trim();
+  let url = doubanUrls.get(query);
+  if (!url) {
+    url = resolveDoubanUrl(query);
+    doubanUrls.set(query, url);
+    // A miss may be the network; look again next time.
+    url.then(u => u === doubanSearchUrl(query) && doubanUrls.delete(query));
+  }
+  return url;
 }
