@@ -51,11 +51,21 @@ const COLUMNS = {
   title: ['title', 'Title', 'Name', '标题', '电影名', '片名', '名称'],
   year: ['year', 'Year', 'release_date', '上映日期', '年份', '年代'],
   imdb: ['imdb', 'IMDb', 'imdb_id', 'IMDb链接'],
+  tmdb: ['tmdb', 'tmdb_id', 'TMDB'],
   type: ['type', 'Type', 'media_type'],
   status: ['status', 'Status', 'Exclusive Shelf', '状态', '类型', '标记'],
   rating: ['rating', 'Rating', 'My Rating', '个人评分', '我的评分', '评分'],
   review: ['review', 'Review', 'My Review', '我的短评', '短评', '评论'],
-  date: ['date', 'Date', 'Date Read', 'Date Added', '打分日期', '标记日期', '日期', '时间'],
+  date: [
+    'date',
+    'Date',
+    'Date Read',
+    'Date Added',
+    '打分日期',
+    '标记日期',
+    '日期',
+    '时间',
+  ],
 };
 
 /** What a CSV needs for the generic import, for display. */
@@ -63,6 +73,7 @@ export const CSV_COLUMNS = [
   'title — required; "Chinese / Original" gives both',
   'year',
   'imdb — tt… id or IMDb link',
+  'tmdb — TMDB id; with type, matches exactly',
   'type — movie or tv',
   'status — watched, watching or want to watch',
   'rating — 0.5 to 5 stars',
@@ -81,6 +92,8 @@ const FORMATS: Format[] = [
     name: 'IMDb',
     matches: h => h.includes('Const') && h.includes('Title'),
     map: (row, fileName) => {
+      const type = row['Title Type'] ?? '';
+      if (/game|podcast|music video/i.test(type)) return null;
       const rating = clampRating(num(row['Your Rating']));
       const watchlist =
         /watchlist/i.test(fileName) || (!rating && !('Your Rating' in row));
@@ -88,7 +101,8 @@ const FORMATS: Format[] = [
         titles: [row.Title, row['Original Title']].filter(Boolean),
         year: yearOf(row.Year),
         imdbId: row.Const,
-        mediaType: imdbType(row['Title Type']),
+        mediaType: imdbType(type),
+        episode: /episode/i.test(type) || undefined,
         status: watchlist ? 'toWatch' : 'completed',
         rating,
         date: dateOf(pick(row, 'Date Rated', 'Created')),
@@ -120,6 +134,7 @@ const FORMATS: Format[] = [
         titles: splitTitles(title),
         year: yearOf(pick(row, ...COLUMNS.year)),
         imdbId: pick(row, ...COLUMNS.imdb)?.match(/tt\d+/)?.[0],
+        tmdbId: pick(row, ...COLUMNS.tmdb)?.match(/\d+/)?.[0],
         mediaType: type ? imdbType(type) : undefined,
         status: shelfStatus(pick(row, ...COLUMNS.status)),
         rating: clampRating((num(pick(row, ...COLUMNS.rating)) ?? 0) * 2),
@@ -134,7 +149,14 @@ function isBookExport(headers: string[]): boolean {
   return headers.some(h => /^(ISBN13?|Book Id|Author|作者)$/i.test(h));
 }
 
-export function parseImportCsv(text: string, fileName = ''): ParsedImport {
+export type CsvFormat = 'IMDb' | 'Letterboxd' | 'CSV';
+
+/** `expected` rejects a file from a different source than the one chosen. */
+export function parseImportCsv(
+  text: string,
+  fileName = '',
+  expected?: CsvFormat,
+): ParsedImport {
   const rows = parseCsv(text);
   if (rows.length < 2)
     throw new UnsupportedImportError('The file has no rows.');
@@ -152,8 +174,15 @@ export function parseImportCsv(text: string, fileName = ''): ParsedImport {
       'Unrecognised CSV: it needs a title column. IMDb and Letterboxd exports also work as-is.',
     );
   }
-  const entries = rows
-    .slice(1)
+  if (expected && format.name !== expected) {
+    throw new UnsupportedImportError(
+      format.name === 'CSV'
+        ? `This isn't an IMDb export. Use the other import row for it.`
+        : `This looks like a ${format.name} export. Use its own import row.`,
+    );
+  }
+  const body = rows.slice(1).filter(cells => cells.some(c => c.trim()));
+  const entries = body
     .map(cells =>
       format.map(
         Object.fromEntries(headers.map((h, i) => [h, cells[i] ?? ''])),
@@ -161,5 +190,9 @@ export function parseImportCsv(text: string, fileName = ''): ParsedImport {
       ),
     )
     .filter((e): e is ImportEntry => !!e && e.titles.length > 0);
-  return { source: format.name, entries };
+  return {
+    source: format.name,
+    entries,
+    ignored: body.length - entries.length,
+  };
 }

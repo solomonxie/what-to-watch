@@ -14,11 +14,15 @@ export interface ImportEntry {
   rating?: number;
   review?: string;
   date?: number;
+  /** The row is one episode (by imdbId), not a whole show. */
+  episode?: boolean;
 }
 
 export interface ParsedImport {
   source: string;
   entries: ImportEntry[];
+  /** Rows that aren't movies or shows (e.g. video games). */
+  ignored: number;
 }
 
 export class UnsupportedImportError extends Error {}

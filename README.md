@@ -36,6 +36,21 @@ xcodebuild -workspace WhatToWatch.xcworkspace -scheme WhatToWatch -configuration
 xcrun devicectl device install app --device <UDID> build/dd/Build/Products/Release-iphoneos/WhatToWatch.app
 ```
 
+Import history: Settings → Import CSV… reads any CSV with a `title` column (optional `year, imdb, tmdb, type, status, rating (0.5–5), review, date`); IMDb and Letterboxd exports work as-is. A row with `tmdb` + `type` matches exactly.
+
+Douban (no official export) → a CSV pinned to TMDB ids:
+
+```sh
+python3 scripts/douban-export.py <profile id> -o ~/Downloads/douban.csv
+MATCH_CSV=~/Downloads/douban.csv MATCH_OUT=~/Downloads/douban-matched.csv npx jest scripts/match-csv.test.js
+# misses only: IMDb ids from their Douban pages, then match again
+python3 scripts/douban-export.py <profile id> -o ~/Downloads/douban.csv --from ~/Downloads/douban.csv \
+  --imdb-for ~/Downloads/douban-matched.unmatched.csv
+MATCH_CSV=~/Downloads/douban.csv MATCH_OUT=~/Downloads/douban-matched.csv npx jest scripts/match-csv.test.js
+```
+
+Import `douban-matched.csv`; `douban-matched.unmatched.csv` lists what TMDB doesn't have.
+
 Live end-to-end test (real TMDB/OMDb, SQLite via `node:sqlite`) — keys from env or gitignored `.env.local` (`TMDB_API_KEY=…`, `OMDB_API_KEY=…`); skipped without them:
 
 ```sh

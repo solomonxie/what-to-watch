@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Alert } from 'react-native';
 import { keepLocalCopy, pick, types } from '@react-native-documents/picker';
-import { parseImportCsv } from '../../libraryImport/formats';
+import { parseImportCsv, type CsvFormat } from '../../libraryImport/formats';
 import { runImport } from '../../libraryImport/importService';
 import { isProviderActive } from '../../providers/providerRegistry';
 import { Row } from '../../ui/components';
@@ -24,7 +24,18 @@ async function readCsv(): Promise<{ text: string; name: string }> {
   };
 }
 
-export function CsvImportRow() {
+export function CsvImportRow({
+  label,
+  hint,
+  format,
+  source,
+}: {
+  label: string;
+  hint: string;
+  format: CsvFormat;
+  /** Name shown in the result. */
+  source: string;
+}) {
   const [progress, setProgress] = useState<string | null>(null);
 
   const run = async () => {
@@ -33,7 +44,7 @@ export function CsvImportRow() {
         throw new Error('Connect TMDB first — it is used to match titles.');
       const file = await readCsv();
       setProgress('Reading…');
-      const parsed = parseImportCsv(file.text, file.name);
+      const parsed = parseImportCsv(file.text, file.name, format);
       if (parsed.entries.length === 0)
         throw new Error('Nothing to import in that file.');
       const s = await runImport(parsed, (done, total) =>
@@ -48,9 +59,11 @@ export function CsvImportRow() {
           (s.unmatched.length > 10 ? '…' : '')
         : '';
       Alert.alert(
-        `Imported from ${s.source}`,
+        `Imported from ${source}`,
         `Added ${s.imported} of ${s.total}: ${s.watched} watched, ${s.toWatch} to watch, ${s.rated} ratings.` +
+          (s.episodes ? ` ${s.episodes} single episodes marked watched.` : '') +
           (s.skipped ? ` ${s.skipped} already in your library.` : '') +
+          (s.ignored ? ` ${s.ignored} skipped (not movies or shows).` : '') +
           notFound,
       );
     } catch (e) {
@@ -66,7 +79,8 @@ export function CsvImportRow() {
 
   return (
     <Row
-      label="Import CSV…"
+      label={label}
+      subtitle={hint}
       value={progress ?? undefined}
       onPress={progress ? undefined : run}
     />
