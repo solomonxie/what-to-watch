@@ -2,6 +2,8 @@ export interface PlatformConfig {
   id: string;
   name: string;
   tmdbProviderId: number;
+  /** Where it streams, when that's not everywhere. */
+  regions?: string[];
 }
 
 export const PLATFORMS: PlatformConfig[] = [
@@ -11,6 +13,7 @@ export const PLATFORMS: PlatformConfig[] = [
   { id: 'hbomax', name: 'Max', tmdbProviderId: 1899 },
   { id: 'primevideo', name: 'Prime Video', tmdbProviderId: 9 },
   { id: 'hulu', name: 'Hulu', tmdbProviderId: 15 },
+  { id: 'crave', name: 'Crave', tmdbProviderId: 230, regions: ['CA'] },
 ];
 
 export const DEFAULT_ENABLED_PLATFORM_IDS = ['netflix', 'appletv'];

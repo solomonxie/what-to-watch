@@ -1,5 +1,6 @@
 import {
   discoverByPlatform,
+  getCertification,
   getTmdbFullTitle,
   tmdbProvider,
 } from '../providers/tmdbProvider';
@@ -8,6 +9,7 @@ import { mergeTitleDetails } from '../providers/mergeService';
 import {
   getAllCachedTitles,
   replaceWatchProviders,
+  setCertification,
   upsertTitle,
 } from '../db/repositories/titlesRepo';
 import {
@@ -61,6 +63,37 @@ async function omdbExtras(imdbId?: string) {
   } catch {
     return null;
   }
+}
+
+/** Looks up certifications missing on list-sourced titles; returns how many were filled. */
+export async function fillCertifications(
+  titles: Array<{
+    id: string;
+    certification?: string | null;
+    originCountries?: string[] | null;
+  }>,
+  region: string,
+): Promise<number> {
+  const queue = titles.filter(t => t.certification == null);
+  let filled = 0;
+  const worker = async () => {
+    for (let t = queue.shift(); t; t = queue.shift()) {
+      const ref = parseTitleId(t.id);
+      if (!ref) continue;
+      try {
+        const cert = await getCertification(
+          ref.tmdbId,
+          ref.mediaType,
+          region,
+          t.originCountries,
+        );
+        await setCertification(t.id, cert);
+        filled++;
+      } catch {}
+    }
+  };
+  await Promise.all(Array.from({ length: 4 }, worker));
+  return filled;
 }
 
 export async function fetchAndCacheTitle(

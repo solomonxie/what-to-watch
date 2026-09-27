@@ -106,7 +106,7 @@ live('live TMDB/OMDb end to end', () => {
 
   it('loads platform rankings and filters them', async () => {
     for (const platform of PLATFORMS) {
-      const rows = await refreshPlatformRanking(platform, 'US', true);
+      const rows = await refreshPlatformRanking(platform, platform.regions?.[0] ?? 'US', true);
       expect(rows.length).toBeGreaterThan(5);
     }
     const rows = await refreshPlatformRanking(PLATFORMS[0], 'US');

@@ -46,6 +46,30 @@ function shelfStatus(v?: string): ImportStatus {
   return 'completed';
 }
 
+/** Accepted headers per field, English first; the Chinese ones are Douban's. */
+const COLUMNS = {
+  title: ['title', 'Title', 'Name', '标题', '电影名', '片名', '名称'],
+  year: ['year', 'Year', 'release_date', '上映日期', '年份', '年代'],
+  imdb: ['imdb', 'IMDb', 'imdb_id', 'IMDb链接'],
+  type: ['type', 'Type', 'media_type'],
+  status: ['status', 'Status', 'Exclusive Shelf', '状态', '类型', '标记'],
+  rating: ['rating', 'Rating', 'My Rating', '个人评分', '我的评分', '评分'],
+  review: ['review', 'Review', 'My Review', '我的短评', '短评', '评论'],
+  date: ['date', 'Date', 'Date Read', 'Date Added', '打分日期', '标记日期', '日期', '时间'],
+};
+
+/** What a CSV needs for the generic import, for display. */
+export const CSV_COLUMNS = [
+  'title — required; "Chinese / Original" gives both',
+  'year',
+  'imdb — tt… id or IMDb link',
+  'type — movie or tv',
+  'status — watched, watching or want to watch',
+  'rating — 0.5 to 5 stars',
+  'review',
+  'date',
+];
+
 interface Format {
   name: string;
   matches: (headers: string[]) => boolean;
@@ -85,39 +109,24 @@ const FORMATS: Format[] = [
     }),
   },
   {
-    name: 'Douban',
-    matches: h => h.some(x => /^(标题|电影名|片名|名称)$/.test(x)),
+    // Generic schema; see CSV_COLUMNS. Douban exports use these headers.
+    name: 'CSV',
+    matches: h => h.some(x => COLUMNS.title.includes(x)),
     map: row => {
-      const title = pick(row, '标题', '电影名', '片名', '名称');
+      const title = pick(row, ...COLUMNS.title);
       if (!title) return null;
-      const imdb = pick(row, 'IMDb', 'IMDb链接', 'imdb')?.match(/tt\d+/)?.[0];
+      const type = pick(row, ...COLUMNS.type);
       return {
         titles: splitTitles(title),
-        year: yearOf(pick(row, '上映日期', '年份', '年代')),
-        imdbId: imdb,
-        status: shelfStatus(pick(row, '状态', '类型', '标记')),
-        rating: clampRating(
-          (num(pick(row, '个人评分', '我的评分', '评分')) ?? 0) * 2,
-        ),
-        review: pick(row, '我的短评', '短评', '评论'),
-        date: dateOf(pick(row, '打分日期', '标记日期', '日期', '时间')),
+        year: yearOf(pick(row, ...COLUMNS.year)),
+        imdbId: pick(row, ...COLUMNS.imdb)?.match(/tt\d+/)?.[0],
+        mediaType: type ? imdbType(type) : undefined,
+        status: shelfStatus(pick(row, ...COLUMNS.status)),
+        rating: clampRating((num(pick(row, ...COLUMNS.rating)) ?? 0) * 2),
+        review: pick(row, ...COLUMNS.review),
+        date: dateOf(pick(row, ...COLUMNS.date)),
       };
     },
-  },
-  {
-    // Goodreads-style shelf export, as produced by some Douban exporters.
-    name: 'Douban',
-    matches: h => h.includes('Title') && h.includes('Exclusive Shelf'),
-    map: row => ({
-      titles: splitTitles(row.Title),
-      year: yearOf(
-        pick(row, 'Year', 'Original Publication Year', 'Year Published'),
-      ),
-      status: shelfStatus(row['Exclusive Shelf']),
-      rating: clampRating((num(row['My Rating']) ?? 0) * 2),
-      review: row['My Review'] || undefined,
-      date: dateOf(pick(row, 'Date Read', 'Date Added')),
-    }),
   },
 ];
 
@@ -134,13 +143,13 @@ export function parseImportCsv(text: string, fileName = ''): ParsedImport {
     throw new UnsupportedImportError(
       `This is a book export (${
         rows.length - 1
-      } books). What to Watch imports movies and shows — export your Douban movie (影视) list instead.`,
+      } books). What to Watch imports movies and shows — export your movie and TV list instead.`,
     );
   }
   const format = FORMATS.find(f => f.matches(headers));
   if (!format) {
     throw new UnsupportedImportError(
-      'Unrecognised CSV. Supported: Douban movie exports, IMDb ratings/watchlist, Letterboxd.',
+      'Unrecognised CSV: it needs a title column. IMDb and Letterboxd exports also work as-is.',
     );
   }
   const entries = rows

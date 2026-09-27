@@ -16,6 +16,8 @@ import { usePrefsStore } from '../../prefs/prefsStore';
 import { FLOATING_CLEARANCE, GroupedSection, Row } from '../../ui/components';
 import { space, type, useColors } from '../../ui/theme';
 import { ICloudRow } from './ICloudRow';
+import { CsvImportRow } from './CsvImportRow';
+import { CSV_COLUMNS } from '../../libraryImport/formats';
 import { useImportExport } from './useImportExport';
 import type { SettingsStackParamList } from '../../navigation/types';
 
@@ -23,6 +25,11 @@ type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsHome'>;
 
 const BACKUP_INFO =
   'Your ratings, reviews, notes and watch history. API keys never leave this device, including in backups. A daily copy is also kept in Files → On My iPhone → What to Watch.';
+
+const CSV_INFO =
+  'One row per title, with a header row. Columns (any order, only title required):\n\n' +
+  CSV_COLUMNS.map(c => `• ${c}`).join('\n') +
+  '\n\nDouban, IMDb and Letterboxd exports work as they are.';
 
 export function SettingsScreen({ navigation }: Props) {
   const c = useColors();
@@ -96,6 +103,19 @@ export function SettingsScreen({ navigation }: Props) {
           value={tasteSummary}
           onPress={() => navigation.navigate('Taste')}
         />
+      </GroupedSection>
+
+      <View style={styles.backupHeader}>
+        <Text style={[type.section, { color: c.secondary }]}>IMPORT DATA</Text>
+        <Pressable
+          onPress={() => Alert.alert('CSV columns', CSV_INFO)}
+          hitSlop={12}
+        >
+          <Text style={[type.section, { color: c.accent }]}>ⓘ</Text>
+        </Pressable>
+      </View>
+      <GroupedSection footer="Ratings and watch history from any platform's CSV export.">
+        <CsvImportRow />
       </GroupedSection>
 
       <View style={styles.backupHeader}>

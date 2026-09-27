@@ -1,7 +1,10 @@
 import { create } from 'zustand';
-import type { FilterState, SortState } from '../types/domain';
+import { matchesAgeGroup } from '../catalog/ageRating';
+import type { FilterState, SortState, TitleKind } from '../types/domain';
 
 export const DEFAULT_FILTERS: FilterState = {
+  kinds: [],
+  ages: [],
   ratingRange: [0, 100],
   minWatchCount: 0,
   genres: [],
@@ -19,6 +22,8 @@ export const DEFAULT_SORT: SortState = {
 export interface FilterableTitle {
   id: string;
   title: string;
+  mediaType?: string;
+  certification?: string | null;
   primaryRatingScore?: number | null;
   releaseDate?: string | null;
   genres: string[];
@@ -39,6 +44,16 @@ function yearOf(title: FilterableTitle): number | undefined {
   return Number.isNaN(year) ? undefined : year;
 }
 
+const UNSCRIPTED = ['Reality', 'Talk', 'News'];
+
+export function kindOf(title: FilterableTitle): TitleKind {
+  const tv = title.mediaType === 'tv';
+  if (title.genres.includes('Documentary'))
+    return tv ? 'docuseries' : 'documentary';
+  if (tv && title.genres.some(g => UNSCRIPTED.includes(g))) return 'unscripted';
+  return tv ? 'series' : 'movie';
+}
+
 function matchesAny(selected: string[], values?: string[] | null): boolean {
   if (selected.length === 0) return true;
   return selected.some(v => (values ?? []).includes(v));
@@ -54,6 +69,8 @@ function matchesCast(queries: string[], castNames?: string[] | null): boolean {
 export function countActiveFilters(filters: FilterState): number {
   const d = DEFAULT_FILTERS;
   return [
+    filters.kinds.length > 0,
+    filters.ages.length > 0,
     filters.ratingRange[0] !== d.ratingRange[0] ||
       filters.ratingRange[1] !== d.ratingRange[1],
     filters.minWatchCount !== d.minWatchCount,
@@ -75,6 +92,13 @@ export function applyFilters<T extends FilterableTitle>(
     if (score < filters.ratingRange[0] || score > filters.ratingRange[1])
       return false;
     if (watchCount < filters.minWatchCount) return false;
+    if (filters.kinds.length && !filters.kinds.includes(kindOf(title)))
+      return false;
+    if (
+      filters.ages.length &&
+      !filters.ages.some(group => matchesAgeGroup(title, group))
+    )
+      return false;
     if (!matchesAny(filters.genres, title.genres)) return false;
 
     const year = yearOf(title);
