@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { imdbUrl, platformUrl, tmdbUrl } from '../../config/links';
+import { doubanUrl, imdbUrl, platformUrl, tmdbUrl } from '../../config/links';
 import {
   getRatingsForTitle,
   getTitleById,
@@ -238,6 +238,7 @@ export function TitleScreen({ route }: Props) {
 
 function OpenIn({ title, providers }: { title: Title; providers: Provider[] }) {
   const c = useColors();
+  const douban = doubanUrl(title.imdbId, title.title, year(title.releaseDate));
   const unique = Array.from(
     new Map(
       providers
@@ -276,9 +277,17 @@ function OpenIn({ title, providers }: { title: Title; providers: Provider[] }) {
           },
         ]
       : []),
-  ].filter(l => l.url);
+  ]
+    .filter(l => l.url)
+    .map(l => ({ ...l, open: () => Linking.openURL(l.url!) }));
+  links.push({
+    key: 'douban',
+    label: 'Douban',
+    logo: null,
+    url: null,
+    open: async () => Linking.openURL(await douban),
+  });
 
-  if (links.length === 0) return null;
   return (
     <>
       <SectionLabel>{streaming.length ? 'Watch on' : 'More on'}</SectionLabel>
@@ -290,26 +299,15 @@ function OpenIn({ title, providers }: { title: Title; providers: Provider[] }) {
         {links.map(l => (
           <Pressable
             key={l.key}
-            onPress={() => Linking.openURL(l.url!)}
+            onPress={l.open}
             style={({ pressed }) => [styles.link, pressed && styles.pressed]}
           >
             {l.logo ? (
               <Image source={{ uri: l.logo }} style={styles.logo} />
             ) : (
-              <View
-                style={[
-                  styles.logo,
-                  styles.badge,
-                  l.key === 'imdb' ? styles.imdbBadge : styles.tmdbBadge,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.badgeText,
-                    l.key === 'imdb' ? styles.imdbText : styles.tmdbText,
-                  ]}
-                >
-                  {l.label}
+              <View style={[styles.logo, styles.badge, BADGE[l.key]]}>
+                <Text style={[styles.badgeText, BADGE_TEXT[l.key]]}>
+                  {l.key === 'douban' ? '豆瓣' : l.label}
                 </Text>
               </View>
             )}
@@ -650,6 +648,8 @@ const styles = StyleSheet.create({
   tmdbBadge: { backgroundColor: '#0D253F' },
   imdbText: { color: '#000000' },
   tmdbText: { color: '#01B4E4' },
+  doubanBadge: { backgroundColor: '#2E963D' },
+  doubanText: { color: '#FFFFFF' },
   linkLabel: { fontSize: 11 },
   fill: { flex: 1 },
   content: { paddingBottom: FLOATING_CLEARANCE + 24 },
@@ -733,3 +733,14 @@ const styles = StyleSheet.create({
   noteField: { flex: 1, paddingVertical: 10, fontSize: 16 },
   addText: { fontSize: 16, fontWeight: '600' },
 });
+
+const BADGE: Record<string, object> = {
+  imdb: styles.imdbBadge,
+  tmdb: styles.tmdbBadge,
+  douban: styles.doubanBadge,
+};
+const BADGE_TEXT: Record<string, object> = {
+  imdb: styles.imdbText,
+  tmdb: styles.tmdbText,
+  douban: styles.doubanText,
+};
