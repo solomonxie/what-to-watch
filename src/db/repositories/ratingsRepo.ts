@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { db, ensureMigrated } from '../client';
 import { userRatings } from '../schema';
+import { markDataChanged } from '../../backup/changeFeed';
 
 export async function getUserRatingForTitle(titleId: string) {
   await ensureMigrated();
@@ -17,6 +18,7 @@ export async function setUserRating(
   rating: number,
   reviewText?: string,
 ) {
+  markDataChanged();
   await ensureMigrated();
   const existing = await getUserRatingForTitle(titleId);
   const now = Date.now();
@@ -48,6 +50,7 @@ export async function importRating(
   reviewText: string | undefined,
   at: number,
 ): Promise<boolean> {
+  markDataChanged();
   if (await getUserRatingForTitle(titleId)) return false;
   await db.insert(userRatings).values({
     titleId,

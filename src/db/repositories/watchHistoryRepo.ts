@@ -1,9 +1,12 @@
 import { desc, eq } from 'drizzle-orm';
-import { db, ensureMigrated } from '../client';
+import { db, ensureMigrated, getRawDb } from '../client';
+import { DERIVED_STATUS_STATEMENTS } from '../migrations/0005_derived_status';
 import { watchHistory } from '../schema';
 import type { WatchStatus } from '../../types/domain';
+import { markDataChanged } from '../../backup/changeFeed';
 
 export async function recordWatch(titleId: string, status: WatchStatus) {
+  markDataChanged();
   await ensureMigrated();
   const existing = await db
     .select()
@@ -29,6 +32,89 @@ export async function recordWatch(titleId: string, status: WatchStatus) {
       rewatchCount: status === 'completed' ? 1 : 0,
     });
   }
+}
+
+async function writeStatus(
+  titleId: string,
+  status: WatchStatus,
+  existing?: { id: number; rewatchCount: number },
+) {
+  markDataChanged();
+  const values = {
+    status,
+    watchedAt: Date.now(),
+    rewatchCount:
+      status === 'completed' ? Math.max(1, existing?.rewatchCount ?? 0) : 0,
+  };
+  if (existing) {
+    await db
+      .update(watchHistory)
+      .set(values)
+      .where(eq(watchHistory.id, existing.id));
+  } else {
+    await db.insert(watchHistory).values({ titleId, ...values });
+  }
+}
+
+/** Interested = on the to-watch list; only applies before watching starts. */
+export async function setInterested(titleId: string, interested: boolean) {
+  markDataChanged();
+  await ensureMigrated();
+  const existing = await getWatchEntry(titleId);
+  if (interested && !existing) await writeStatus(titleId, 'toWatch');
+  if (!interested && existing?.status === 'toWatch')
+    await db.delete(watchHistory).where(eq(watchHistory.id, existing.id));
+}
+
+/** A movie counts as watched once rated. */
+export async function markFinished(titleId: string) {
+  await ensureMigrated();
+  const existing = await getWatchEntry(titleId);
+  if (existing?.status === 'completed') return;
+  await writeStatus(titleId, 'completed', existing);
+}
+
+/** Below this score an unfinished show counts as dropped. */
+export const DROP_BELOW = 5;
+
+const isLow = (rating?: number) => rating !== undefined && rating < DROP_BELOW;
+
+/**
+ * Show status from episode progress: all aired watched → completed, some →
+ * watching, or dropped when scored low. `touch` marks a user action, which
+ * also counts as activity; otherwise only a changed status is written.
+ */
+export async function syncShowProgress(
+  titleId: string,
+  watchedEpisodes: number,
+  airedEpisodes: number,
+  { touch = true, rating }: { touch?: boolean; rating?: number } = {},
+) {
+  await ensureMigrated();
+  const existing = await getWatchEntry(titleId);
+  if (watchedEpisodes === 0) {
+    if (touch && existing && existing.status !== 'toWatch')
+      await writeStatus(titleId, 'toWatch', existing);
+    return;
+  }
+  const status: WatchStatus =
+    airedEpisodes > 0 && watchedEpisodes >= airedEpisodes
+      ? 'completed'
+      : isLow(rating)
+      ? 'dropped'
+      : 'watching';
+  if (!touch && existing?.status === status) return;
+  await writeStatus(titleId, status, existing);
+}
+
+/** A low score drops a show in progress; raising it picks it back up. */
+export async function applyShowRating(titleId: string, rating: number) {
+  await ensureMigrated();
+  const existing = await getWatchEntry(titleId);
+  if (existing?.status === 'watching' && isLow(rating))
+    await writeStatus(titleId, 'dropped', existing);
+  else if (existing?.status === 'dropped' && !isLow(rating))
+    await writeStatus(titleId, 'watching', existing);
 }
 
 export async function getRecentlyWatched(limit = 20) {
@@ -61,33 +147,34 @@ export async function getWatchCounts(): Promise<Map<string, number>> {
   return new Map(rows.map(r => [r.titleId, r.rewatchCount]));
 }
 
-const STATUS_RANK: Record<string, number> = {
-  toWatch: 0,
-  watching: 1,
-  dropped: 1,
-  completed: 2,
-};
-
-/** Adds an imported entry; never downgrades what's already recorded. Returns true if written. */
-export async function importWatch(
+/** Writes an imported title's derived status; true if anything changed. */
+export async function setImportedStatus(
   titleId: string,
   status: WatchStatus,
-  watchedAt: number,
+  at: number,
 ): Promise<boolean> {
+  markDataChanged();
   const existing = await getWatchEntry(titleId);
-  if (existing && STATUS_RANK[existing.status] >= STATUS_RANK[status])
-    return false;
+  if (existing?.status === status) return false;
   const rewatchCount =
     status === 'completed' ? Math.max(1, existing?.rewatchCount ?? 0) : 0;
   if (existing) {
     await db
       .update(watchHistory)
-      .set({ status, watchedAt, rewatchCount })
+      .set({ status, rewatchCount })
       .where(eq(watchHistory.id, existing.id));
   } else {
     await db
       .insert(watchHistory)
-      .values({ titleId, status, watchedAt, rewatchCount });
+      .values({ titleId, status, watchedAt: at, rewatchCount });
   }
   return true;
+}
+
+/** Applies the derived-status rules to everything stored (e.g. after a restore). */
+export async function rederiveStatuses(): Promise<void> {
+  await ensureMigrated();
+  const raw = getRawDb();
+  for (const sql of DERIVED_STATUS_STATEMENTS) await raw.execute(sql);
+  markDataChanged();
 }

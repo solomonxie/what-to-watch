@@ -17,6 +17,7 @@ export const cachedTitles = sqliteTable('cached_titles', {
   originalLanguage: text('original_language'),
   originCountries: text('origin_countries', { mode: 'json' }).$type<string[]>(),
   castNames: text('cast_names', { mode: 'json' }).$type<string[]>(),
+  certification: text('certification'),
   fetchedAt: integer('fetched_at').notNull(),
 });
 
@@ -76,6 +77,14 @@ export const watchHistory = sqliteTable('watch_history', {
   watchedAt: integer('watched_at').notNull(),
   status: text('status').notNull(),
   rewatchCount: integer('rewatch_count').notNull().default(0),
+});
+
+export const episodeWatches = sqliteTable('episode_watches', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  titleId: text('title_id').notNull(),
+  season: integer('season').notNull(),
+  episode: integer('episode').notNull(),
+  watchedAt: integer('watched_at').notNull(),
 });
 
 export const settings = sqliteTable('settings', {

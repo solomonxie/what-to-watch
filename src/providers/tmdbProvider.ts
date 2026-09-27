@@ -1,6 +1,10 @@
 import { getApiKey } from '../secureStorage/apiKeyStore';
 import { fetchJson } from './httpClient';
 import { normalizeRating } from './ratingNormalization';
+import {
+  pickCertification,
+  type RegionCertification,
+} from '../catalog/ageRating';
 import type {
   CastMember,
   MediaType,
@@ -87,6 +91,58 @@ interface TmdbDetailsResponse extends TmdbListItem {
   external_ids?: { imdb_id?: string | null };
   credits?: TmdbCreditsResponse;
   'watch/providers'?: { results: Record<string, TmdbRegionProviders> };
+  release_dates?: TmdbReleaseDates;
+  content_ratings?: TmdbContentRatings;
+}
+
+interface TmdbReleaseDates {
+  results: Array<{
+    iso_3166_1: string;
+    release_dates: Array<{ certification: string }>;
+  }>;
+}
+
+interface TmdbContentRatings {
+  results: Array<{ iso_3166_1: string; rating: string }>;
+}
+
+function certificationsOf(
+  data: Pick<TmdbDetailsResponse, 'release_dates' | 'content_ratings'>,
+): RegionCertification[] {
+  return [
+    ...(data.release_dates?.results ?? []).flatMap(r =>
+      r.release_dates.map(d => ({
+        country: r.iso_3166_1,
+        certification: d.certification,
+      })),
+    ),
+    ...(data.content_ratings?.results ?? []).map(r => ({
+      country: r.iso_3166_1,
+      certification: r.rating,
+    })),
+  ];
+}
+
+const CERTIFICATION_PART: Record<MediaType, string> = {
+  movie: 'release_dates',
+  tv: 'content_ratings',
+};
+
+/** Just the age certification, for titles that came from list results. */
+export async function getCertification(
+  tmdbId: string,
+  mediaType: MediaType,
+  region: string,
+  originCountries?: string[] | null,
+): Promise<string> {
+  const path = `/${mediaType}/${tmdbId}/${CERTIFICATION_PART[mediaType]}`;
+  const entries =
+    mediaType === 'movie'
+      ? certificationsOf({ release_dates: await get<TmdbReleaseDates>(path) })
+      : certificationsOf({
+          content_ratings: await get<TmdbContentRatings>(path),
+        });
+  return pickCertification(entries, region, originCountries ?? []);
 }
 
 interface TmdbCreditsResponse {
@@ -218,10 +274,18 @@ export async function getTmdbFullTitle(
 ): Promise<TmdbFullTitle> {
   const data = await get<TmdbDetailsResponse>(`/${mediaType}/${tmdbId}`, {
     language: 'en-US',
-    append_to_response: 'credits,watch/providers,external_ids',
+    append_to_response: `credits,watch/providers,external_ids,${CERTIFICATION_PART[mediaType]}`,
   });
+  const details = toDetails(data, mediaType);
   return {
-    details: toDetails(data, mediaType),
+    details: {
+      ...details,
+      certification: pickCertification(
+        certificationsOf(data),
+        region,
+        details.originCountries,
+      ),
+    },
     castMembers: toCastMembers(data.credits),
     ratings: tmdbRating(data.vote_average, data.vote_count),
     watchProviders: toWatchProviders(
@@ -298,6 +362,27 @@ export async function findByImdbId(
   return null;
 }
 
+/** An IMDb episode id → its show on TMDB and where it sits. */
+export async function findEpisodeByImdbId(
+  imdbId: string,
+): Promise<{ showId: string; season: number; episode: number } | null> {
+  const data = await get<{
+    tv_episode_results?: Array<{
+      show_id: number;
+      season_number: number;
+      episode_number: number;
+    }>;
+  }>(`/find/${imdbId}`, { external_source: 'imdb_id' });
+  const hit = data.tv_episode_results?.[0];
+  return hit
+    ? {
+        showId: String(hit.show_id),
+        season: hit.season_number,
+        episode: hit.episode_number,
+      }
+    : null;
+}
+
 function toListMeta(
   item: TmdbListItem,
   mediaType: MediaType,
@@ -320,6 +405,141 @@ export async function searchKeywords(
     },
   );
   return data.results.slice(0, 20);
+}
+
+export interface TmdbReview {
+  id: string;
+  author: string;
+  rating?: number;
+  content: string;
+  createdAt: string;
+}
+
+// Reviews arrive as loose Markdown/HTML; show them as plain text.
+export function plainReviewText(content: string): string {
+  return content
+    .replace(/<[^>]+>/g, '')
+    .replace(/(\*\*|\*)(\S[^]*?\S|\S)\1/g, '$2')
+    .replace(/(^|\W)_{1,2}(\S[^]*?\S|\S)_{1,2}(?=\W|$)/g, '$1$2')
+    .replace(/\r/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+export async function getReviews(
+  tmdbId: string,
+  mediaType: MediaType,
+): Promise<{ reviews: TmdbReview[]; total: number }> {
+  const data = await get<{
+    total_results: number;
+    results: Array<{
+      id: string;
+      author: string;
+      author_details?: { rating?: number | null };
+      content: string;
+      created_at: string;
+    }>;
+  }>(`/${mediaType}/${tmdbId}/reviews`);
+  return {
+    total: data.total_results,
+    reviews: data.results
+      .map(r => ({
+        id: r.id,
+        author: r.author,
+        rating: r.author_details?.rating ?? undefined,
+        content: plainReviewText(r.content),
+        createdAt: r.created_at,
+      }))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+  };
+}
+
+export interface TmdbSeason {
+  number: number;
+  name: string;
+  overview: string;
+  airDate?: string;
+  episodeCount: number;
+  rating?: number;
+}
+
+export interface TmdbEpisode {
+  number: number;
+  name: string;
+  overview: string;
+  airDate?: string;
+  runtime?: number;
+  rating?: number;
+}
+
+const voted = (average?: number, count = 1) =>
+  average && count > 0 ? average : undefined;
+
+export interface TmdbShowSeasons {
+  seasons: TmdbSeason[];
+  /** Regular (non-special) episodes aired so far. */
+  airedEpisodes: number;
+}
+
+/** Regular seasons in order, specials last. */
+export async function getSeasons(tmdbId: string): Promise<TmdbShowSeasons> {
+  const data = await get<{
+    last_episode_to_air?: {
+      season_number: number;
+      episode_number: number;
+    } | null;
+    seasons?: Array<{
+      season_number: number;
+      name: string;
+      overview?: string;
+      air_date?: string | null;
+      episode_count: number;
+      vote_average?: number;
+    }>;
+  }>(`/tv/${tmdbId}`);
+  const seasons = (data.seasons ?? [])
+    .filter(s => s.episode_count > 0)
+    .map(s => ({
+      number: s.season_number,
+      name: s.name,
+      overview: s.overview ?? '',
+      airDate: s.air_date ?? undefined,
+      episodeCount: s.episode_count,
+      rating: voted(s.vote_average),
+    }))
+    .sort((a, b) => (a.number || Infinity) - (b.number || Infinity));
+  const last = data.last_episode_to_air;
+  const airedEpisodes = last
+    ? seasons
+        .filter(s => s.number > 0 && s.number < last.season_number)
+        .reduce((sum, s) => sum + s.episodeCount, 0) + last.episode_number
+    : 0;
+  return { seasons, airedEpisodes };
+}
+
+export async function getEpisodes(
+  tmdbId: string,
+  season: number,
+): Promise<TmdbEpisode[]> {
+  const data = await get<{
+    episodes?: Array<{
+      episode_number: number;
+      name: string;
+      overview?: string;
+      air_date?: string | null;
+      runtime?: number | null;
+      vote_average?: number;
+      vote_count?: number;
+    }>;
+  }>(`/tv/${tmdbId}/season/${season}`);
+  return (data.episodes ?? []).map(e => ({
+    number: e.episode_number,
+    name: e.name,
+    overview: e.overview ?? '',
+    airDate: e.air_date ?? undefined,
+    runtime: e.runtime ?? undefined,
+    rating: voted(e.vote_average, e.vote_count),
+  }));
 }
 
 export const tmdbProvider: MetadataProvider = {

@@ -17,14 +17,15 @@ export type DiscoverStackParamList = {
 
 export type LibraryStackParamList = {
   LibraryHome: undefined;
+  LibrarySection: { title: string };
   Title: TitleParams;
-  Import: undefined;
 };
 
 export type SettingsStackParamList = TasteStackParamList & {
   SettingsHome: undefined;
   ApiKey: { providerId: 'tmdb' | 'omdb' };
   Region: undefined;
+  ICloudBackups: undefined;
 };
 
 export type SearchStackParamList = {

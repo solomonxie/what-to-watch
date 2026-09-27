@@ -15,3 +15,11 @@ export function joinMeta(
 ): string {
   return parts.filter(Boolean).join(' · ');
 }
+
+export function formatDate(date: number | string): string {
+  return new Date(date).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
