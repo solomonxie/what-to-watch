@@ -12,7 +12,7 @@ export const PAYLOAD_VERSION = 2;
 export const BACKUP_SUFFIX = '-what-to-watch.json';
 export const ZIP_ENTRY = 'backup.json';
 export const SNAPSHOT_DIR = 'Snapshots';
-export const SNAPSHOTS_PER_DAY = 20;
+export const SNAPSHOTS_PER_DAY = 1;
 export const SNAPSHOT_DAYS = 7;
 export const LOCAL_PREFIX = 'what-to-watch-';
 export const LOCAL_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -189,15 +189,15 @@ export function selectExpiredICloud(
   return dated.filter(n => !keep.has(n));
 }
 
-/** Sorts by time: 20260926-095210-123.json */
+/** One per day, replaced while the day lasts: 20260926.json */
 export function snapshotName(date: Date): string {
-  const time = `${pad(date.getHours())}${pad(date.getMinutes())}${pad(
-    date.getSeconds(),
-  )}`;
-  return `${dayKey(date)}-${time}-${pad(date.getMilliseconds(), 3)}.json`;
+  return `${dayKey(date)}.json`;
 }
 
-/** Keeps the newest `perDay` snapshots of each of the last `days` days. */
+/**
+ * Keeps the newest `perDay` snapshots of each of the last `days` days.
+ * Also matches the older per-change names (20260926-095210-123.json).
+ */
 export function selectExpiredSnapshots(
   names: string[],
   now: Date,
@@ -208,7 +208,9 @@ export function selectExpiredSnapshots(
   oldest.setDate(oldest.getDate() - (days - 1));
   const cutoff = dayKey(oldest);
   const byDay = new Map<string, string[]>();
-  for (const name of names.filter(n => /^\d{8}-\d{6}-\d{3}\.json$/.test(n))) {
+  for (const name of names.filter(n =>
+    /^\d{8}(-\d{6}-\d{3})?\.json$/.test(n),
+  )) {
     const day = name.slice(0, 8);
     byDay.set(day, [...(byDay.get(day) ?? []), name]);
   }

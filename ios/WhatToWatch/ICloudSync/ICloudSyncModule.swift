@@ -60,6 +60,58 @@ class ICloudSyncModule: NSObject {
     } }
   }
 
+  /// Adds `base64` bytes to the end of the file, creating it if absent.
+  /// Refuses while only a placeholder is local, so the file is never replaced.
+  @objc(appendFile:base64:withResolver:withRejecter:)
+  func appendFile(
+    _ fileName: String,
+    base64: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    writeQueue.async { self.trace("appendFile") {
+      guard let docs = self.currentStatus().documents else {
+        reject("ICLOUD_UNAVAILABLE", "iCloud Drive is not available", nil)
+        return
+      }
+      guard let bytes = Data(base64Encoded: base64) else {
+        reject("ICLOUD_WRITE_ERROR", "Bad data", nil)
+        return
+      }
+      let fm = FileManager.default
+      let target = docs.appendingPathComponent(fileName)
+      if !fm.fileExists(atPath: target.path),
+         fm.fileExists(atPath: docs.appendingPathComponent(".\(fileName).icloud").path) {
+        try? fm.startDownloadingUbiquitousItem(at: target)
+        reject("ICLOUD_NOT_DOWNLOADED", "\(fileName) is still downloading", nil)
+        return
+      }
+      do {
+        try fm.createDirectory(at: docs, withIntermediateDirectories: true)
+        var coordError: NSError?
+        var writeError: Error?
+        NSFileCoordinator().coordinate(writingItemAt: target, options: .forMerging, error: &coordError) { url in
+          do {
+            if !fm.fileExists(atPath: url.path) {
+              try bytes.write(to: url)
+              return
+            }
+            let handle = try FileHandle(forWritingTo: url)
+            defer { try? handle.close() }
+            try handle.seekToEnd()
+            try handle.write(contentsOf: bytes)
+          } catch {
+            writeError = error
+          }
+        }
+        if let error = coordError ?? writeError { throw error }
+        resolve(nil)
+      } catch {
+        reject("ICLOUD_WRITE_ERROR", error.localizedDescription, error)
+      }
+    } }
+  }
+
   /// Newest first: [{ name, size, modifiedAt, downloaded }].
   @objc(listBackups:withRejecter:)
   func listBackups(
