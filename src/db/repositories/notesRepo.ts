@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { db, ensureMigrated } from '../client';
 import { userNotes } from '../schema';
+import { markDataChanged } from '../../backup/changeFeed';
 
 export async function getNotesForTitle(titleId: string) {
   await ensureMigrated();
@@ -8,6 +9,7 @@ export async function getNotesForTitle(titleId: string) {
 }
 
 export async function addNote(titleId: string, body: string) {
+  markDataChanged();
   await ensureMigrated();
   const now = Date.now();
   await db.insert(userNotes).values({
@@ -19,6 +21,7 @@ export async function addNote(titleId: string, body: string) {
 }
 
 export async function updateNote(id: number, body: string) {
+  markDataChanged();
   await ensureMigrated();
   await db
     .update(userNotes)
@@ -27,6 +30,7 @@ export async function updateNote(id: number, body: string) {
 }
 
 export async function deleteNote(id: number) {
+  markDataChanged();
   await ensureMigrated();
   await db.delete(userNotes).where(eq(userNotes.id, id));
 }

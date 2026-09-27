@@ -51,6 +51,8 @@ export interface ProviderTitleDetails {
   originalLanguage?: string;
   originCountries?: string[];
   cast?: string[];
+  /** Age certification (e.g. PG-13, TV-MA, 15); '' when none exists. */
+  certification?: string;
   imdbId?: string;
   tmdbId?: string;
   omdbId?: string;
@@ -69,9 +71,21 @@ export interface ExternalReview {
   url?: string;
 }
 
+/** 'dropped' = unfinished show scored low. Movies are never 'watching'. */
 export type WatchStatus = 'toWatch' | 'watching' | 'completed' | 'dropped';
 
+export type TitleKind =
+  | 'movie'
+  | 'series'
+  | 'documentary'
+  | 'docuseries'
+  | 'unscripted';
+
+export type AgeGroup = 'family' | 'kids' | 'children' | 'teens' | 'adults';
+
 export interface FilterState {
+  kinds: TitleKind[];
+  ages: AgeGroup[];
   ratingRange: [number, number];
   minWatchCount: number;
   genres: string[];

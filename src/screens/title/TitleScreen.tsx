@@ -18,8 +18,11 @@ import {
   getWatchProvidersForTitle,
 } from '../../db/repositories/titlesRepo';
 import {
+  applyShowRating,
   getWatchEntry,
-  recordWatch,
+  markFinished,
+  setInterested,
+  syncShowProgress,
 } from '../../db/repositories/watchHistoryRepo';
 import {
   getUserRatingForTitle,
@@ -32,19 +35,19 @@ import {
 } from '../../db/repositories/notesRepo';
 import { fetchAndCacheTitle, parseTitleId } from '../../catalog/catalogService';
 import { isProviderActive } from '../../providers/providerRegistry';
+import { getReviews, type TmdbReview } from '../../providers/tmdbProvider';
+import { Seasons } from './Seasons';
 import { useSettingsStore } from '../../state/settingsStore';
 import { DEFAULT_REGION } from '../../config/platforms';
 import {
   EmptyState,
   Poster,
   SectionLabel,
-  Segmented,
   FLOATING_CLEARANCE,
 } from '../../ui/components';
-import { joinMeta, mediaLabel, year } from '../../ui/format';
+import { formatDate, joinMeta, mediaLabel, year } from '../../ui/format';
 import { space, type, useColors } from '../../ui/theme';
 import type { DiscoverStackParamList } from '../../navigation/types';
-import type { WatchStatus } from '../../types/domain';
 
 type Props = NativeStackScreenProps<DiscoverStackParamList, 'Title'>;
 type Title = NonNullable<Awaited<ReturnType<typeof getTitleById>>>;
@@ -60,25 +63,10 @@ const SOURCE: Record<string, string> = {
   metacritic: 'Metacritic',
 };
 
-const STATUSES: { value: WatchStatus; label: string }[] = [
-  { value: 'toWatch', label: 'To watch' },
-  { value: 'watching', label: 'Watching' },
-  { value: 'completed', label: 'Watched' },
-  { value: 'dropped', label: 'Dropped' },
-];
-
 function formatRating(r: Rating): string {
   if (r.scale === 'percent') return `${Math.round(r.rawValue)}%`;
   if (r.scale === '0-100') return String(Math.round(r.rawValue));
   return r.rawValue.toFixed(1);
-}
-
-function formatDate(ms: number): string {
-  return new Date(ms).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
 }
 
 export function TitleScreen({ route }: Props) {
@@ -125,6 +113,33 @@ export function TitleScreen({ route }: Props) {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Status is derived: episodes drive shows, a rating finishes a movie.
+  const [entry, setEntry] = useState<Entry>();
+  const reloadEntry = useCallback(
+    () => getWatchEntry(titleId).then(setEntry),
+    [titleId],
+  );
+  useEffect(() => {
+    reloadEntry();
+  }, [reloadEntry]);
+  const onEpisodeProgress = useCallback(
+    async (watched: number, aired: number, touch: boolean) => {
+      const rating = (await getUserRatingForTitle(titleId))?.rating;
+      await syncShowProgress(titleId, watched, aired, { touch, rating });
+      reloadEntry();
+    },
+    [titleId, reloadEntry],
+  );
+  const onRated = useCallback(
+    async (rating: number) => {
+      if (parseTitleId(titleId)?.mediaType === 'movie')
+        await markFinished(titleId);
+      else await applyShowRating(titleId, rating);
+      reloadEntry();
+    },
+    [titleId, reloadEntry],
+  );
 
   if (!title) {
     return (
@@ -196,10 +211,14 @@ export function TitleScreen({ route }: Props) {
 
       <OpenIn title={title} providers={providers} />
 
-      <WatchStatus titleId={titleId} />
-      <MyRating titleId={titleId} />
+      <WatchState titleId={titleId} entry={entry} onChange={reloadEntry} />
+      <MyRating titleId={titleId} onRated={onRated} />
 
       {title.overview ? <Overview text={title.overview} /> : null}
+
+      {title.mediaType === 'tv' ? (
+        <Seasons titleId={titleId} onProgress={onEpisodeProgress} />
+      ) : null}
 
       {title.castNames?.length ? (
         <>
@@ -209,6 +228,8 @@ export function TitleScreen({ route }: Props) {
           </Text>
         </>
       ) : null}
+
+      <Reviews titleId={titleId} />
 
       <Notes titleId={titleId} />
     </ScrollView>
@@ -298,52 +319,103 @@ function OpenIn({ title, providers }: { title: Title; providers: Provider[] }) {
   );
 }
 
-function WatchStatus({ titleId }: { titleId: string }) {
+function WatchState({
+  titleId,
+  entry,
+  onChange,
+}: {
+  titleId: string;
+  entry?: Entry;
+  onChange: () => void;
+}) {
   const c = useColors();
-  const [entry, setEntry] = useState<Entry | undefined>(undefined);
-
-  const reload = useCallback(
-    () => getWatchEntry(titleId).then(e => setEntry(e)),
-    [titleId],
-  );
-  useEffect(() => {
-    reload();
-  }, [reload]);
-
-  const mark = async (status: WatchStatus) => {
-    if (entry?.status === status) return;
-    await recordWatch(titleId, status);
-    reload();
-  };
-
+  const isMovie = parseTitleId(titleId)?.mediaType === 'movie';
+  const status = entry?.status;
+  if (entry && status && status !== 'toWatch') {
+    const date = formatDate(entry.watchedAt);
+    const line =
+      status === 'watching' && !isMovie
+        ? `Watching · last activity ${date}`
+        : status === 'dropped'
+        ? `Dropped · scored low · ${date}`
+        : `✓ Watched · ${date}`;
+    return (
+      <Text style={[type.meta, styles.stateLine, { color: c.secondary }]}>
+        {line}
+      </Text>
+    );
+  }
+  const on = status === 'toWatch';
   return (
-    <View style={styles.block}>
-      <Segmented
-        options={STATUSES}
-        value={(entry?.status as WatchStatus | undefined) ?? null}
-        onChange={mark}
-      />
-      {entry?.status === 'completed' ? (
-        <View style={styles.watchedLine}>
-          <Text style={[type.meta, { color: c.secondary }]}>
-            {`Watched ${entry.rewatchCount}× · ${formatDate(entry.watchedAt)}`}
-          </Text>
+    <Pressable
+      onPress={async () => {
+        await setInterested(titleId, !on);
+        onChange();
+      }}
+      accessibilityRole="button"
+      accessibilityState={{ selected: on }}
+      style={({ pressed }) => [
+        styles.interested,
+        on
+          ? { backgroundColor: c.text, borderColor: c.text }
+          : { borderColor: c.separator },
+        pressed && styles.pressed,
+      ]}
+    >
+      <Text
+        style={[styles.interestedText, { color: on ? c.background : c.text }]}
+      >
+        {on ? '✓ Interested' : '+ Interested'}
+      </Text>
+    </Pressable>
+  );
+}
+
+const STAR = 32;
+
+/** Five stars in half steps; each half star is one point of a 10-point score. */
+function StarRating({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  const c = useColors();
+  return (
+    <View style={styles.starsRow}>
+      {[0, 1, 2, 3, 4].map(i => {
+        const fill = Math.min(Math.max(value - i * 2, 0), 2) / 2;
+        return (
           <Pressable
-            hitSlop={8}
-            onPress={async () => {
-              await recordWatch(titleId, 'completed');
-              reload();
-            }}
+            key={i}
+            accessibilityLabel={`${i + 1} star${i ? 's' : ''}`}
+            onPress={e =>
+              onChange(i * 2 + (e.nativeEvent.locationX < STAR / 2 ? 1 : 2))
+            }
+            style={styles.starBox}
           >
-            <Text style={[type.meta, { color: c.accent }]}>Watched again</Text>
+            <Text style={[styles.star, { color: c.placeholder }]}>★</Text>
+            <View style={[styles.starFill, { width: STAR * fill }]}>
+              <Text style={[styles.star, { color: c.star }]}>★</Text>
+            </View>
           </Pressable>
-        </View>
-      ) : null}
+        );
+      })}
+      <Text style={[type.meta, styles.ratingValue, { color: c.secondary }]}>
+        {value ? `${value} / 10` : ''}
+      </Text>
     </View>
   );
 }
 
-function MyRating({ titleId }: { titleId: string }) {
+function MyRating({
+  titleId,
+  onRated,
+}: {
+  titleId: string;
+  onRated: (rating: number) => void;
+}) {
   const c = useColors();
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
@@ -356,36 +428,22 @@ function MyRating({ titleId }: { titleId: string }) {
     });
   }, [titleId]);
 
-  const save = (value: number, text: string) =>
-    value ? setUserRating(titleId, value, text.trim() || undefined) : undefined;
+  const save = async (value: number, text: string) => {
+    if (!value) return;
+    await setUserRating(titleId, value, text.trim() || undefined);
+    onRated(value);
+  };
 
   return (
     <>
       <SectionLabel>My rating</SectionLabel>
-      <View style={styles.starsRow}>
-        {Array.from({ length: 10 }, (_, i) => i + 1).map(v => (
-          <Pressable
-            key={v}
-            hitSlop={3}
-            onPress={() => {
-              setRating(v);
-              save(v, review);
-            }}
-          >
-            <Text
-              style={[
-                styles.star,
-                { color: v <= rating ? c.star : c.placeholder },
-              ]}
-            >
-              ★
-            </Text>
-          </Pressable>
-        ))}
-        <Text style={[type.meta, styles.ratingValue, { color: c.secondary }]}>
-          {rating ? `${rating} / 10` : ''}
-        </Text>
-      </View>
+      <StarRating
+        value={rating}
+        onChange={v => {
+          setRating(v);
+          save(v, review);
+        }}
+      />
       {rating ? (
         <TextInput
           style={[styles.input, { backgroundColor: c.chip, color: c.text }]}
@@ -415,6 +473,98 @@ function Overview({ text }: { text: string }) {
       {expanded ? null : (
         <Text style={[type.meta, styles.more, { color: c.accent }]}>More</Text>
       )}
+    </Pressable>
+  );
+}
+
+const REVIEWS_SHOWN = 3;
+
+// Fetched on its own after the page renders; stays hidden until it has any.
+function Reviews({ titleId }: { titleId: string }) {
+  const c = useColors();
+  const [data, setData] = useState<{ reviews: TmdbReview[]; total: number }>();
+  const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    const ref = parseTitleId(titleId);
+    if (!ref) return;
+    let live = true;
+    getReviews(ref.tmdbId, ref.mediaType)
+      .then(d => live && setData(d))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [titleId]);
+
+  if (!data?.reviews.length) return null;
+  const ref = parseTitleId(titleId)!;
+  const shown = showAll ? data.reviews : data.reviews.slice(0, REVIEWS_SHOWN);
+  const more = data.reviews.length - shown.length;
+  return (
+    <>
+      <View style={styles.sectionRow}>
+        <SectionLabel>Reviews</SectionLabel>
+        <Text style={[type.meta, styles.sectionCount, { color: c.tertiary }]}>
+          {data.total}
+        </Text>
+      </View>
+      {shown.map(r => (
+        <Review key={r.id} review={r} />
+      ))}
+      {more > 0 ? (
+        <Pressable onPress={() => setShowAll(true)} hitSlop={8}>
+          <Text
+            style={[styles.inset, styles.reviewAction, { color: c.accent }]}
+          >
+            {`Show all ${data.reviews.length}`}
+          </Text>
+        </Pressable>
+      ) : data.total > data.reviews.length ? (
+        <Pressable
+          onPress={() =>
+            Linking.openURL(`${tmdbUrl(ref.mediaType, ref.tmdbId)}/reviews`)
+          }
+          hitSlop={8}
+        >
+          <Text
+            style={[styles.inset, styles.reviewAction, { color: c.accent }]}
+          >
+            {`All ${data.total} on TMDB ›`}
+          </Text>
+        </Pressable>
+      ) : null}
+    </>
+  );
+}
+
+function Review({ review }: { review: TmdbReview }) {
+  const c = useColors();
+  const [expanded, setExpanded] = useState(false);
+  const [long, setLong] = useState(false);
+  return (
+    <Pressable
+      onPress={() => setExpanded(e => !e)}
+      style={[styles.review, { borderTopColor: c.separator }]}
+    >
+      <Text style={[type.meta, { color: c.secondary }]}>
+        {review.rating ? (
+          <Text style={{ color: c.star }}>{`★ ${review.rating}  `}</Text>
+        ) : null}
+        {joinMeta([review.author, formatDate(review.createdAt)])}
+      </Text>
+      <Text
+        style={[styles.reviewBody, { color: c.text }]}
+        numberOfLines={expanded ? undefined : 4}
+        onTextLayout={e => {
+          if (!expanded) setLong(e.nativeEvent.lines.length >= 4);
+        }}
+      >
+        {review.content}
+      </Text>
+      {long && !expanded ? (
+        <Text style={[type.meta, styles.more, { color: c.accent }]}>More</Text>
+      ) : null}
     </Pressable>
   );
 }
@@ -510,20 +660,33 @@ const styles = StyleSheet.create({
     marginTop: space.xl,
   },
   statValue: { fontSize: 20, fontWeight: '700' },
-  block: { marginTop: space.xl },
-  watchedLine: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: space.l,
-    marginTop: space.s,
-  },
   starsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
     paddingHorizontal: space.l,
   },
-  star: { fontSize: 26 },
+  starBox: { width: STAR, height: STAR, justifyContent: 'center' },
+  star: { fontSize: 30, width: STAR, textAlign: 'center' },
+  starFill: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    overflow: 'hidden',
+    justifyContent: 'center',
+  },
+  stateLine: { paddingHorizontal: space.l, marginTop: space.xl },
+  interested: {
+    alignSelf: 'flex-start',
+    marginHorizontal: space.l,
+    marginTop: space.xl,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 18,
+    borderWidth: 1,
+  },
+  interestedText: { fontSize: 15, fontWeight: '600' },
   ratingValue: { marginLeft: space.s },
   input: {
     marginHorizontal: space.l,
@@ -537,6 +700,20 @@ const styles = StyleSheet.create({
   paragraph: { fontSize: 16, lineHeight: 23 },
   inset: { paddingHorizontal: space.l },
   more: { marginTop: 4 },
+  sectionRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  sectionCount: { paddingRight: space.l, marginBottom: space.s },
+  review: {
+    marginHorizontal: space.l,
+    paddingVertical: space.m,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    gap: 4,
+  },
+  reviewBody: { fontSize: 15, lineHeight: 21 },
+  reviewAction: { fontSize: 15, fontWeight: '600', paddingVertical: space.s },
   note: { paddingHorizontal: space.l, paddingVertical: space.xs },
   noteInput: {
     flexDirection: 'row',

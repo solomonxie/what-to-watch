@@ -1,100 +1,138 @@
-import React, { useCallback, useLayoutEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import {
+  FlatList,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { getAllWatchHistory } from '../../db/repositories/watchHistoryRepo';
 import { getAllUserRatings } from '../../db/repositories/ratingsRepo';
+import { getLatestEpisodes } from '../../db/repositories/episodeWatchesRepo';
 import { getTitlesByIds } from '../../db/repositories/titlesRepo';
 import {
   EmptyState,
-  PosterGrid,
-  Segmented,
+  PosterTile,
+  SectionLabel,
   type GridItem,
   FLOATING_CLEARANCE,
 } from '../../ui/components';
 import { joinMeta, mediaLabel, year } from '../../ui/format';
-import { space, useColors } from '../../ui/theme';
+import { space, type, useColors } from '../../ui/theme';
 import type { LibraryStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<LibraryStackParamList, 'LibraryHome'>;
-type Tab = 'toWatch' | 'watching' | 'watched' | 'rated';
 
-const TABS: { value: Tab; label: string }[] = [
-  { value: 'toWatch', label: 'To watch' },
-  { value: 'watching', label: 'Watching' },
-  { value: 'watched', label: 'Watched' },
-  { value: 'rated', label: 'Rated' },
-];
+export interface Section {
+  title: string;
+  items: GridItem[];
+}
 
-const STATUS_FOR_TAB: Record<Exclude<Tab, 'rated'>, string> = {
-  toWatch: 'toWatch',
-  watching: 'watching',
-  watched: 'completed',
-};
+interface Entry {
+  titleId: string;
+  badge?: string;
+  meta?: string;
+}
 
-const EMPTY: Record<Tab, string> = {
-  toWatch: 'Save titles to watch later from any title page.',
-  watched: 'Titles you mark watched show up here.',
-  watching: 'Nothing in progress.',
-  rated: 'Rate a title to see it here.',
-};
+const TOP = 8;
+const SO_SO = 5;
 
-async function loadItems(tab: Tab): Promise<GridItem[]> {
-  const entries =
-    tab === 'rated'
-      ? (await getAllUserRatings())
-          .sort((a, b) => b.updatedAt - a.updatedAt)
-          .map(r => ({ titleId: r.titleId, badge: `★ ${r.rating}` }))
-      : (await getAllWatchHistory())
-          .filter(h => h.status === STATUS_FOR_TAB[tab])
-          .sort((a, b) => b.watchedAt - a.watchedAt)
-          .map(h => ({
-            titleId: h.titleId,
-            badge:
-              tab === 'watched' && h.rewatchCount > 1
-                ? `${h.rewatchCount}×`
-                : undefined,
-          }));
-  const titles = new Map(
-    (await getTitlesByIds(entries.map(e => e.titleId))).map(t => [t.id, t]),
+export async function loadSections(): Promise<Section[]> {
+  const [history, ratings, latest] = await Promise.all([
+    getAllWatchHistory(),
+    getAllUserRatings(),
+    getLatestEpisodes(),
+  ]);
+  const rating = new Map(ratings.map(r => [r.titleId, r]));
+  const byActivity = [...history].sort((a, b) => b.watchedAt - a.watchedAt);
+  // Only shows are ever in progress; a movie marked watching counts as seen.
+  const isMovie = (id: string) => id.startsWith('movie:');
+  const watching = byActivity.filter(
+    h => h.status === 'watching' && !isMovie(h.titleId),
   );
-  return entries.flatMap(e => {
-    const t = titles.get(e.titleId);
-    if (!t) return [];
-    return [
-      {
-        id: t.id,
-        title: t.title,
-        posterPath: t.posterPath,
-        badge: e.badge,
-        badgeCorner: 'right' as const,
-        meta: joinMeta([year(t.releaseDate), mediaLabel(t.mediaType)]),
-      },
-    ];
+  const inProgress = new Set(watching.map(h => h.titleId));
+
+  const continueWatching: Entry[] = watching.map(h => {
+    const ep = latest.get(h.titleId);
+    return {
+      titleId: h.titleId,
+      meta: ep ? `S${ep.season} · E${ep.episode}` : undefined,
+    };
   });
+  const watchNext: Entry[] = byActivity
+    .filter(h => h.status === 'toWatch' && !rating.has(h.titleId))
+    .map(h => ({ titleId: h.titleId }));
+
+  const rated = ratings
+    .filter(r => !inProgress.has(r.titleId))
+    .sort((a, b) => b.rating - a.rating || b.updatedAt - a.updatedAt);
+  const bucket = (min: number, max: number): Entry[] =>
+    rated
+      .filter(r => r.rating >= min && r.rating < max)
+      .map(r => ({ titleId: r.titleId, badge: `★ ${r.rating}` }));
+
+  const unrated: Entry[] = byActivity
+    .filter(
+      h =>
+        h.status !== 'toWatch' &&
+        !inProgress.has(h.titleId) &&
+        !rating.has(h.titleId),
+    )
+    .map(h => ({ titleId: h.titleId }));
+
+  const groups: [string, Entry[]][] = [
+    ['Continue watching', continueWatching],
+    ['My next watch', watchNext],
+    ['My top rated', bucket(TOP, Infinity)],
+    ['I feel so-so', bucket(SO_SO, TOP)],
+    ['Waste of time', bucket(-Infinity, SO_SO)],
+    ['To be rated', unrated],
+  ];
+
+  const titles = new Map(
+    (
+      await getTitlesByIds(
+        groups.flatMap(([, entries]) => entries).map(e => e.titleId),
+      )
+    ).map(t => [t.id, t]),
+  );
+  return groups
+    .map(([title, entries]) => ({
+      title,
+      items: entries.flatMap(e => {
+        const t = titles.get(e.titleId);
+        if (!t) return [];
+        return [
+          {
+            id: t.id,
+            title: t.title,
+            posterPath: t.posterPath,
+            badge: e.badge,
+            badgeCorner: 'right' as const,
+            meta:
+              e.meta ??
+              joinMeta([year(t.releaseDate), mediaLabel(t.mediaType)]),
+          },
+        ];
+      }),
+    }))
+    .filter(s => s.items.length > 0);
 }
 
 export function LibraryScreen({ navigation }: Props) {
   const c = useColors();
-  const [tab, setTab] = useState<Tab>('toWatch');
-  const [items, setItems] = useState<GridItem[] | null>(null);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      // eslint-disable-next-line react/no-unstable-nested-components
-      headerRight: () => (
-        <Pressable onPress={() => navigation.navigate('Import')} hitSlop={8}>
-          <Text style={[styles.headerButton, { color: c.accent }]}>Import</Text>
-        </Pressable>
-      ),
-    });
-  }, [navigation, c.accent]);
+  const [sections, setSections] = useState<Section[] | null>(null);
 
   useFocusEffect(
     useCallback(() => {
-      loadItems(tab).then(setItems);
-    }, [tab]),
+      loadSections().then(setSections);
+    }, []),
   );
+
+  const open = (titleId: string) => navigation.navigate('Title', { titleId });
 
   return (
     <ScrollView
@@ -102,31 +140,60 @@ export function LibraryScreen({ navigation }: Props) {
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ paddingBottom: FLOATING_CLEARANCE }}
     >
-      <View style={styles.segment}>
-        <Segmented
-          options={TABS}
-          value={tab}
-          onChange={next => {
-            setItems(null);
-            setTab(next);
-          }}
-        />
-      </View>
-      {items === null ? (
+      {sections === null ? (
         <EmptyState loading />
-      ) : items.length === 0 ? (
-        <EmptyState message={EMPTY[tab]} />
+      ) : sections.length === 0 ? (
+        <EmptyState message="Mark titles Interested, track episodes, or rate what you've watched." />
       ) : (
-        <PosterGrid
-          items={items}
-          onPress={titleId => navigation.navigate('Title', { titleId })}
-        />
+        sections.map(section => (
+          <View key={section.title}>
+            <View style={styles.header}>
+              <SectionLabel>{section.title}</SectionLabel>
+              <Pressable
+                onPress={() =>
+                  navigation.navigate('LibrarySection', {
+                    title: section.title,
+                  })
+                }
+                hitSlop={12}
+                accessibilityRole="button"
+                accessibilityLabel={`See all ${section.items.length} in ${section.title}`}
+                style={({ pressed }) => pressed && styles.pressed}
+              >
+                <Text style={[type.meta, styles.count, { color: c.accent }]}>
+                  {`${section.items.length} ›`}
+                </Text>
+              </Pressable>
+            </View>
+            <FlatList
+              horizontal
+              data={section.items}
+              keyExtractor={item => item.id}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.row}
+              initialNumToRender={6}
+              renderItem={({ item }) => (
+                <PosterTile item={item} onPress={() => open(item.id)} />
+              )}
+            />
+          </View>
+        ))
       )}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerButton: { fontSize: 17 },
-  segment: { paddingTop: space.s, paddingBottom: space.l },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  count: {
+    paddingRight: space.l,
+    marginBottom: space.s,
+    fontWeight: '600',
+  },
+  pressed: { opacity: 0.5 },
+  row: { paddingHorizontal: space.l, gap: space.m },
 });

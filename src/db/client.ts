@@ -12,7 +12,7 @@ let ormInstance: OPSQLiteDatabase<Schema> | null = null;
 // (inside ensureMigrated/a repository call) rather than at module load, so
 // importing this file never triggers a native call during JS bundle
 // evaluation/app startup.
-function getRawDb(): DB {
+export function getRawDb(): DB {
   if (!rawDbInstance) {
     rawDbInstance = open({ name: 'whattowatch.db' });
   }

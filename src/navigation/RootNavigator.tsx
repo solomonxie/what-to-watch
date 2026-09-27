@@ -5,11 +5,12 @@ import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/un
 import { DiscoverScreen } from '../screens/discover/DiscoverScreen';
 import { FiltersScreen } from '../screens/discover/FiltersScreen';
 import { LibraryScreen } from '../screens/library/LibraryScreen';
-import { ImportScreen } from '../screens/library/ImportScreen';
+import { LibrarySectionScreen } from '../screens/library/LibrarySectionScreen';
 import { TitleScreen } from '../screens/title/TitleScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { ApiKeyScreen } from '../screens/settings/ApiKeyScreen';
 import { RegionScreen } from '../screens/settings/RegionScreen';
+import { ICloudBackupsScreen } from '../screens/settings/ICloudBackupsScreen';
 import { TasteScreen } from '../screens/taste/TasteScreen';
 import { AddFacetScreen } from '../screens/taste/AddFacetScreen';
 import { SearchScreen } from '../screens/search/SearchScreen';
@@ -45,7 +46,7 @@ function DiscoverNavigator() {
       <DiscoverStack.Screen
         name="DiscoverHome"
         component={DiscoverScreen}
-        options={{ title: 'Discover', ...largeTitle }}
+        options={{ title: 'What to Watch', ...largeTitle }}
       />
       <DiscoverStack.Screen
         name="Title"
@@ -70,14 +71,13 @@ function LibraryNavigator() {
         options={{ title: 'Library', ...largeTitle }}
       />
       <LibraryStack.Screen
+        name="LibrarySection"
+        component={LibrarySectionScreen}
+      />
+      <LibraryStack.Screen
         name="Title"
         component={TitleScreen}
         options={titleOptions}
-      />
-      <LibraryStack.Screen
-        name="Import"
-        component={ImportScreen}
-        options={{ title: 'Import' }}
       />
     </LibraryStack.Navigator>
   );
@@ -103,6 +103,11 @@ function SettingsNavigator() {
         options={{ title: 'Taste' }}
       />
       <SettingsStack.Screen name="AddFacet" component={AddFacetScreen} />
+      <SettingsStack.Screen
+        name="ICloudBackups"
+        component={ICloudBackupsScreen}
+        options={{ title: 'iCloud Backups' }}
+      />
     </SettingsStack.Navigator>
   );
 }
