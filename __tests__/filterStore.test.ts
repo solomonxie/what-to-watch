@@ -61,6 +61,25 @@ describe('applyFilters', () => {
   });
 });
 
+describe('applyFilters kinds', () => {
+  it('splits movies, series, documentaries and unscripted TV', () => {
+    const items = [
+      makeItem({ id: 'm' }),
+      makeItem({ id: 's', mediaType: 'tv', genres: ['Drama'] }),
+      makeItem({ id: 'd', genres: ['Documentary'] }),
+      makeItem({ id: 'ds', mediaType: 'tv', genres: ['Documentary', 'Reality'] }),
+      makeItem({ id: 'r', mediaType: 'tv', genres: ['Reality'] }),
+    ];
+    const ids = (kinds: typeof DEFAULT_FILTERS.kinds) =>
+      applyFilters(items, { ...DEFAULT_FILTERS, kinds }).map(r => r.title.id);
+    expect(ids(['movie'])).toEqual(['m']);
+    expect(ids(['series', 'docuseries'])).toEqual(['s', 'ds']);
+    expect(ids(['documentary'])).toEqual(['d']);
+    expect(ids(['unscripted'])).toEqual(['r']);
+    expect(ids([])).toHaveLength(5);
+  });
+});
+
 describe('applyFilters facets', () => {
   it('filters by country of origin', () => {
     const items = [

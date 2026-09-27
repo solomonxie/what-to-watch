@@ -9,6 +9,7 @@ const PLATFORM_SEARCH: Record<string, (q: string) => string> = {
   '2': q => `https://tv.apple.com/search?term=${q}`,
   '1899': q => `https://play.max.com/search?q=${q}`,
   '15': q => `https://www.hulu.com/search?q=${q}`,
+  '230': q => `https://www.crave.ca/en/search?q=${q}`,
   '531': q => `https://www.paramountplus.com/search/?q=${q}`,
   '386': q => `https://www.peacocktv.com/search?q=${q}`,
 };

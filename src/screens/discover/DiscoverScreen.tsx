@@ -22,7 +22,11 @@ import {
   sortTitles,
   useFilterStore,
 } from '../../state/filterStore';
-import { refreshSearchIndex } from '../../catalog/catalogService';
+import {
+  fillCertifications,
+  refreshSearchIndex,
+} from '../../catalog/catalogService';
+import { getTitlesByIds } from '../../db/repositories/titlesRepo';
 import { isProviderActive } from '../../providers/providerRegistry';
 import { hasTaste, usePrefsStore } from '../../prefs/prefsStore';
 import { readRecsCache, recsNeedRefresh } from '../../recs/recsService';
@@ -63,6 +67,7 @@ export function DiscoverScreen({ navigation }: Props) {
   const [updating, setUpdating] = useState(false);
   const [updateError, setUpdateError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [checkingAges, setCheckingAges] = useState(false);
   const request = useRef(0);
 
   const region = settings?.defaultRegion ?? DEFAULT_REGION;
@@ -141,6 +146,43 @@ export function DiscoverScreen({ navigation }: Props) {
     }, [load]),
   );
 
+  // Ratings/rankings lack certifications; fetch them only once an age filter needs them.
+  const needsAges =
+    filters.ages.length > 0 &&
+    !!feed?.items.some(i => i.title.certification == null);
+  useEffect(() => {
+    if (!needsAges || !feed) return;
+    let live = true;
+    setCheckingAges(true);
+    fillCertifications(
+      feed.items.map(i => i.title),
+      region,
+    )
+      .then(async () => {
+        const fresh = new Map(
+          (await getTitlesByIds(feed.items.map(i => i.title.id))).map(t => [
+            t.id,
+            t,
+          ]),
+        );
+        if (!live) return;
+        setFeed({
+          ...feed,
+          items: feed.items.map(i => ({
+            ...i,
+            title: {
+              ...i.title,
+              certification: fresh.get(i.title.id)?.certification ?? '',
+            },
+          })),
+        });
+      })
+      .finally(() => live && setCheckingAges(false));
+    return () => {
+      live = false;
+    };
+  }, [needsAges, feed, region]);
+
   const selectScope = (id: string) => {
     if (id === scopeId) return;
     setFeed(null);
@@ -203,7 +245,11 @@ export function DiscoverScreen({ navigation }: Props) {
         onAction={() => goSettings('ApiKey')}
       />
     );
-  } else if (status === 'loading' || (!feed && updating)) {
+  } else if (
+    status === 'loading' ||
+    (!feed && updating) ||
+    (checkingAges && items.length === 0)
+  ) {
     body = <EmptyState loading />;
   } else if (status === 'error') {
     body = (
@@ -238,16 +284,17 @@ export function DiscoverScreen({ navigation }: Props) {
     feed?.kind === 'picks'
       ? `Picked for you${scope ? ` · ${scope.name}` : ''}`
       : `Most popular · ${region}`;
-  const note =
-    feed?.kind !== 'picks'
-      ? null
-      : updating
-      ? 'Updating…'
-      : updateError
-      ? "Couldn't update · showing saved picks"
-      : feed.generatedAt
-      ? `Updated ${ago(feed.generatedAt)}`
-      : null;
+  const note = checkingAges
+    ? 'Checking age ratings…'
+    : feed?.kind !== 'picks'
+    ? null
+    : updating
+    ? 'Updating…'
+    : updateError
+    ? "Couldn't update · showing saved picks"
+    : feed.generatedAt
+    ? `Updated ${ago(feed.generatedAt)}`
+    : null;
 
   return (
     <ScrollView

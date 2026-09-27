@@ -64,6 +64,8 @@ export function mergeTitleDetails(
       d.originCountries?.length ? d.originCountries : undefined,
     ),
     cast: firstDefined(sorted, d => (d.cast?.length ? d.cast : undefined)),
+    certification: sorted.find(d => d.certification !== undefined)
+      ?.certification,
     imdbId: firstDefined(sorted, d => d.imdbId),
     tmdbId: firstDefined(sorted, d => d.tmdbId),
     omdbId: firstDefined(sorted, d => d.omdbId),

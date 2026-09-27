@@ -12,6 +12,7 @@ export async function upsertTitle(title: NormalizedTitle): Promise<void> {
     originalLanguage: title.originalLanguage,
     originCountries: title.originCountries,
     castNames: title.cast,
+    certification: title.certification,
   };
   await db
     .insert(cachedTitles)
@@ -67,6 +68,17 @@ export async function upsertTitle(title: NormalizedTitle): Promise<void> {
       })),
     );
   }
+}
+
+export async function setCertification(
+  id: string,
+  certification: string,
+): Promise<void> {
+  await ensureMigrated();
+  await db
+    .update(cachedTitles)
+    .set({ certification })
+    .where(eq(cachedTitles.id, id));
 }
 
 export async function getTitleById(id: string) {
