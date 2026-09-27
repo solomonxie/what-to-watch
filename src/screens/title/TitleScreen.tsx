@@ -238,7 +238,7 @@ export function TitleScreen({ route }: Props) {
 
 function OpenIn({ title, providers }: { title: Title; providers: Provider[] }) {
   const c = useColors();
-  const streaming = Array.from(
+  const unique = Array.from(
     new Map(
       providers
         .filter(
@@ -247,6 +247,13 @@ function OpenIn({ title, providers }: { title: Title; providers: Provider[] }) {
         )
         .map(p => [p.platformId, p]),
     ).values(),
+  );
+  // Drop tiers and channels of a service already listed, e.g. "Netflix Standard with Ads".
+  const streaming = unique.filter(
+    p =>
+      !unique.some(
+        o => o !== p && p.platformName.startsWith(`${o.platformName} `),
+      ),
   );
   const ref = parseTitleId(title.id);
   const links = [
