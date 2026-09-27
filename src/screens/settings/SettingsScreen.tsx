@@ -55,7 +55,7 @@ export function SettingsScreen({ navigation }: Props) {
     >
       <GroupedSection
         header="Data sources"
-        footer="TMDB powers search and rankings. OMDb adds IMDb & Rotten Tomatoes ratings."
+        footer="TMDB powers search and rankings. OMDb adds IMDb & Rotten Tomatoes ratings. This product uses the TMDB API but is not endorsed or certified by TMDB. Streaming availability by JustWatch."
       >
         <Row
           label="TMDB"

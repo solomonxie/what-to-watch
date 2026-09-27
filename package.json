@@ -7,7 +7,11 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm test",
+    "release:ios": "scripts/release-ios.sh",
+    "screenshots": "scripts/store-screenshots.sh"
   },
   "dependencies": {
     "@op-engineering/op-sqlite": "^18.2.5",

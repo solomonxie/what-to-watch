@@ -36,6 +36,8 @@ xcodebuild -workspace WhatToWatch.xcworkspace -scheme WhatToWatch -configuration
 xcrun devicectl device install app --device <UDID> build/dd/Build/Products/Release-iphoneos/WhatToWatch.app
 ```
 
+App Store: `make release` archives and uploads; every listing field, the privacy policy and the checklist are in `docs/release/`. `make help` lists the rest.
+
 Import history: Settings → Import CSV… reads any CSV with a `title` column (optional `year, imdb, tmdb, type, status, rating (0.5–5), review, date`); IMDb and Letterboxd exports work as-is. A row with `tmdb` + `type` matches exactly.
 
 Douban (no official export) → a CSV pinned to TMDB ids:
@@ -60,3 +62,13 @@ npx jest __tests__/liveApis.test.ts
 Design + plan: `docs/design/mvp/`.
 
 Add a TMDB and/or OMDb API key in the app's Settings section to enable metadata, ratings, and platform rankings.
+
+## Screenshots
+
+| Discover | Title | Library |
+|---|---|---|
+| <img src="docs/release/screenshots/6.9/01-discover.jpg" width="240"> | <img src="docs/release/screenshots/6.9/02-title.jpg" width="240"> | <img src="docs/release/screenshots/6.9/03-library.jpg" width="240"> |
+| **Filters** | **Search** | **Taste** |
+| <img src="docs/release/screenshots/6.9/04-filters.jpg" width="240"> | <img src="docs/release/screenshots/6.9/05-search.jpg" width="240"> | <img src="docs/release/screenshots/6.9/06-taste.jpg" width="240"> |
+| **Settings** | | |
+| <img src="docs/release/screenshots/6.9/07-settings.jpg" width="240"> | | |
