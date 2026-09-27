@@ -1,18 +1,24 @@
 import {
-  findByImdbId,
-  getTmdbFullTitle,
-  searchDetailed,
-} from '../providers/tmdbProvider';
-import type { DiscoveredTitleMeta } from '../providers/tmdbProvider';
-import {
   cacheListTitle,
   refreshSearchIndex,
   titleIdFor,
 } from '../catalog/catalogService';
-import { importRating } from '../db/repositories/ratingsRepo';
-import { importWatch } from '../db/repositories/watchHistoryRepo';
+import {
+  getUserRatingForTitle,
+  importRating,
+} from '../db/repositories/ratingsRepo';
+import {
+  getWatchEntry,
+  setImportedStatus,
+} from '../db/repositories/watchHistoryRepo';
+import {
+  getWatchedEpisodes,
+  setEpisodesWatched,
+} from '../db/repositories/episodeWatchesRepo';
+import { derivedStatus } from './status';
+import type { WatchStatus } from '../types/domain';
 import { snapshotBeforeImport } from '../backup/backupService';
-import { bestMatch, hasCjk } from './matcher';
+import { resolveEntry } from './resolve';
 import type { ImportEntry, ParsedImport } from './types';
 
 const CONCURRENCY = 4;
@@ -26,34 +32,11 @@ export interface ImportSummary {
   watching: number;
   rated: number;
   skipped: number;
+  /** Single episodes, marked watched on their show. */
+  episodes: number;
+  /** Rows that aren't movies or shows. */
+  ignored: number;
   unmatched: ImportEntry[];
-}
-
-async function resolve(
-  entry: ImportEntry,
-): Promise<DiscoveredTitleMeta | null> {
-  if (entry.tmdbId && entry.mediaType) {
-    const full = await getTmdbFullTitle(entry.tmdbId, entry.mediaType, 'US');
-    return {
-      details: full.details,
-      ratings: full.ratings,
-      popularity: 0,
-      voteAverage: 0,
-    };
-  }
-  if (entry.imdbId) {
-    const found = await findByImdbId(entry.imdbId);
-    if (found) return found;
-  }
-  for (const title of entry.titles) {
-    const results = await searchDetailed(
-      title,
-      hasCjk(title) ? 'zh-CN' : 'en-US',
-    );
-    const match = bestMatch(entry, results);
-    if (match) return match;
-  }
-  return null;
 }
 
 export async function runImport(
@@ -70,6 +53,8 @@ export async function runImport(
     watching: 0,
     rated: 0,
     skipped: 0,
+    episodes: 0,
+    ignored: parsed.ignored,
     unmatched: [],
   };
   let next = 0;
@@ -79,7 +64,7 @@ export async function runImport(
     while (next < parsed.entries.length) {
       const entry = parsed.entries[next++];
       try {
-        const match = await resolve(entry);
+        const match = await resolveEntry(entry);
         if (!match) {
           summary.unmatched.push(entry);
         } else {
@@ -88,24 +73,31 @@ export async function runImport(
             match.details.mediaType,
             match.details.externalId,
           );
-          const wrote = await importWatch(
-            id,
-            entry.status,
-            entry.date ?? Date.now(),
-          );
-          const rated = entry.rating
-            ? await importRating(
-                id,
-                entry.rating,
-                entry.review,
-                entry.date ?? Date.now(),
-              )
-            : false;
-          if (wrote || rated) summary.imported++;
+          const at = entry.date ?? Date.now();
+          // An episode's score is for that episode, not the show.
+          if (match.episode) {
+            await setEpisodesWatched(id, [match.episode], true);
+            summary.episodes++;
+          }
+          const rated =
+            !match.episode && entry.rating
+              ? await importRating(id, entry.rating, entry.review, at)
+              : false;
+          const status = derivedStatus({
+            mediaType: match.details.mediaType,
+            source: match.episode ? undefined : entry.status,
+            rated: rated || !!(await getUserRatingForTitle(id)),
+            episodesWatched: (await getWatchedEpisodes(id)).size,
+            current: (await getWatchEntry(id))?.status as
+              | WatchStatus
+              | undefined,
+          });
+          const wrote = await setImportedStatus(id, status, at);
+          if (wrote || rated || match.episode) summary.imported++;
           else summary.skipped++;
           if (wrote) {
-            if (entry.status === 'completed') summary.watched++;
-            else if (entry.status === 'toWatch') summary.toWatch++;
+            if (status === 'completed') summary.watched++;
+            else if (status === 'toWatch') summary.toWatch++;
             else summary.watching++;
           }
           if (rated) summary.rated++;
