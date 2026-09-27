@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { getKv, setKv } from '../db/repositories/kvRepo';
+import { markDataChanged } from '../backup/changeFeed';
 
 export interface Topic {
   id: number;
@@ -44,6 +45,7 @@ export async function readPreferences(): Promise<Preferences> {
 }
 
 export async function writePreferences(p: Preferences): Promise<void> {
+  markDataChanged();
   await setKv(PREFS_KEY, JSON.stringify(p));
 }
 

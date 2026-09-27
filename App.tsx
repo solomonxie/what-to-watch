@@ -21,12 +21,13 @@ function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   useEffect(() => {
-    startBackupScheduler();
+    // Restore first: a backup of the still-empty app must never race it.
     restoreOnFreshInstall()
       .then(restored => {
         if (restored) useSettingsStore.getState().load();
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(startBackupScheduler);
   }, []);
 
   return (

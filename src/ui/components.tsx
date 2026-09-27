@@ -161,13 +161,17 @@ export function Segmented<T extends string>({
 export function GroupedSection({
   header,
   footer,
+  more,
   children,
 }: {
   header?: string;
   footer?: string;
+  /** Longer footer text, revealed by a "More" link. */
+  more?: string;
   children: React.ReactNode;
 }) {
   const c = useColors();
+  const [expanded, setExpanded] = React.useState(false);
   const rows = React.Children.toArray(children).filter(Boolean);
   return (
     <View style={styles.group}>
@@ -187,9 +191,26 @@ export function GroupedSection({
         ))}
       </View>
       {footer ? (
-        <Text style={[styles.groupFooter, { color: c.secondary }]}>
-          {footer}
-        </Text>
+        <Pressable
+          disabled={!more}
+          onPress={() => setExpanded(e => !e)}
+          hitSlop={8}
+          accessibilityRole={more ? 'button' : undefined}
+          accessibilityState={more ? { expanded } : undefined}
+        >
+          <Text style={[styles.groupFooter, { color: c.secondary }]}>
+            {footer}
+            {more && !expanded ? (
+              <Text style={[styles.more, { color: c.accent }]}>{'  More'}</Text>
+            ) : null}
+          </Text>
+          {more && expanded ? (
+            <Text style={[styles.groupFooter, { color: c.secondary }]}>
+              {more}
+              <Text style={[styles.more, { color: c.accent }]}>{'  Less'}</Text>
+            </Text>
+          ) : null}
+        </Pressable>
       ) : null}
     </View>
   );
@@ -462,6 +483,7 @@ const styles = StyleSheet.create({
     paddingTop: space.s,
     lineHeight: 18,
   },
+  more: { fontWeight: '600' },
   separator: { height: StyleSheet.hairlineWidth, marginLeft: space.l },
   row: {
     flexDirection: 'row',

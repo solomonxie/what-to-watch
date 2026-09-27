@@ -6,6 +6,7 @@ import {
   DEFAULT_REGION,
   DEFAULT_LANGUAGE,
 } from '../../config/platforms';
+import { markDataChanged } from '../../backup/changeFeed';
 
 export type AppSettings = typeof settings.$inferSelect;
 
@@ -29,6 +30,7 @@ export async function getSettings(): Promise<AppSettings> {
 export async function updateSettings(
   patch: Partial<Omit<AppSettings, 'id'>>,
 ): Promise<AppSettings> {
+  markDataChanged();
   await ensureMigrated();
   const current = await getSettings();
   const [updated] = await db

@@ -1,12 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { getApiKey } from '../../secureStorage/apiKeyStore';
@@ -14,7 +7,7 @@ import { PLATFORMS, DEFAULT_REGION } from '../../config/platforms';
 import { useSettingsStore } from '../../state/settingsStore';
 import { usePrefsStore } from '../../prefs/prefsStore';
 import { FLOATING_CLEARANCE, GroupedSection, Row } from '../../ui/components';
-import { space, type, useColors } from '../../ui/theme';
+import { useColors } from '../../ui/theme';
 import { ICloudRow } from './ICloudRow';
 import { CsvImportRow } from './CsvImportRow';
 import { CSV_COLUMNS } from '../../libraryImport/formats';
@@ -23,13 +16,13 @@ import type { SettingsStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsHome'>;
 
-const BACKUP_INFO =
-  'Your ratings, reviews, notes and watch history. API keys never leave this device, including in backups. A daily copy is also kept in Files → On My iPhone → What to Watch.';
+const BACKUP_MORE =
+  'iCloud Drive keeps a copy for each of the last 30 days, then one a month for a year. It survives deleting the app, and a reinstall restores the newest copy that has your marks. A smaller backup never replaces a fuller one from the same day. This iPhone also keeps a copy after every change for 7 days, for undoing mistakes. API keys never leave this device.';
 
-const CSV_INFO =
-  'One row per title, with a header row. Columns (any order, only title required):\n\n' +
+const CSV_MORE =
+  'Douban has no export, so its row takes a CSV made by scripts/douban-export.py in the app repo — or any CSV with a header row and these columns, in any order, only title required:\n' +
   CSV_COLUMNS.map(c => `• ${c}`).join('\n') +
-  '\n\nDouban, IMDb and Letterboxd exports work as they are.';
+  '\nIMDb rows match exactly by their IMDb id; your ratings and watchlist are separate exports, import both.';
 
 export function SettingsScreen({ navigation }: Props) {
   const c = useColors();
@@ -105,29 +98,30 @@ export function SettingsScreen({ navigation }: Props) {
         />
       </GroupedSection>
 
-      <View style={styles.backupHeader}>
-        <Text style={[type.section, { color: c.secondary }]}>IMPORT DATA</Text>
-        <Pressable
-          onPress={() => Alert.alert('CSV columns', CSV_INFO)}
-          hitSlop={12}
-        >
-          <Text style={[type.section, { color: c.accent }]}>ⓘ</Text>
-        </Pressable>
-      </View>
-      <GroupedSection footer="Ratings and watch history from any platform's CSV export.">
-        <CsvImportRow />
+      <GroupedSection
+        header="Import data"
+        footer="Ratings and watch history from other apps."
+        more={CSV_MORE}
+      >
+        <CsvImportRow
+          label="IMDb CSV…"
+          hint="Official export: imdb.com → Your Ratings or Watchlist → ⋮ → Export"
+          format="IMDb"
+          source="IMDb"
+        />
+        <CsvImportRow
+          label="Douban CSV…"
+          hint="Made with scripts/douban-export.py, or any CSV with a title column"
+          format="CSV"
+          source="Douban"
+        />
       </GroupedSection>
 
-      <View style={styles.backupHeader}>
-        <Text style={[type.section, { color: c.secondary }]}>BACKUP</Text>
-        <Pressable
-          onPress={() => Alert.alert('Backup', BACKUP_INFO)}
-          hitSlop={12}
-        >
-          <Text style={[type.section, { color: c.accent }]}>ⓘ</Text>
-        </Pressable>
-      </View>
-      <GroupedSection>
+      <GroupedSection
+        header="Backup"
+        footer="Your ratings, reviews, notes and watch history."
+        more={BACKUP_MORE}
+      >
         <ICloudRow />
         <Row label="Export a copy…" onPress={busy ? undefined : exportCopy} />
         <Row
@@ -141,11 +135,4 @@ export function SettingsScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   content: { paddingBottom: FLOATING_CLEARANCE },
-  backupHeader: {
-    flexDirection: 'row',
-    gap: 6,
-    paddingHorizontal: space.l * 2,
-    marginTop: space.xl,
-    marginBottom: space.s,
-  },
 });
