@@ -83,3 +83,112 @@ describe('file names', () => {
     expect(beforeImportFileName(new Date(0))).toBe('what-to-watch-before-import-0.json');
   });
 });
+
+describe('snapshots and zips', () => {
+  const {
+    base64ToBytes,
+    bytesToBase64,
+    payloadFromBytes,
+    payloadStats,
+    selectExpiredSnapshots,
+    snapshotName,
+    zipPayload,
+  } = require('../src/backup/payload');
+
+  it('names snapshots so they sort by time', () => {
+    expect(snapshotName(new Date(2026, 8, 26, 9, 5, 7, 42))).toBe(
+      '20260926-090507-042.json',
+    );
+  });
+
+  it('keeps the newest 20 per day for 7 days', () => {
+    const today = Array.from({ length: 25 }, (_, i) =>
+      snapshotName(new Date(2026, 8, 26, 10, i)),
+    );
+    const weekAgo = snapshotName(new Date(2026, 8, 20, 10));
+    const tooOld = snapshotName(new Date(2026, 8, 19, 10));
+    const expired = selectExpiredSnapshots(
+      [...today, weekAgo, tooOld, 'notes.txt'],
+      new Date(2026, 8, 26, 12),
+    );
+    expect(expired).toContain(tooOld);
+    expect(expired).not.toContain(weekAgo);
+    expect(expired.filter((n: string) => n.startsWith('20260926'))).toEqual(
+      today.slice(0, 5).reverse(),
+    );
+  });
+
+  it('round-trips a payload through zip and base64, and still reads JSON', () => {
+    const payload = {
+      version: 2,
+      exportedAt: 'x',
+      notes: [],
+      ratings: [{ titleId: 'movie:1', rating: 8, createdAt: 1, updatedAt: 1 }],
+      watchHistory: [
+        { titleId: 'tv:1', status: 'watching', watchedAt: 1, rewatchCount: 0 },
+        { titleId: 'movie:1', status: 'completed', watchedAt: 1, rewatchCount: 1 },
+      ],
+      episodes: [{ titleId: 'tv:1', season: 1, episode: 1, watchedAt: 1 }],
+      titles: [],
+    };
+    const back = payloadFromBytes(base64ToBytes(bytesToBase64(zipPayload(payload))));
+    expect(back.ratings).toEqual(payload.ratings);
+    expect(payloadStats(back)).toEqual({
+      watching: 1,
+      watched: 1,
+      toWatch: 0,
+      rated: 1,
+      episodes: 1,
+      notes: 0,
+    });
+    const json = require('fflate').strToU8(JSON.stringify(payload));
+    expect(payloadFromBytes(json).watchHistory).toHaveLength(2);
+  });
+});
+
+describe('iCloud safety rules', () => {
+  const {
+    iCloudFileName,
+    selectExpiredICloud,
+    userRecordCount,
+  } = require('../src/backup/payload');
+  const now = new Date(2026, 8, 26, 14, 30, 5);
+
+  it("refreshes today's file unless the new backup is much smaller", () => {
+    expect(iCloudFileName(now, null, 100)).toBe('20260926-what-to-watch.zip');
+    expect(iCloudFileName(now, 1000, 950)).toBe('20260926-what-to-watch.zip');
+    expect(iCloudFileName(now, 1000, 1500)).toBe('20260926-what-to-watch.zip');
+    expect(iCloudFileName(now, 1000, 100)).toBe(
+      '20260926-143005-what-to-watch.zip',
+    );
+  });
+
+  it('keeps 30 days of files plus one per month for 12 months', () => {
+    const days = Array.from({ length: 400 }, (_, i) => {
+      const d = new Date(2026, 8, 26 - i);
+      const key = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+      return `${key}-what-to-watch.zip`;
+    });
+    const burst = ['20260926-101010-what-to-watch.zip', '20260926-111111-what-to-watch.zip'];
+    const expired = selectExpiredICloud([...days, ...burst]);
+    const kept = [...days, ...burst].filter(n => !expired.includes(n));
+    // A same-day burst doesn't use up days.
+    expect(kept.filter(n => n.startsWith('202609'))).toContain(days[25]);
+    expect(new Set(kept.map(n => n.slice(0, 8))).size).toBe(30 + 12);
+    expect(kept).toEqual(expect.arrayContaining(burst));
+    expect(kept.some(n => n.startsWith('2025'))).toBe(true);
+    expect(expired).toContain(days[399]);
+  });
+
+  it('counts only what the user made', () => {
+    expect(
+      userRecordCount({
+        notes: [{}],
+        ratings: [{}, {}],
+        watchHistory: [{}],
+        episodes: [{}, {}, {}],
+      }),
+    ).toBe(7);
+    expect(userRecordCount({ notes: [], ratings: [], watchHistory: [] })).toBe(0);
+  });
+});

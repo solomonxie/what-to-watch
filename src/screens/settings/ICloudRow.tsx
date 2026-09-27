@@ -1,5 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { AppState, StyleSheet, Text } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { SettingsStackParamList } from '../../navigation/types';
 import { ICloudDrive, type ICloudStatus } from '../../native/ICloudSyncModule';
 import { useSettingsStore } from '../../state/settingsStore';
 import { backupNow, getICloudBackupInfo } from '../../backup/backupService';
@@ -7,6 +10,7 @@ import { Row } from '../../ui/components';
 import { type, useColors } from '../../ui/theme';
 
 const LOCATION = 'Files → iCloud Drive → What to Watch';
+const STALE_MS = 3 * 24 * 60 * 60 * 1000;
 
 const BLOCKED: Partial<Record<ICloudStatus, { reason: string; fix?: string }>> =
   {
@@ -29,6 +33,8 @@ function ago(ms: number): string {
 
 export function ICloudRow() {
   const c = useColors();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<SettingsStackParamList>>();
   const { settings, load, setIcloudSyncEnabled } = useSettingsStore();
   const [status, setStatus] = useState<ICloudStatus | null>(null);
   const [working, setWorking] = useState(false);
@@ -87,15 +93,23 @@ export function ICloudRow() {
   } else if (enabled && info.error) {
     subtitle = `⚠ Last backup failed: ${info.error}`;
     subtitleColor = c.danger;
+  } else if (enabled && info.lastAt && Date.now() - info.lastAt > STALE_MS) {
+    subtitle = `⚠ Last backup ${ago(
+      info.lastAt,
+    )} — open the app on Wi-Fi to catch up`;
+    subtitleColor = c.danger;
   } else {
     subtitle = `${LOCATION}${
       enabled && info.lastAt ? ` · ${ago(info.lastAt)}` : ''
     }`;
   }
+  // Off, or can't work: say plainly what that means.
+  const unprotected = !enabled && !working;
 
   return (
     <Row
       label="iCloud Drive"
+      onPress={blocked ? undefined : () => navigation.navigate('ICloudBackups')}
       subtitle={
         <>
           <Text style={[type.meta, styles.line, { color: subtitleColor }]}>
@@ -104,6 +118,11 @@ export function ICloudRow() {
           {fix ? (
             <Text style={[type.meta, styles.line, { color: c.accent }]}>
               {fix}
+            </Text>
+          ) : null}
+          {unprotected ? (
+            <Text style={[type.meta, styles.line, { color: c.danger }]}>
+              Your marks are only on this iPhone — deleting the app deletes them
             </Text>
           ) : null}
         </>

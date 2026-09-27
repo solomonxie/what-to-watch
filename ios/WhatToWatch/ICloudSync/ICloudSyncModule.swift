@@ -1,31 +1,41 @@
 import Foundation
 import React
+import UIKit
 
 @objc(ICloudSyncModule)
 class ICloudSyncModule: NSObject {
 
-  private static let backupSuffix = "-what-to-watch.json"
-  private static let keepCount = 10
-  private let queue = DispatchQueue(label: "ICloudSyncModule", qos: .utility)
+  private static let backupSuffixes = ["-what-to-watch.zip", "-what-to-watch.json"]
+  // Reads can wait on iCloud downloads; they must never hold up a backup write.
+  private let writeQueue = DispatchQueue(label: "ICloudSyncModule.write", qos: .utility)
+  private let readQueue = DispatchQueue(label: "ICloudSyncModule.read", qos: .utility)
+
+  private func trace<T>(_ name: String, _ work: () throws -> T) rethrows -> T {
+    let start = Date()
+    NSLog("[ICloudSync] %@ start", name)
+    defer { NSLog("[ICloudSync] %@ end %.2fs", name, Date().timeIntervalSince(start)) }
+    return try work()
+  }
 
   @objc(status:withRejecter:)
   func status(
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    queue.async {
+    readQueue.async { self.trace("status") {
       resolve(self.currentStatus().status)
-    }
+    } }
   }
 
-  @objc(writeBackup:contents:withResolver:withRejecter:)
+  /// `base64` is the file's bytes; today's name replaces today's file.
+  @objc(writeBackup:base64:withResolver:withRejecter:)
   func writeBackup(
     _ fileName: String,
-    contents: String,
+    base64: String,
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    queue.async {
+    writeQueue.async { self.trace("writeBackup") {
       guard let docs = self.currentStatus().documents else {
         reject("ICLOUD_UNAVAILABLE", "iCloud Drive is not available", nil)
         return
@@ -37,48 +47,100 @@ class ICloudSyncModule: NSObject {
         var writeError: Error?
         NSFileCoordinator().coordinate(writingItemAt: target, options: .forReplacing, error: &coordError) { url in
           do {
-            try contents.data(using: .utf8)?.write(to: url, options: .atomic)
+            try Data(base64Encoded: base64)?.write(to: url, options: .atomic)
           } catch {
             writeError = error
           }
         }
         if let error = coordError ?? writeError { throw error }
-        self.prune(docs)
         resolve(nil)
       } catch {
         reject("ICLOUD_WRITE_ERROR", error.localizedDescription, error)
       }
-    }
+    } }
   }
 
-  @objc(readLatest:withRejecter:)
-  func readLatest(
+  /// Newest first: [{ name, size, modifiedAt, downloaded }].
+  @objc(listBackups:withRejecter:)
+  func listBackups(
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    queue.async {
+    readQueue.async { self.trace("listBackups") {
       guard let docs = self.currentStatus().documents else {
-        resolve(nil)
+        resolve([])
         return
       }
-      let names = self.backupNames(in: docs)
-      guard let latest = names.first else {
-        resolve(nil)
+      let fm = FileManager.default
+      resolve(self.backupNames(in: docs).map { name -> [String: Any] in
+        let url = docs.appendingPathComponent(name)
+        let downloaded = fm.fileExists(atPath: url.path)
+        let path = downloaded ? url.path : docs.appendingPathComponent(".\(name).icloud").path
+        let attrs = (try? fm.attributesOfItem(atPath: path)) ?? [:]
+        let values = try? url.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
+        let size = values?.fileSize ?? (attrs[.size] as? Int) ?? 0
+        let modified = values?.contentModificationDate ?? (attrs[.modificationDate] as? Date)
+        return [
+          "name": name,
+          "size": size,
+          "modifiedAt": (modified?.timeIntervalSince1970 ?? 0) * 1000,
+          "downloaded": downloaded,
+        ]
+      })
+    } }
+  }
+
+  /// The file's bytes as base64; a coordinated read downloads it first if needed.
+  @objc(readBackup:withResolver:withRejecter:)
+  func readBackup(
+    _ fileName: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    readQueue.async { self.trace("readBackup") {
+      guard let docs = self.currentStatus().documents else {
+        reject("ICLOUD_UNAVAILABLE", "iCloud Drive is not available", nil)
         return
       }
-      let url = docs.appendingPathComponent(latest)
-      if !FileManager.default.fileExists(atPath: url.path) {
-        try? FileManager.default.startDownloadingUbiquitousItem(at: url)
-        resolve(nil)
-        return
-      }
+      let url = docs.appendingPathComponent(fileName)
+      try? FileManager.default.startDownloadingUbiquitousItem(at: url)
       var coordError: NSError?
-      var text: String?
+      var data: Data?
       NSFileCoordinator().coordinate(readingItemAt: url, options: [], error: &coordError) { readURL in
-        text = try? String(contentsOf: readURL, encoding: .utf8)
+        data = try? Data(contentsOf: readURL)
       }
-      resolve(text)
-    }
+      if let data = data {
+        resolve(data.base64EncodedString())
+      } else {
+        reject("ICLOUD_READ_ERROR", coordError?.localizedDescription ?? "Couldn't read \(fileName)", coordError)
+      }
+    } }
+  }
+
+  @objc(deleteBackup:withResolver:withRejecter:)
+  func deleteBackup(
+    _ fileName: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    writeQueue.async { self.trace("deleteBackup") {
+      guard let docs = self.currentStatus().documents else {
+        reject("ICLOUD_UNAVAILABLE", "iCloud Drive is not available", nil)
+        return
+      }
+      let url = docs.appendingPathComponent(fileName)
+      var coordError: NSError?
+      var deleteError: Error?
+      NSFileCoordinator().coordinate(writingItemAt: url, options: .forDeleting, error: &coordError) { target in
+        do { try FileManager.default.removeItem(at: target) } catch { deleteError = error }
+      }
+      try? FileManager.default.removeItem(at: docs.appendingPathComponent(".\(fileName).icloud"))
+      if let error = coordError ?? deleteError {
+        reject("ICLOUD_DELETE_ERROR", error.localizedDescription, error)
+      } else {
+        resolve(nil)
+      }
+    } }
   }
 
   // Newest first. Includes ".<name>.icloud" placeholders under their real name.
@@ -89,17 +151,9 @@ class ICloudSyncModule: NSObject {
       if name.hasPrefix("."), name.hasSuffix(".icloud") {
         name = String(name.dropFirst().dropLast(".icloud".count))
       }
-      return name.hasSuffix(Self.backupSuffix) ? name : nil
+      return Self.backupSuffixes.contains(where: name.hasSuffix) ? name : nil
     }
     return Array(Set(names)).sorted(by: >)
-  }
-
-  private func prune(_ docs: URL) {
-    let fm = FileManager.default
-    for name in backupNames(in: docs).dropFirst(Self.keepCount) {
-      try? fm.removeItem(at: docs.appendingPathComponent(name))
-      try? fm.removeItem(at: docs.appendingPathComponent(".\(name).icloud"))
-    }
   }
 
   private func currentStatus() -> (status: String, documents: URL?) {
@@ -126,6 +180,29 @@ class ICloudSyncModule: NSObject {
     else { return false }
     let containers = entitlements["com.apple.developer.ubiquity-container-identifiers"] as? [String]
     return !(containers ?? []).isEmpty
+  }
+
+  /// Asks iOS for time to finish a backup after the app leaves the screen.
+  @objc(beginBackgroundTask:withRejecter:)
+  func beginBackgroundTask(
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    DispatchQueue.main.async {
+      var id: UIBackgroundTaskIdentifier = .invalid
+      id = UIApplication.shared.beginBackgroundTask(withName: "backup") {
+        UIApplication.shared.endBackgroundTask(id)
+      }
+      resolve(id.rawValue)
+    }
+  }
+
+  @objc(endBackgroundTask:)
+  func endBackgroundTask(_ id: NSNumber) {
+    DispatchQueue.main.async {
+      let task = UIBackgroundTaskIdentifier(rawValue: id.intValue)
+      if task != .invalid { UIApplication.shared.endBackgroundTask(task) }
+    }
   }
 
   @objc
