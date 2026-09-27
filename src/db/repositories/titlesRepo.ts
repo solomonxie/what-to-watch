@@ -104,10 +104,13 @@ export async function getAllCachedTitles() {
 
 export async function getRatingsForTitle(titleId: string) {
   await ensureMigrated();
-  return db
+  const rows = await db
     .select()
     .from(cachedRatings)
-    .where(eq(cachedRatings.titleId, titleId));
+    .where(eq(cachedRatings.titleId, titleId))
+    .orderBy(cachedRatings.id);
+  // Overlapping fetches of one title can each insert a full set; newest wins.
+  return Array.from(new Map(rows.map(r => [r.source, r])).values());
 }
 
 export async function getWatchProvidersForTitle(titleId: string) {
