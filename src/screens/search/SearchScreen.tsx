@@ -18,13 +18,13 @@ import type { SearchStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<SearchStackParamList, 'SearchHome'>;
 
-export function SearchScreen({ navigation }: Props) {
+export function SearchScreen({ navigation, route }: Props) {
   const c = useColors();
   const insets = useSafeAreaInsets();
   const region = useSettingsStore(
     s => s.settings?.defaultRegion ?? DEFAULT_REGION,
   );
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(route.params?.q ?? '');
 
   return (
     <KeyboardAvoidingView

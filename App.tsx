@@ -11,6 +11,7 @@ import {
   NavigationContainer,
 } from '@react-navigation/native';
 import { RootNavigator } from './src/navigation/RootNavigator';
+import { linking } from './src/navigation/linking';
 import { useSettingsStore } from './src/state/settingsStore';
 import {
   restoreOnFreshInstall,
@@ -33,7 +34,9 @@ function App() {
   return (
     <SafeAreaProvider>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <NavigationContainer theme={isDarkMode ? DarkTheme : DefaultTheme}>
+      <NavigationContainer
+        linking={linking}
+        theme={isDarkMode ? DarkTheme : DefaultTheme}>
         <RootNavigator />
       </NavigationContainer>
     </SafeAreaProvider>

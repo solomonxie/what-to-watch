@@ -29,7 +29,7 @@ export type SettingsStackParamList = TasteStackParamList & {
 };
 
 export type SearchStackParamList = {
-  SearchHome: undefined;
+  SearchHome: { q?: string } | undefined;
   Title: TitleParams;
 };
 
