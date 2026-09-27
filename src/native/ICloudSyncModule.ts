@@ -18,6 +18,7 @@ export interface ICloudBackupFile {
 interface NativeICloudSyncModule {
   status(): Promise<Exclude<ICloudStatus, 'unsupported'>>;
   writeBackup(fileName: string, base64: string): Promise<void>;
+  appendFile(fileName: string, base64: string): Promise<void>;
   listBackups(): Promise<ICloudBackupFile[]>;
   readBackup(fileName: string): Promise<string>;
   deleteBackup(fileName: string): Promise<void>;
@@ -61,6 +62,8 @@ export const ICloudDrive = {
   },
   writeBackup: (fileName: string, base64: string) =>
     timeout(required().writeBackup(fileName, base64), 120_000, 'write'),
+  appendFile: (fileName: string, base64: string) =>
+    timeout(required().appendFile(fileName, base64), 60_000, 'append'),
   async listBackups(): Promise<ICloudBackupFile[]> {
     return NativeModule
       ? timeout(NativeModule.listBackups(), 30_000, 'list')

@@ -33,6 +33,13 @@ import {
 } from '../native/ICloudSyncModule';
 import { markDataChanged, onDataChanged } from './changeFeed';
 import {
+  ICLOUD_LOG,
+  LOCAL_LOG,
+  diffStates,
+  logState,
+  toJsonl,
+} from './changeLog';
+import {
   PAYLOAD_VERSION,
   SNAPSHOT_DIR,
   base64ToBytes,
@@ -145,7 +152,39 @@ async function gated(
   }
 }
 
-/** Tier 1: a snapshot per change, newest 20 a day for 7 days. */
+const LOG_STATE = `${RNFS.LibraryDirectoryPath}/changes-state.json`;
+/** Log lines not yet appended to iCloud. */
+const LOG_PENDING = `${RNFS.LibraryDirectoryPath}/changes-pending.jsonl`;
+
+/**
+ * Append-only: each change since the last run becomes a line in the log.
+ * The first run only records where the log starts from.
+ */
+async function recordChanges(payload: BackupPayload) {
+  const next = logState(payload);
+  if (await RNFS.exists(LOG_STATE)) {
+    const prev = JSON.parse(await RNFS.readFile(LOG_STATE, 'utf8'));
+    const names = Object.fromEntries(
+      (payload.titles ?? []).map(t => [t.id, t.title]),
+    );
+    const lines = toJsonl(diffStates(prev, next, new Date(), names));
+    if (!lines) return;
+    await RNFS.appendFile(`${DOCS}/${LOCAL_LOG}`, lines, 'utf8');
+    await RNFS.appendFile(LOG_PENDING, lines, 'utf8');
+  }
+  await RNFS.writeFile(LOG_STATE, JSON.stringify(next), 'utf8');
+}
+
+async function flushICloudLog() {
+  if (!(await RNFS.exists(LOG_PENDING))) return;
+  await ICloudDrive.appendFile(
+    ICLOUD_LOG,
+    await RNFS.readFile(LOG_PENDING, 'base64'),
+  );
+  await RNFS.unlink(LOG_PENDING);
+}
+
+/** Tier 1: one snapshot a day, replaced on each change, kept 7 days. */
 async function backupLocal(payload: BackupPayload) {
   await gated('local', payload, false, async () => {
     await RNFS.mkdir(SNAPSHOTS);
@@ -162,6 +201,7 @@ async function backupICloud(payload: BackupPayload, force: boolean) {
   const appSettings = await getSettings();
   if (!appSettings.icloudSyncEnabled) return;
   if ((await ICloudDrive.status()) !== 'available') return;
+  await flushICloudLog().catch(() => {});
   // Nothing typed by hand yet: nothing to protect, and an empty file would
   // only compete with real backups.
   if (userRecordCount(payload) === 0) return;
@@ -204,6 +244,7 @@ function serial<T>(work: () => Promise<T>): Promise<T> {
 export function backupNow(options: { forceICloud?: boolean } = {}) {
   return serial(async () => {
     const payload = await buildPayload();
+    await recordChanges(payload).catch(() => {});
     await backupLocal(payload).catch(() => {});
     await backupICloud(payload, !!options.forceICloud);
   });
@@ -244,6 +285,7 @@ export function startBackupScheduler(): void {
   onDataChanged(() => {
     serial(async () => {
       const payload = await buildPayload();
+      await recordChanges(payload).catch(() => {});
       await backupLocal(payload).catch(() => {});
       if (Date.now() - lastICloudAt < ICLOUD_MIN_INTERVAL_MS) return;
       lastICloudAt = Date.now();
