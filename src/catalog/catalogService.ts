@@ -1,6 +1,8 @@
 import {
   discoverByPlatform,
   getCertification,
+  getEpisodes,
+  getSeasons,
   getTmdbFullTitle,
   tmdbProvider,
 } from '../providers/tmdbProvider';
@@ -16,6 +18,7 @@ import {
   getPlatformRanking,
   replacePlatformRanking,
 } from '../db/repositories/rankingsRepo';
+import { cachedResponse } from '../db/repositories/responseCacheRepo';
 import { buildSearchIndex } from '../search/fuseIndex';
 import type { PlatformConfig } from '../config/platforms';
 import type {
@@ -27,6 +30,7 @@ import type {
 } from '../types/domain';
 
 const RANKING_CATEGORY = 'popular';
+const SEASONS_TTL_MS = 24 * 60 * 60 * 1000;
 
 // TMDB movie and tv ids overlap, so the media type is part of the key.
 export function titleIdFor(mediaType: MediaType, tmdbId: string): string {
@@ -113,6 +117,18 @@ export async function fetchAndCacheTitle(
   await replaceWatchProviders(title.id, region, full.watchProviders);
   await refreshSearchIndex();
   return title.id;
+}
+
+export function showSeasons(tmdbId: string) {
+  return cachedResponse(`tv:${tmdbId}:seasons`, SEASONS_TTL_MS, () =>
+    getSeasons(tmdbId),
+  );
+}
+
+export function seasonEpisodes(tmdbId: string, season: number) {
+  return cachedResponse(`tv:${tmdbId}:season:${season}`, SEASONS_TTL_MS, () =>
+    getEpisodes(tmdbId, season),
+  );
 }
 
 function interleave<T>(a: T[], b: T[]): T[] {

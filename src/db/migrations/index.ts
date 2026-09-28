@@ -4,6 +4,7 @@ import { PROVIDER_LINKS_STATEMENTS } from './0002_provider_links';
 import { CERTIFICATION_STATEMENTS } from './0003_certification';
 import { EPISODE_WATCHES_STATEMENTS } from './0004_episode_watches';
 import { DERIVED_STATUS_STATEMENTS } from './0005_derived_status';
+import { RESPONSE_CACHE_STATEMENTS } from './0006_response_cache';
 
 // Index + 1 = the PRAGMA user_version after that step runs.
 export const MIGRATIONS: string[][] = [
@@ -13,6 +14,7 @@ export const MIGRATIONS: string[][] = [
   CERTIFICATION_STATEMENTS,
   EPISODE_WATCHES_STATEMENTS,
   DERIVED_STATUS_STATEMENTS,
+  RESPONSE_CACHE_STATEMENTS,
 ];
 
 export interface MigrationDb {

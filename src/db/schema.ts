@@ -106,3 +106,10 @@ export const appKv = sqliteTable('app_kv', {
   key: text('key').primaryKey(),
   value: text('value').notNull(),
 });
+
+export const responseCache = sqliteTable('response_cache', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+  fetchedAt: integer('fetched_at').notNull(),
+  usedAt: integer('used_at').notNull(),
+});
