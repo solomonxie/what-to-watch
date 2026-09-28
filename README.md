@@ -65,10 +65,10 @@ Add a TMDB and/or OMDb API key in the app's Settings section to enable metadata,
 
 ## Screenshots
 
-| Discover | Title | Library |
-|---|---|---|
+| **Discover** · picks for you, by service | **Title** · ratings, where to watch, your rating | **Library** · next watch, top rated |
+|:-:|:-:|:-:|
 | <img src="docs/release/screenshots/6.9/01-discover.jpg" width="240"> | <img src="docs/release/screenshots/6.9/02-title.jpg" width="240"> | <img src="docs/release/screenshots/6.9/03-library.jpg" width="240"> |
-| **Filters** | **Search** | **Taste** |
+| **Filters** · sort, type, year, rating, genre | **Search** · recent searches, tap to reuse | **Taste** · rank genres that drive picks |
 | <img src="docs/release/screenshots/6.9/04-filters.jpg" width="240"> | <img src="docs/release/screenshots/6.9/05-search.jpg" width="240"> | <img src="docs/release/screenshots/6.9/06-taste.jpg" width="240"> |
-| **Settings** | | |
-| <img src="docs/release/screenshots/6.9/07-settings.jpg" width="240"> | | |
+| **Settings** · data sources, streaming services |  |  |
+| <img src="docs/release/screenshots/6.9/07-settings.jpg" width="240"> |  |  |
