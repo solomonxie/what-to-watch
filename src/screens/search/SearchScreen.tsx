@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Pressable,
@@ -11,9 +11,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSettingsStore } from '../../state/settingsStore';
 import { DEFAULT_REGION } from '../../config/platforms';
-import { EmptyState } from '../../ui/components';
 import { space, useColors } from '../../ui/theme';
 import { SearchResults } from './SearchResults';
+import { SearchHistory } from './SearchHistory';
+import {
+  getSearchHistory,
+  saveSearchHistory,
+  withQuery,
+} from '../../search/searchHistory';
 import type { SearchStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<SearchStackParamList, 'SearchHome'>;
@@ -25,6 +30,19 @@ export function SearchScreen({ navigation, route }: Props) {
     s => s.settings?.defaultRegion ?? DEFAULT_REGION,
   );
   const [query, setQuery] = useState(route.params?.q ?? '');
+  const [history, setHistory] = useState<string[]>([]);
+
+  useEffect(() => {
+    getSearchHistory()
+      .then(setHistory)
+      .catch(() => {});
+  }, []);
+
+  const updateHistory = (next: string[]) => {
+    setHistory(next);
+    saveSearchHistory(next).catch(() => {});
+  };
+  const remember = () => updateHistory(withQuery(history, query));
 
   return (
     <KeyboardAvoidingView
@@ -39,10 +57,18 @@ export function SearchScreen({ navigation, route }: Props) {
           <SearchResults
             query={query}
             region={region}
-            onOpen={titleId => navigation.navigate('Title', { titleId })}
+            onOpen={titleId => {
+              remember();
+              navigation.navigate('Title', { titleId });
+            }}
           />
         ) : (
-          <EmptyState message="Search your library and everything on TMDB." />
+          <SearchHistory
+            history={history}
+            onPick={setQuery}
+            onRemove={q => updateHistory(history.filter(h => h !== q))}
+            onClear={() => updateHistory([])}
+          />
         )}
       </View>
       <View
@@ -63,6 +89,7 @@ export function SearchScreen({ navigation, route }: Props) {
           autoFocus
           autoCorrect={false}
           returnKeyType="search"
+          onSubmitEditing={remember}
           clearButtonMode="while-editing"
         />
         <Pressable onPress={() => navigation.getParent()?.goBack()} hitSlop={8}>
