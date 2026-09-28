@@ -67,7 +67,8 @@ class ExpiringURLCache: URLCache {
 
   init(memoryCapacity: Int, diskCapacity: Int, maxAge: TimeInterval) {
     self.maxAge = maxAge
-    super.init(memoryCapacity: memoryCapacity, diskCapacity: diskCapacity, directory: nil)
+    // The directory: variant links a Swift symbol iOS 18 lacks, crashing at launch.
+    super.init(memoryCapacity: memoryCapacity, diskCapacity: diskCapacity, diskPath: nil)
   }
 
   override func cachedResponse(for request: URLRequest) -> CachedURLResponse? {
