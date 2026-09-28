@@ -6,10 +6,12 @@ import {
   Text,
   View,
 } from 'react-native';
-import { parseTitleId } from '../../catalog/catalogService';
 import {
-  getEpisodes,
-  getSeasons,
+  parseTitleId,
+  seasonEpisodes,
+  showSeasons,
+} from '../../catalog/catalogService';
+import {
   type TmdbEpisode,
   type TmdbSeason,
 } from '../../providers/tmdbProvider';
@@ -77,7 +79,7 @@ export function Seasons({
   useEffect(() => {
     if (!tmdbId) return;
     let live = true;
-    getSeasons(tmdbId)
+    showSeasons(tmdbId)
       .then(show => {
         if (!live) return;
         setSeasons(show.seasons);
@@ -191,7 +193,7 @@ function Season({
   const [fullOverview, setFullOverview] = useState(false);
 
   const fetchEpisodes = () =>
-    getEpisodes(tmdbId, season.number).then(list => {
+    seasonEpisodes(tmdbId, season.number).then(list => {
       setEpisodes(list);
       return list;
     });
