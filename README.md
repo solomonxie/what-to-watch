@@ -22,7 +22,7 @@ Bare React Native (TypeScript), React Navigation, Zustand, op-sqlite + Drizzle O
 ```sh
 npm install
 cd ios && pod install && cd ..
-npm run ios       # or: npm run android
+npm run ios       # Release build → connected iPhone (no Metro server)
 ```
 
 iOS signing: create gitignored `ios/Local.xcconfig` with your `DEVELOPMENT_TEAM` and `PRODUCT_BUNDLE_IDENTIFIER` (placeholders in `ios/Signing.xcconfig`). iCloud Drive backup needs a paid team; the container `iCloud.<bundle id>` is registered automatically with `-allowProvisioningUpdates`.
