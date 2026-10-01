@@ -5,6 +5,7 @@ export interface GenreDef {
 }
 
 // Unified genre list mapped to TMDB's separate movie/tv genre ids.
+// TMDB tv has no Thriller genre; its thrillers are filed under Mystery.
 export const GENRES: GenreDef[] = [
   { name: 'Action', movie: 28, tv: 10759 },
   { name: 'Adventure', movie: 12, tv: 10759 },
@@ -23,7 +24,7 @@ export const GENRES: GenreDef[] = [
   { name: 'Reality', tv: 10764 },
   { name: 'Romance', movie: 10749 },
   { name: 'Science Fiction', movie: 878, tv: 10765 },
-  { name: 'Thriller', movie: 53 },
+  { name: 'Thriller', movie: 53, tv: 9648 },
   { name: 'War', movie: 10752, tv: 10768 },
   { name: 'Western', movie: 37, tv: 37 },
 ];
@@ -89,4 +90,29 @@ export function unifiedGenres(tmdbName: string): string[] {
     default:
       return [tmdbName];
   }
+}
+
+const TMDB_TV_GENRE_IDS: Record<string, number> = {
+  'Action & Adventure': 10759,
+  'Sci-Fi & Fantasy': 10765,
+  'War & Politics': 10768,
+};
+
+function genreId(name: string, mediaType?: string): number | undefined {
+  const kind = mediaType === 'tv' ? 'tv' : 'movie';
+  return (
+    GENRES.find(g => g.name === name)?.[kind] ??
+    (kind === 'tv' ? TMDB_TV_GENRE_IDS[name] : undefined)
+  );
+}
+
+/** By TMDB genre id for the title's type, so tv "Sci-Fi & Fantasy" is Science Fiction and tv Mystery is Thriller. */
+export function hasGenre(
+  wanted: string,
+  genres: string[],
+  mediaType?: string,
+): boolean {
+  if (genres.includes(wanted)) return true;
+  const id = genreId(wanted, mediaType);
+  return id !== undefined && genres.some(g => genreId(g, mediaType) === id);
 }

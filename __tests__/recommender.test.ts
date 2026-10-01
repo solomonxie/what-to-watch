@@ -40,7 +40,7 @@ describe('planQueries', () => {
     const movie = qs.filter(q => q.mediaType === 'movie');
     const tv = qs.filter(q => q.mediaType === 'tv');
     expect(movie.map(q => q.params.with_genres)).toEqual(['878', '53']);
-    expect(tv.map(q => q.params.with_genres)).toEqual(['10765']); // Thriller has no tv id
+    expect(tv.map(q => q.params.with_genres)).toEqual(['10765', '9648']); // tv thrillers are Mystery
     expect(movie[0].params.with_original_language).toBe('ko|ja');
     expect(movie[0].params.with_watch_providers).toBe('8|350');
   });

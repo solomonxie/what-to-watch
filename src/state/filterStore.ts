@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { matchesAgeGroup } from '../catalog/ageRating';
+import { hasGenre } from '../config/taxonomy';
 import type { FilterState, SortState, TitleKind } from '../types/domain';
 
 export const DEFAULT_FILTERS: FilterState = {
@@ -99,7 +100,11 @@ export function applyFilters<T extends FilterableTitle>(
       !filters.ages.some(group => matchesAgeGroup(title, group))
     )
       return false;
-    if (!matchesAny(filters.genres, title.genres)) return false;
+    if (
+      filters.genres.length &&
+      !filters.genres.some(g => hasGenre(g, title.genres, title.mediaType))
+    )
+      return false;
 
     const year = yearOf(title);
     if (

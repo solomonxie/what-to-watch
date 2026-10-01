@@ -15,7 +15,11 @@ import {
   useFilterStore,
 } from '../../state/filterStore';
 import { getAllCachedTitles } from '../../db/repositories/titlesRepo';
-import { countryName, languageName } from '../../config/taxonomy';
+import {
+  countryName,
+  languageName,
+  unifiedGenres,
+} from '../../config/taxonomy';
 import { Chip, Segmented } from '../../ui/components';
 import { space, type, useColors } from '../../ui/theme';
 import type { DiscoverStackParamList } from '../../navigation/types';
@@ -84,7 +88,7 @@ async function loadFacets(): Promise<Facets> {
   ) =>
     Array.from(new Set(titles.flatMap(pick).filter((v): v is string => !!v)));
   return {
-    genres: collect(t => t.genres),
+    genres: collect(t => t.genres.flatMap(unifiedGenres)),
     languages: collect(t => [t.originalLanguage]),
     regions: collect(t => t.originCountries ?? []),
   };
