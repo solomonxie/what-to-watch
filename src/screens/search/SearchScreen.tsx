@@ -19,6 +19,10 @@ import {
   saveSearchHistory,
   withQuery,
 } from '../../search/searchHistory';
+import { getAllWatchHistory } from '../../db/repositories/watchHistoryRepo';
+import { getAllUserRatings } from '../../db/repositories/ratingsRepo';
+import { refreshSearchIndex } from '../../catalog/catalogService';
+import { isSearchIndexBuilt } from '../../search/titleIndex';
 import type { SearchStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<SearchStackParamList, 'SearchHome'>;
@@ -31,11 +35,21 @@ export function SearchScreen({ navigation, route }: Props) {
   );
   const [query, setQuery] = useState(route.params?.q ?? '');
   const [history, setHistory] = useState<string[]>([]);
+  const [library, setLibrary] = useState<Set<string>>(() => new Set());
+  const [indexVersion, setIndexVersion] = useState(0);
 
   useEffect(() => {
     getSearchHistory()
       .then(setHistory)
       .catch(() => {});
+    Promise.all([getAllWatchHistory(), getAllUserRatings()])
+      .then(([h, r]) => setLibrary(new Set([...h, ...r].map(x => x.titleId))))
+      .catch(() => {});
+    // Normally built by Discover at launch; a deep link can arrive first.
+    if (!isSearchIndexBuilt())
+      refreshSearchIndex()
+        .then(() => setIndexVersion(v => v + 1))
+        .catch(() => {});
   }, []);
 
   const updateHistory = (next: string[]) => {
@@ -57,6 +71,8 @@ export function SearchScreen({ navigation, route }: Props) {
           <SearchResults
             query={query}
             region={region}
+            library={library}
+            indexVersion={indexVersion}
             onOpen={titleId => {
               remember();
               navigation.navigate('Title', { titleId });

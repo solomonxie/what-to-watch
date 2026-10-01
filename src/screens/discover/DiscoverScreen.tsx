@@ -81,7 +81,7 @@ export function DiscoverScreen({ navigation }: Props) {
 
   useEffect(() => {
     loadSettings();
-    refreshSearchIndex();
+    refreshSearchIndex().catch(() => {});
   }, [loadSettings]);
 
   const load = useCallback(

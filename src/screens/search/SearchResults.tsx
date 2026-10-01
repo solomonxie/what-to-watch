@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -7,11 +7,11 @@ import {
   Text,
   View,
 } from 'react-native';
-import { searchIndex } from '../../search/fuseIndex';
+import { mergeResults, searchIndex } from '../../search/titleIndex';
 import { fetchAndCacheTitle, searchOnline } from '../../catalog/catalogService';
 import { isProviderActive } from '../../providers/providerRegistry';
-import { EmptyState, Poster, SectionLabel } from '../../ui/components';
-import { joinMeta, mediaLabel, score10, year } from '../../ui/format';
+import { EmptyState, Poster } from '../../ui/components';
+import { joinMeta, mediaLabel, score10 } from '../../ui/format';
 import { space, type, useColors } from '../../ui/theme';
 import type { ProviderSearchResult } from '../../types/domain';
 
@@ -26,12 +26,29 @@ type Online =
 interface Props {
   query: string;
   region: string;
+  /** Watched, tracked or rated titles. */
+  library: Set<string>;
+  /** Bumped when the local index is rebuilt. */
+  indexVersion: number;
   onOpen: (titleId: string) => void;
 }
 
-export function SearchResults({ query, region, onOpen }: Props) {
+export function SearchResults({
+  query,
+  region,
+  library,
+  indexVersion,
+  onOpen,
+}: Props) {
   const c = useColors();
-  const local = searchIndex(query).slice(0, 8);
+  // Typing stays responsive; the local match catches up a frame later.
+  const deferred = useDeferredValue(query);
+  const local = useMemo(
+    () => searchIndex(deferred),
+    // The index is module state; indexVersion marks its rebuilds.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [deferred, indexVersion],
+  );
   const [online, setOnline] = useState<Online>({ kind: 'loading' });
   const [opening, setOpening] = useState<string | null>(null);
   const [openError, setOpenError] = useState<{
@@ -61,13 +78,16 @@ export function SearchResults({ query, region, onOpen }: Props) {
     };
   }, [query, attempt]);
 
-  const localIds = new Set(local.map(t => t.id));
-  const remote =
-    online.kind === 'ready'
-      ? online.results.filter(
-          r => !localIds.has(`${r.mediaType}:${r.externalId}`),
-        )
-      : [];
+  const rows = useMemo(
+    () =>
+      mergeResults(
+        deferred,
+        local,
+        online.kind === 'ready' ? online.results : [],
+        library,
+      ),
+    [deferred, local, online, library],
+  );
 
   const openRemote = async (r: ProviderSearchResult) => {
     const key = `${r.mediaType}:${r.externalId}`;
@@ -85,8 +105,7 @@ export function SearchResults({ query, region, onOpen }: Props) {
     }
   };
 
-  const nothing =
-    local.length === 0 && online.kind === 'ready' && remote.length === 0;
+  const nothing = rows.length === 0 && online.kind === 'ready';
 
   return (
     <ScrollView
@@ -97,23 +116,26 @@ export function SearchResults({ query, region, onOpen }: Props) {
     >
       {nothing ? <EmptyState message={`No results for "${query}"`} /> : null}
 
-      {local.length > 0 ? <SectionLabel>In your library</SectionLabel> : null}
-      {local.map(t => (
+      {rows.map(r => (
         <ResultRow
-          key={t.id}
-          title={t.title}
-          posterPath={t.posterPath}
+          key={r.key}
+          title={r.title}
+          posterPath={r.posterPath}
           meta={joinMeta([
-            year(t.releaseDate),
-            t.mediaType && mediaLabel(t.mediaType),
-            score10(t.primaryRatingScore) &&
-              `★ ${score10(t.primaryRatingScore)}`,
+            r.year,
+            r.mediaType && mediaLabel(r.mediaType),
+            score10(r.rating) && `★ ${score10(r.rating)}`,
+            r.inLibrary && 'In library',
           ])}
-          onPress={() => onOpen(t.id)}
+          busy={opening === r.key}
+          error={openError?.key === r.key ? openError.message : undefined}
+          disabled={opening !== null}
+          onPress={() =>
+            r.remote && !r.cached ? openRemote(r.remote) : onOpen(r.key)
+          }
         />
       ))}
 
-      {nothing ? null : <SectionLabel>On TMDB</SectionLabel>}
       {online.kind === 'noKey' ? (
         <Text style={[styles.note, { color: c.secondary }]}>
           Connect TMDB to search everything.
@@ -126,26 +148,7 @@ export function SearchResults({ query, region, onOpen }: Props) {
             ⚠ {online.message} · Retry
           </Text>
         </Pressable>
-      ) : (
-        remote.map(r => {
-          const key = `${r.mediaType}:${r.externalId}`;
-          return (
-            <ResultRow
-              key={key}
-              title={r.title}
-              posterPath={r.posterPath}
-              meta={joinMeta([
-                r.year && String(r.year),
-                mediaLabel(r.mediaType),
-              ])}
-              busy={opening === key}
-              error={openError?.key === key ? openError.message : undefined}
-              disabled={opening !== null}
-              onPress={() => openRemote(r)}
-            />
-          );
-        })
-      )}
+      ) : null}
     </ScrollView>
   );
 }

@@ -40,7 +40,7 @@ import {
 import { addNote, getAllNotes } from '../src/db/repositories/notesRepo';
 import { buildPayload, importPayload } from '../src/backup/backupService';
 import { applyFilters, DEFAULT_FILTERS } from '../src/state/filterStore';
-import { searchIndex } from '../src/search/fuseIndex';
+import { searchIndex } from '../src/search/titleIndex';
 import { PLATFORMS } from '../src/config/platforms';
 import { writePreferences, EMPTY_PREFS } from '../src/prefs/prefsStore';
 import {
@@ -99,7 +99,7 @@ live('live TMDB/OMDb end to end', () => {
   it('indexes cached titles for local search, including cast', async () => {
     expect(searchIndex('three body').length).toBeGreaterThan(0);
     const title = await getTitleById('tv:108545');
-    expect(searchIndex(title!.castNames![0]).map(t => t.id)).toContain(
+    expect(searchIndex(title!.castNames![0]).map(h => h.item.id)).toContain(
       'tv:108545',
     );
   });

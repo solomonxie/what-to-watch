@@ -115,6 +115,6 @@ export async function refreshRecs(scope: RecsScope): Promise<RecsCache> {
     items,
   };
   await setKv(cacheKey(scope), JSON.stringify(cache));
-  refreshSearchIndex();
+  refreshSearchIndex().catch(() => {});
   return cache;
 }

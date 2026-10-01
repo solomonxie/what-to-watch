@@ -9,7 +9,7 @@ import {
 import { omdbProvider } from '../providers/omdbProvider';
 import { mergeTitleDetails } from '../providers/mergeService';
 import {
-  getAllCachedTitles,
+  getSearchableTitles,
   replaceWatchProviders,
   setCertification,
   upsertTitle,
@@ -19,7 +19,7 @@ import {
   replacePlatformRanking,
 } from '../db/repositories/rankingsRepo';
 import { cachedResponse } from '../db/repositories/responseCacheRepo';
-import { buildSearchIndex } from '../search/fuseIndex';
+import { buildSearchIndex, upsertSearchIndex } from '../search/titleIndex';
 import type { PlatformConfig } from '../config/platforms';
 import type {
   MediaType,
@@ -115,7 +115,7 @@ export async function fetchAndCacheTitle(
   );
   await upsertTitle(title);
   await replaceWatchProviders(title.id, region, full.watchProviders);
-  await refreshSearchIndex();
+  upsertSearchIndex({ ...title, castNames: title.cast });
   return title.id;
 }
 
@@ -169,7 +169,7 @@ export async function refreshPlatformRanking(
     ids.push(title.id);
   }
   await replacePlatformRanking(platform.id, region, RANKING_CATEGORY, ids);
-  await refreshSearchIndex();
+  refreshSearchIndex().catch(() => {});
   return getPlatformRanking(platform.id, region, RANKING_CATEGORY);
 }
 
@@ -195,6 +195,23 @@ export async function cacheListTitle(
   return title.id;
 }
 
-export async function refreshSearchIndex(): Promise<void> {
-  buildSearchIndex(await getAllCachedTitles());
+// Callers fire this in bursts (one per platform ranking); coalesce them
+// into one rebuild that runs once the burst is over.
+let rebuild: Promise<void> | null = null;
+let again = false;
+
+export function refreshSearchIndex(): Promise<void> {
+  if (rebuild) {
+    again = true;
+    return rebuild;
+  }
+  rebuild = (async () => {
+    do {
+      again = false;
+      buildSearchIndex(await getSearchableTitles());
+    } while (again);
+  })().finally(() => {
+    rebuild = null;
+  });
+  return rebuild;
 }

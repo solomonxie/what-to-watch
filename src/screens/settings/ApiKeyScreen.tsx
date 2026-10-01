@@ -67,7 +67,7 @@ export function ApiKeyScreen({ route, navigation }: Props) {
     try {
       await verifyApiKey(providerId, trimmed);
       await saveApiKey(providerId, trimmed);
-      refreshSearchIndex();
+      refreshSearchIndex().catch(() => {});
       navigation.goBack();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

@@ -102,6 +102,25 @@ export async function getAllCachedTitles() {
   return db.select().from(cachedTitles);
 }
 
+/** Only what search and Spotlight need: no overview, the bulk of a row. */
+export async function getSearchableTitles() {
+  await ensureMigrated();
+  const t = cachedTitles;
+  return db
+    .select({
+      id: t.id,
+      title: t.title,
+      originalTitle: t.originalTitle,
+      genres: t.genres,
+      castNames: t.castNames,
+      posterPath: t.posterPath,
+      releaseDate: t.releaseDate,
+      mediaType: t.mediaType,
+      primaryRatingScore: t.primaryRatingScore,
+    })
+    .from(t);
+}
+
 export async function getRatingsForTitle(titleId: string) {
   await ensureMigrated();
   const rows = await db
