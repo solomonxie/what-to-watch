@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { Alert, ScrollView, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { getApiKey } from '../../secureStorage/apiKeyStore';
@@ -12,12 +12,17 @@ import { ICloudRow } from './ICloudRow';
 import { CsvImportRow } from './CsvImportRow';
 import { CSV_COLUMNS } from '../../libraryImport/formats';
 import { useImportExport } from './useImportExport';
+import { isDemo, useDataStore } from '../../demo/demoMode';
+import { resetDemoData, switchDataStore } from '../../demo/dataStore';
 import type { SettingsStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsHome'>;
 
 const BACKUP_MORE =
   'iCloud Drive keeps a copy for each of the last 30 days, then one a month for a year. It survives deleting the app, and a reinstall restores the newest copy that has your marks. A smaller backup never replaces a fuller one from the same day. This iPhone also keeps a copy after every change for 7 days, for undoing mistakes. API keys never leave this device.';
+
+const DEMO_FOOTER =
+  'A sample library for trying features and taking screenshots. It lives in its own database: nothing done in demo mode touches your data or backups.';
 
 const CSV_MORE =
   'Douban has no export, so its row takes a CSV made by scripts/douban-export.py in the app repo — or any CSV with a header row and these columns, in any order, only title required:\n' +
@@ -30,6 +35,26 @@ export function SettingsScreen({ navigation }: Props) {
   const [keys, setKeys] = useState({ tmdb: false, omdb: false });
   const { exportCopy, importFile, busy } = useImportExport();
   const { prefs, load: loadPrefs } = usePrefsStore();
+  useDataStore(s => s.generation);
+  const demo = isDemo();
+  const [switching, setSwitching] = useState(false);
+
+  const swap = (work: () => Promise<void>) => {
+    setSwitching(true);
+    work()
+      .catch(e => Alert.alert("Couldn't switch data", String(e)))
+      .finally(() => setSwitching(false));
+  };
+  const setDemo = (on: boolean) => swap(() => switchDataStore(on));
+  const confirmReset = () =>
+    Alert.alert('Reset demo data?', 'Undoes every change made in demo mode.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Reset',
+        style: 'destructive',
+        onPress: () => swap(resetDemoData),
+      },
+    ]);
 
   useFocusEffect(
     useCallback(() => {
@@ -122,12 +147,26 @@ export function SettingsScreen({ navigation }: Props) {
         footer="Your ratings, reviews, notes and watch history."
         more={BACKUP_MORE}
       >
-        <ICloudRow />
+        {demo ? null : <ICloudRow />}
         <Row label="Export a copy…" onPress={busy ? undefined : exportCopy} />
         <Row
           label="Import from file…"
           onPress={busy ? undefined : importFile}
         />
+      </GroupedSection>
+
+      <GroupedSection header="Demo" footer={DEMO_FOOTER}>
+        <Row
+          label="Demo mode"
+          toggle={{ value: demo, onChange: setDemo, disabled: switching }}
+        />
+        {demo ? (
+          <Row
+            label="Reset demo data"
+            destructive
+            onPress={switching ? undefined : confirmReset}
+          />
+        ) : null}
       </GroupedSection>
     </ScrollView>
   );

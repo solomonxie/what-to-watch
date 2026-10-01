@@ -2,6 +2,7 @@ import { open, type DB } from '@op-engineering/op-sqlite';
 import { drizzle, type OPSQLiteDatabase } from 'drizzle-orm/op-sqlite';
 import * as schema from './schema';
 import { runMigrations } from './migrations';
+import { isDemo } from '../demo/demoMode';
 
 type Schema = typeof schema;
 
@@ -14,9 +15,21 @@ let ormInstance: OPSQLiteDatabase<Schema> | null = null;
 // evaluation/app startup.
 export function getRawDb(): DB {
   if (!rawDbInstance) {
-    rawDbInstance = open({ name: 'whattowatch.db' });
+    // Demo mode gets its own file; the real one is never opened meanwhile.
+    rawDbInstance = open({
+      name: isDemo() ? 'whattowatch-demo.db' : 'whattowatch.db',
+    });
   }
   return rawDbInstance;
+}
+
+/** Drops the connection, so the next query opens the current mode's file. */
+export function closeDatabase(options: { deleteFile?: boolean } = {}): void {
+  if (options.deleteFile) getRawDb().delete();
+  else rawDbInstance?.close();
+  rawDbInstance = null;
+  ormInstance = null;
+  migration = null;
 }
 
 type Params = Parameters<DB['execute']>[1];

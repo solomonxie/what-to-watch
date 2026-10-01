@@ -15,6 +15,7 @@ Bare React Native (TypeScript), React Navigation, Zustand, op-sqlite + Drizzle O
 - `src/catalog` — fetch/cache titles, platform rankings, online search
 - `src/backup` — local + iCloud Drive backup, import/export
 - `src/native` — iCloud Drive bridge (iOS only)
+- `src/demo`, `demo/` — demo mode and its preset library
 - `deprecated/` — archived earlier backend scaffold, unused
 
 ## Local dev
@@ -36,9 +37,9 @@ xcodebuild -workspace WhatToWatch.xcworkspace -scheme WhatToWatch -configuration
 xcrun devicectl device install app --device <UDID> build/dd/Build/Products/Release-iphoneos/WhatToWatch.app
 ```
 
-App Store: `make release` archives and uploads; every listing field, the privacy policy and the checklist are in `docs/release/`. `make help` lists the rest.
 Store region: `make ios STORE=cn` / `make release STORE=cn` (default `us` = Canada/US). Written to gitignored `ios/Install.xcconfig` → Info.plist `AppStoreRegion` → `storeRegion()` (`src/config/storeRegion.ts`). Plain `xcodebuild`/Xcode builds use the last one written, else `us`.
 
+App Store: `make release` archives and uploads; every listing field, the privacy policy and the checklist are in `docs/release/`. `make help` lists the rest.
 
 Import history: Settings → Import CSV… reads any CSV with a `title` column (optional `year, imdb, tmdb, type, status, rating (0.5–5), review, date`); IMDb and Letterboxd exports work as-is. A row with `tmdb` + `type` matches exactly.
 
@@ -64,6 +65,13 @@ npx jest __tests__/liveApis.test.ts
 Design + plan: `docs/design/mvp/`.
 
 Add a TMDB and/or OMDb API key in the app's Settings section to enable metadata, ratings, and platform rankings.
+
+## Demo
+
+- Settings → Demo mode: own database and API-key slot; backups and iCloud stay off; switching back shows the real data untouched. "Reset demo data" starts over.
+- Preset library: `demo/library.json` (backup format, dates shifted to today on first launch). Regenerate: `node scripts/make-demo-data.js`.
+- Keys: `.env.demo` (copy `.env.demo.example`), baked in by `make ios` only (never `make release`); used only in demo mode. Order: key set in demo mode → `.env.demo` → real key (read only).
+- Screenshots in demo mode: `DEMO=1 scripts/screenshot.sh discover /tmp/out.png` (`-demoMode 1` launch argument, that run only).
 
 ## Screenshots
 
