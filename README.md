@@ -14,7 +14,7 @@ Bare React Native (TypeScript), React Navigation, Zustand, op-sqlite + Drizzle O
 - `src/screens`, `src/components` — Home (sections + persistent search + settings) and Show Detail
 - `src/catalog` — fetch/cache titles, platform rankings, online search
 - `src/backup` — local + iCloud Drive backup, import/export
-- `src/native` — iCloud Drive bridge (iOS only)
+- `src/native` — iCloud Drive and Spotlight bridges (iOS only)
 - `src/demo`, `demo/` — demo mode and its preset library
 - `deprecated/` — archived earlier backend scaffold, unused
 
@@ -68,10 +68,14 @@ Add a TMDB and/or OMDb API key in the app's Settings section to enable metadata,
 
 ## Demo
 
-- Settings → Demo mode: own database and API-key slot; backups and iCloud stay off; switching back shows the real data untouched. "Reset demo data" starts over.
+- Settings → Demo mode: own database and API-key slot; backups, iCloud and Spotlight stay off; switching back shows the real data untouched. "Reset demo data" starts over.
 - Preset library: `demo/library.json` (backup format, dates shifted to today on first launch). Regenerate: `node scripts/make-demo-data.js`.
 - Keys: `.env.demo` (copy `.env.demo.example`), baked in by `make ios` only (never `make release`); used only in demo mode. Order: key set in demo mode → `.env.demo` → real key (read only).
 - Screenshots in demo mode: `DEMO=1 scripts/screenshot.sh discover /tmp/out.png` (`-demoMode 1` launch argument, that run only).
+
+## Spotlight
+
+Every cached title (library, browsed, rankings, picks) is indexed in iOS Spotlight via `CoreSpotlight`; tapping a result opens its page (`whattowatch://title/<id>`). Synced in the background as titles or the library change — only changed items are sent, everything again weekly.
 
 ## Screenshots
 

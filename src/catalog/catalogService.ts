@@ -20,6 +20,7 @@ import {
 } from '../db/repositories/rankingsRepo';
 import { cachedResponse } from '../db/repositories/responseCacheRepo';
 import { buildSearchIndex, upsertSearchIndex } from '../search/titleIndex';
+import { scheduleSpotlightSync } from '../search/spotlight';
 import type { PlatformConfig } from '../config/platforms';
 import type {
   MediaType,
@@ -116,6 +117,7 @@ export async function fetchAndCacheTitle(
   await upsertTitle(title);
   await replaceWatchProviders(title.id, region, full.watchProviders);
   upsertSearchIndex({ ...title, castNames: title.cast });
+  scheduleSpotlightSync();
   return title.id;
 }
 
@@ -210,6 +212,7 @@ export function refreshSearchIndex(): Promise<void> {
       again = false;
       buildSearchIndex(await getSearchableTitles());
     } while (again);
+    scheduleSpotlightSync();
   })().finally(() => {
     rebuild = null;
   });

@@ -59,6 +59,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       defaults.set(Bundle.main.object(forInfoDictionaryKey: plistKey) as? String ?? "", forKey: defaultsKey)
     }
   }
+
+  /// A tapped Spotlight result: open its title like a whattowatch:// link.
+  func application(
+    _ application: UIApplication,
+    continue userActivity: NSUserActivity,
+    restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
+  ) -> Bool {
+    guard let url = SpotlightModule.url(forActivity: userActivity) else { return false }
+    // Cold start: JS isn't listening yet and asks for it once it is.
+    SpotlightModule.pendingURL = url
+    return RCTLinkingManager.application(application, open: url, options: [:])
+  }
 }
 
 class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {

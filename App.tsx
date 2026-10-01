@@ -19,6 +19,7 @@ import {
 } from './src/backup/backupService';
 import { isDemo, useDataStore } from './src/demo/demoMode';
 import { prepareDataStore } from './src/demo/dataStore';
+import { startSpotlightSync } from './src/search/spotlight';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -41,6 +42,7 @@ function App() {
         .catch(() => {})
         .finally(startBackupScheduler);
     }
+    startSpotlightSync();
   }, []);
 
   if (!ready) return null;

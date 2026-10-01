@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5A0F1E0000000000000000A3 /* SpotlightModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A0F1E0000000000000000A1 /* SpotlightModule.swift */; };
+		5A0F1E0000000000000000A4 /* SpotlightModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A0F1E0000000000000000A2 /* SpotlightModule.m */; };
 		08539A0B78B137824F2EF232 /* ICloudSyncModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33D395EEBD68E14EC5E7A64 /* ICloudSyncModule.swift */; };
 		0C80B921A6F3F58F76C31292 /* libPods-WhatToWatch.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-WhatToWatch.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
@@ -17,6 +19,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5A0F1E0000000000000000A1 /* SpotlightModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpotlightModule.swift; sourceTree = "<group>"; };
+		5A0F1E0000000000000000A2 /* SpotlightModule.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = SpotlightModule.m; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* WhatToWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WhatToWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = WhatToWatch/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = WhatToWatch/Info.plist; sourceTree = "<group>"; };
@@ -56,6 +60,7 @@
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 				BDE38CF9C7C88308B0EFF2E7 /* ICloudSync */,
+				5A0F1E0000000000000000A5 /* Spotlight */,
 			);
 			name = WhatToWatch;
 			sourceTree = "<group>";
@@ -109,6 +114,16 @@
 				5709B34CF0A7D63546082F79 /* Pods-WhatToWatch.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		5A0F1E0000000000000000A5 /* Spotlight */ = {
+			isa = PBXGroup;
+			children = (
+				5A0F1E0000000000000000A1 /* SpotlightModule.swift */,
+				5A0F1E0000000000000000A2 /* SpotlightModule.m */,
+			);
+			name = Spotlight;
+			path = WhatToWatch/Spotlight;
 			sourceTree = "<group>";
 		};
 		BDE38CF9C7C88308B0EFF2E7 /* ICloudSync */ = {
@@ -279,6 +294,8 @@
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				08539A0B78B137824F2EF232 /* ICloudSyncModule.swift in Sources */,
 				1A5ADBB8498AE4ACE7E1C620 /* ICloudSyncModule.m in Sources */,
+				5A0F1E0000000000000000A3 /* SpotlightModule.swift in Sources */,
+				5A0F1E0000000000000000A4 /* SpotlightModule.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -8,6 +8,7 @@ import {
 } from '../backup/backupService';
 import { parsePayload } from '../backup/payload';
 import { refreshSearchIndex } from '../catalog/catalogService';
+import { scheduleSpotlightSync, spotlightIdle } from '../search/spotlight';
 import { useSettingsStore } from '../state/settingsStore';
 import { useFilterStore } from '../state/filterStore';
 import { usePrefsStore } from '../prefs/prefsStore';
@@ -50,7 +51,7 @@ export async function prepareDataStore(): Promise<void> {
 }
 
 async function reopen(deleteFile: boolean): Promise<void> {
-  await backupsIdle();
+  await Promise.all([backupsIdle(), spotlightIdle()]);
   closeDatabase({ deleteFile });
   await prepareDataStore();
   useFilterStore.getState().resetFilters();
@@ -67,7 +68,10 @@ export async function switchDataStore(demo: boolean): Promise<void> {
   if (demo === isDemo()) return;
   setDemoSwitch(demo);
   await reopen(false);
-  if (!demo) startBackupScheduler();
+  if (!demo) {
+    startBackupScheduler();
+    scheduleSpotlightSync();
+  }
 }
 
 /** Throws away demo changes: a new demo database with the preset library. */
