@@ -37,6 +37,8 @@ xcrun devicectl device install app --device <UDID> build/dd/Build/Products/Relea
 ```
 
 App Store: `make release` archives and uploads; every listing field, the privacy policy and the checklist are in `docs/release/`. `make help` lists the rest.
+Store region: `make ios STORE=cn` / `make release STORE=cn` (default `us` = Canada/US). Written to gitignored `ios/Install.xcconfig` → Info.plist `AppStoreRegion` → `storeRegion()` (`src/config/storeRegion.ts`). Plain `xcodebuild`/Xcode builds use the last one written, else `us`.
+
 
 Import history: Settings → Import CSV… reads any CSV with a `title` column (optional `year, imdb, tmdb, type, status, rating (0.5–5), review, date`); IMDb and Letterboxd exports work as-is. A row with `tmdb` + `type` matches exactly.
 

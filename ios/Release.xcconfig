@@ -1,2 +1,6 @@
 #include "Pods/Target Support Files/Pods-WhatToWatch/Pods-WhatToWatch.release.xcconfig"
 #include "Signing.xcconfig"
+
+// Defaults; `make ios|release` overrides them in Install.xcconfig (generated, gitignored).
+APP_STORE_REGION = us
+#include? "Install.xcconfig"

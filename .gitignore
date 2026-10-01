@@ -76,7 +76,9 @@ yarn-error.log
 
 # Per-developer signing (team id, bundle id)
 ios/Local.xcconfig
+ios/Install.xcconfig
 
 # Local secrets
 .env
 .env.local
+.env.demo
