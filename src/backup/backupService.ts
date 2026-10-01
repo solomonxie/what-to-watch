@@ -32,6 +32,7 @@ import {
   type ICloudBackupFile,
 } from '../native/ICloudSyncModule';
 import { markDataChanged, onDataChanged } from './changeFeed';
+import { isDemo } from '../demo/demoMode';
 import {
   ICLOUD_LOG,
   LOCAL_LOG,
@@ -246,8 +247,13 @@ function serial<T>(work: () => Promise<T>): Promise<T> {
   return run;
 }
 
+/** Settles once queued backups have; a data store swap waits on it. */
+export const backupsIdle = () => queue;
+
 export function backupNow(options: { forceICloud?: boolean } = {}) {
   return serial(async () => {
+    // Demo data never reaches backups, local or iCloud.
+    if (isDemo()) return;
     const payload = await buildPayload();
     await recordChanges(payload).catch(() => {});
     await backupLocal(payload).catch(() => {});
@@ -265,6 +271,7 @@ export async function readICloudBackup(name: string): Promise<BackupPayload> {
 }
 
 export async function deleteICloudBackup(name: string): Promise<void> {
+  if (isDemo()) throw new Error('Backups are off in demo mode');
   await ICloudDrive.deleteBackup(name);
   // The next run must not skip rewriting a deleted day.
   await setKv(KV.hash('icloud'), '');
@@ -289,6 +296,7 @@ export function startBackupScheduler(): void {
   let lastICloudAt = 0;
   onDataChanged(() => {
     serial(async () => {
+      if (isDemo()) return;
       const payload = await buildPayload();
       await recordChanges(payload).catch(() => {});
       await backupLocal(payload).catch(() => {});
@@ -311,7 +319,7 @@ export function startBackupScheduler(): void {
 
 /** Backups stay off-phone by default: switch iCloud on once, where it can work. */
 async function defaultICloudOn() {
-  if (await getKv(KV.iCloudDefaulted)) return;
+  if (isDemo() || (await getKv(KV.iCloudDefaulted))) return;
   if ((await ICloudDrive.status()) !== 'available') return;
   await setKv(KV.iCloudDefaulted, '1');
   const current = await getSettings();
@@ -342,6 +350,7 @@ export async function latestUsefulICloudBackup(): Promise<{
  * the newest useful one, silently. Runs at every launch until the app has data.
  */
 export async function restoreOnFreshInstall(): Promise<boolean> {
+  if (isDemo()) return false;
   if (userRecordCount(await buildPayload()) > 0) return false;
   const found = await latestUsefulICloudBackup();
   if (!found) return false;
@@ -379,6 +388,7 @@ export async function pickBackupFile(): Promise<BackupPayload> {
 
 /** Tier-1 copy taken before any operation that rewrites many rows. */
 export async function snapshotBeforeImport(): Promise<void> {
+  if (isDemo()) return;
   await writeLocal(beforeImportFileName(new Date()), await buildPayload());
 }
 
@@ -394,7 +404,7 @@ export async function importPayload(payload: BackupPayload) {
   };
 }
 
-async function replaceAllData(payload: BackupPayload): Promise<void> {
+export async function replaceAllData(payload: BackupPayload): Promise<void> {
   await withTransaction(async () => {
     const tx = db;
     await tx.delete(userNotes);

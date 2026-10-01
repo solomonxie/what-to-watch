@@ -1,0 +1,2996 @@
+{
+ "version": 2,
+ "exportedAt": "2026-10-01T12:00:00.000Z",
+ "notes": [
+  {
+   "titleId": "movie:976893",
+   "body": "Recommended by Mia — watch on a slow Sunday.",
+   "createdAt": 1790107200000,
+   "updatedAt": 1790107200000
+  },
+  {
+   "titleId": "tv:95396",
+   "body": "Rewatch S1 finale before the new season.",
+   "createdAt": 1790798400000,
+   "updatedAt": 1790798400000
+  },
+  {
+   "titleId": "tv:126308",
+   "body": "Subtitles on, not dubbed.",
+   "createdAt": 1790539200000,
+   "updatedAt": 1790539200000
+  }
+ ],
+ "ratings": [
+  {
+   "titleId": "movie:693134",
+   "rating": 9,
+   "reviewText": "Huge, strange and gorgeous. The arena scene alone.",
+   "createdAt": 1789858800000,
+   "updatedAt": 1789858800000
+  },
+  {
+   "titleId": "movie:666277",
+   "rating": 10,
+   "reviewText": "Quiet and devastating. Stayed with me for days.",
+   "createdAt": 1789167600000,
+   "updatedAt": 1789167600000
+  },
+  {
+   "titleId": "movie:872585",
+   "rating": 8,
+   "reviewText": null,
+   "createdAt": 1787958000000,
+   "updatedAt": 1787958000000
+  },
+  {
+   "titleId": "movie:545611",
+   "rating": 9,
+   "reviewText": "Hot dog fingers made me cry. Somehow.",
+   "createdAt": 1787353200000,
+   "updatedAt": 1787353200000
+  },
+  {
+   "titleId": "movie:496243",
+   "rating": 10,
+   "reviewText": null,
+   "createdAt": 1786143600000,
+   "updatedAt": 1786143600000
+  },
+  {
+   "titleId": "movie:569094",
+   "rating": 9,
+   "reviewText": null,
+   "createdAt": 1785538800000,
+   "updatedAt": 1785538800000
+  },
+  {
+   "titleId": "movie:840430",
+   "rating": 8,
+   "reviewText": "A new Christmas rewatch.",
+   "createdAt": 1784847600000,
+   "updatedAt": 1784847600000
+  },
+  {
+   "titleId": "movie:329865",
+   "rating": 9,
+   "reviewText": null,
+   "createdAt": 1783638000000,
+   "updatedAt": 1783638000000
+  },
+  {
+   "titleId": "movie:546554",
+   "rating": 8,
+   "reviewText": null,
+   "createdAt": 1783119600000,
+   "updatedAt": 1783119600000
+  },
+  {
+   "titleId": "movie:361743",
+   "rating": 7,
+   "reviewText": null,
+   "createdAt": 1782169200000,
+   "updatedAt": 1782169200000
+  },
+  {
+   "titleId": "movie:915935",
+   "rating": 8,
+   "reviewText": null,
+   "createdAt": 1780959600000,
+   "updatedAt": 1780959600000
+  },
+  {
+   "titleId": "movie:705996",
+   "rating": 8,
+   "reviewText": null,
+   "createdAt": 1779836400000,
+   "updatedAt": 1779836400000
+  },
+  {
+   "titleId": "movie:414906",
+   "rating": 6,
+   "reviewText": "Looks great, an hour too long.",
+   "createdAt": 1778799600000,
+   "updatedAt": 1778799600000
+  },
+  {
+   "titleId": "movie:346698",
+   "rating": 7,
+   "reviewText": null,
+   "createdAt": 1777935600000,
+   "updatedAt": 1777935600000
+  },
+  {
+   "titleId": "tv:95396",
+   "rating": 10,
+   "reviewText": null,
+   "createdAt": 1790809200000,
+   "updatedAt": 1790809200000
+  },
+  {
+   "titleId": "tv:136315",
+   "rating": 9,
+   "reviewText": null,
+   "createdAt": 1790722800000,
+   "updatedAt": 1790722800000
+  },
+  {
+   "titleId": "tv:95480",
+   "rating": 9,
+   "reviewText": "Gary Oldman having the time of his life.",
+   "createdAt": 1790204400000,
+   "updatedAt": 1790204400000
+  },
+  {
+   "titleId": "tv:1396",
+   "rating": 10,
+   "reviewText": null,
+   "createdAt": 1773615600000,
+   "updatedAt": 1773615600000
+  },
+  {
+   "titleId": "tv:87108",
+   "rating": 10,
+   "reviewText": null,
+   "createdAt": 1776207600000,
+   "updatedAt": 1776207600000
+  },
+  {
+   "titleId": "tv:67070",
+   "rating": 9,
+   "reviewText": null,
+   "createdAt": 1777071600000,
+   "updatedAt": 1777071600000
+  },
+  {
+   "titleId": "tv:76331",
+   "rating": 9,
+   "reviewText": null,
+   "createdAt": 1780527600000,
+   "updatedAt": 1780527600000
+  },
+  {
+   "titleId": "tv:70523",
+   "rating": 8,
+   "reviewText": "Keep a notebook for the family trees.",
+   "createdAt": 1782687600000,
+   "updatedAt": 1782687600000
+  },
+  {
+   "titleId": "tv:114922",
+   "rating": 4,
+   "reviewText": null,
+   "createdAt": 1784415600000,
+   "updatedAt": 1784415600000
+  }
+ ],
+ "watchHistory": [
+  {
+   "titleId": "movie:693134",
+   "status": "completed",
+   "watchedAt": 1789851600000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "movie:666277",
+   "status": "completed",
+   "watchedAt": 1789160400000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "movie:872585",
+   "status": "completed",
+   "watchedAt": 1787950800000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "movie:545611",
+   "status": "completed",
+   "watchedAt": 1787346000000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "movie:496243",
+   "status": "completed",
+   "watchedAt": 1786136400000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "movie:569094",
+   "status": "completed",
+   "watchedAt": 1785531600000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "movie:840430",
+   "status": "completed",
+   "watchedAt": 1784840400000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "movie:329865",
+   "status": "completed",
+   "watchedAt": 1783630800000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "movie:546554",
+   "status": "completed",
+   "watchedAt": 1783112400000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "movie:361743",
+   "status": "completed",
+   "watchedAt": 1782162000000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "movie:915935",
+   "status": "completed",
+   "watchedAt": 1780952400000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "movie:705996",
+   "status": "completed",
+   "watchedAt": 1779829200000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "movie:414906",
+   "status": "completed",
+   "watchedAt": 1778792400000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "movie:346698",
+   "status": "completed",
+   "watchedAt": 1777928400000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "movie:792307",
+   "status": "toWatch",
+   "watchedAt": 1790629200000,
+   "rewatchCount": 0
+  },
+  {
+   "titleId": "movie:974576",
+   "status": "toWatch",
+   "watchedAt": 1790370000000,
+   "rewatchCount": 0
+  },
+  {
+   "titleId": "movie:976893",
+   "status": "toWatch",
+   "watchedAt": 1790110800000,
+   "rewatchCount": 0
+  },
+  {
+   "titleId": "movie:467244",
+   "status": "toWatch",
+   "watchedAt": 1789592400000,
+   "rewatchCount": 0
+  },
+  {
+   "titleId": "movie:1064213",
+   "status": "toWatch",
+   "watchedAt": 1789333200000,
+   "rewatchCount": 0
+  },
+  {
+   "titleId": "movie:929590",
+   "status": "toWatch",
+   "watchedAt": 1788642000000,
+   "rewatchCount": 0
+  },
+  {
+   "titleId": "tv:95396",
+   "status": "watching",
+   "watchedAt": 1790802000000,
+   "rewatchCount": 0
+  },
+  {
+   "titleId": "tv:136315",
+   "status": "watching",
+   "watchedAt": 1790715600000,
+   "rewatchCount": 0
+  },
+  {
+   "titleId": "tv:126308",
+   "status": "watching",
+   "watchedAt": 1790542800000,
+   "rewatchCount": 0
+  },
+  {
+   "titleId": "tv:95480",
+   "status": "watching",
+   "watchedAt": 1790197200000,
+   "rewatchCount": 0
+  },
+  {
+   "titleId": "tv:83867",
+   "status": "watching",
+   "watchedAt": 1788987600000,
+   "rewatchCount": 0
+  },
+  {
+   "titleId": "tv:1396",
+   "status": "completed",
+   "watchedAt": 1773608400000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "tv:87108",
+   "status": "completed",
+   "watchedAt": 1776200400000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "tv:67070",
+   "status": "completed",
+   "watchedAt": 1777064400000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "tv:76331",
+   "status": "completed",
+   "watchedAt": 1780520400000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "tv:70523",
+   "status": "completed",
+   "watchedAt": 1782680400000,
+   "rewatchCount": 1
+  },
+  {
+   "titleId": "tv:114922",
+   "status": "dropped",
+   "watchedAt": 1784408400000,
+   "rewatchCount": 0
+  },
+  {
+   "titleId": "tv:110382",
+   "status": "toWatch",
+   "watchedAt": 1790456400000,
+   "rewatchCount": 0
+  },
+  {
+   "titleId": "tv:111803",
+   "status": "toWatch",
+   "watchedAt": 1789938000000,
+   "rewatchCount": 0
+  },
+  {
+   "titleId": "tv:94028",
+   "status": "toWatch",
+   "watchedAt": 1788296400000,
+   "rewatchCount": 0
+  }
+ ],
+ "episodes": [
+  {
+   "titleId": "tv:95396",
+   "season": 1,
+   "episode": 1,
+   "watchedAt": 1788728400000
+  },
+  {
+   "titleId": "tv:95396",
+   "season": 1,
+   "episode": 2,
+   "watchedAt": 1788901200000
+  },
+  {
+   "titleId": "tv:95396",
+   "season": 1,
+   "episode": 3,
+   "watchedAt": 1789074000000
+  },
+  {
+   "titleId": "tv:95396",
+   "season": 1,
+   "episode": 4,
+   "watchedAt": 1789246800000
+  },
+  {
+   "titleId": "tv:95396",
+   "season": 1,
+   "episode": 5,
+   "watchedAt": 1789419600000
+  },
+  {
+   "titleId": "tv:95396",
+   "season": 1,
+   "episode": 6,
+   "watchedAt": 1789592400000
+  },
+  {
+   "titleId": "tv:95396",
+   "season": 1,
+   "episode": 7,
+   "watchedAt": 1789765200000
+  },
+  {
+   "titleId": "tv:95396",
+   "season": 1,
+   "episode": 8,
+   "watchedAt": 1789938000000
+  },
+  {
+   "titleId": "tv:95396",
+   "season": 1,
+   "episode": 9,
+   "watchedAt": 1790110800000
+  },
+  {
+   "titleId": "tv:95396",
+   "season": 2,
+   "episode": 1,
+   "watchedAt": 1790283600000
+  },
+  {
+   "titleId": "tv:95396",
+   "season": 2,
+   "episode": 2,
+   "watchedAt": 1790456400000
+  },
+  {
+   "titleId": "tv:95396",
+   "season": 2,
+   "episode": 3,
+   "watchedAt": 1790629200000
+  },
+  {
+   "titleId": "tv:95396",
+   "season": 2,
+   "episode": 4,
+   "watchedAt": 1790802000000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 1,
+   "episode": 1,
+   "watchedAt": 1786050000000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 1,
+   "episode": 2,
+   "watchedAt": 1786222800000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 1,
+   "episode": 3,
+   "watchedAt": 1786395600000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 1,
+   "episode": 4,
+   "watchedAt": 1786568400000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 1,
+   "episode": 5,
+   "watchedAt": 1786741200000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 1,
+   "episode": 6,
+   "watchedAt": 1786914000000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 1,
+   "episode": 7,
+   "watchedAt": 1787086800000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 1,
+   "episode": 8,
+   "watchedAt": 1787259600000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 2,
+   "episode": 1,
+   "watchedAt": 1787432400000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 2,
+   "episode": 2,
+   "watchedAt": 1787605200000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 2,
+   "episode": 3,
+   "watchedAt": 1787778000000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 2,
+   "episode": 4,
+   "watchedAt": 1787950800000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 2,
+   "episode": 5,
+   "watchedAt": 1788123600000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 2,
+   "episode": 6,
+   "watchedAt": 1788296400000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 2,
+   "episode": 7,
+   "watchedAt": 1788469200000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 2,
+   "episode": 8,
+   "watchedAt": 1788642000000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 2,
+   "episode": 9,
+   "watchedAt": 1788814800000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 2,
+   "episode": 10,
+   "watchedAt": 1788987600000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 3,
+   "episode": 1,
+   "watchedAt": 1789160400000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 3,
+   "episode": 2,
+   "watchedAt": 1789333200000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 3,
+   "episode": 3,
+   "watchedAt": 1789506000000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 3,
+   "episode": 4,
+   "watchedAt": 1789678800000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 3,
+   "episode": 5,
+   "watchedAt": 1789851600000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 3,
+   "episode": 6,
+   "watchedAt": 1790024400000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 3,
+   "episode": 7,
+   "watchedAt": 1790197200000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 3,
+   "episode": 8,
+   "watchedAt": 1790370000000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 3,
+   "episode": 9,
+   "watchedAt": 1790542800000
+  },
+  {
+   "titleId": "tv:136315",
+   "season": 3,
+   "episode": 10,
+   "watchedAt": 1790715600000
+  },
+  {
+   "titleId": "tv:126308",
+   "season": 1,
+   "episode": 1,
+   "watchedAt": 1789851600000
+  },
+  {
+   "titleId": "tv:126308",
+   "season": 1,
+   "episode": 2,
+   "watchedAt": 1790024400000
+  },
+  {
+   "titleId": "tv:126308",
+   "season": 1,
+   "episode": 3,
+   "watchedAt": 1790197200000
+  },
+  {
+   "titleId": "tv:126308",
+   "season": 1,
+   "episode": 4,
+   "watchedAt": 1790370000000
+  },
+  {
+   "titleId": "tv:126308",
+   "season": 1,
+   "episode": 5,
+   "watchedAt": 1790542800000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 1,
+   "episode": 1,
+   "watchedAt": 1786741200000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 1,
+   "episode": 2,
+   "watchedAt": 1786914000000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 1,
+   "episode": 3,
+   "watchedAt": 1787086800000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 1,
+   "episode": 4,
+   "watchedAt": 1787259600000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 1,
+   "episode": 5,
+   "watchedAt": 1787432400000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 1,
+   "episode": 6,
+   "watchedAt": 1787605200000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 2,
+   "episode": 1,
+   "watchedAt": 1787778000000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 2,
+   "episode": 2,
+   "watchedAt": 1787950800000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 2,
+   "episode": 3,
+   "watchedAt": 1788123600000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 2,
+   "episode": 4,
+   "watchedAt": 1788296400000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 2,
+   "episode": 5,
+   "watchedAt": 1788469200000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 2,
+   "episode": 6,
+   "watchedAt": 1788642000000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 3,
+   "episode": 1,
+   "watchedAt": 1788814800000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 3,
+   "episode": 2,
+   "watchedAt": 1788987600000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 3,
+   "episode": 3,
+   "watchedAt": 1789160400000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 3,
+   "episode": 4,
+   "watchedAt": 1789333200000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 3,
+   "episode": 5,
+   "watchedAt": 1789506000000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 3,
+   "episode": 6,
+   "watchedAt": 1789678800000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 4,
+   "episode": 1,
+   "watchedAt": 1789851600000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 4,
+   "episode": 2,
+   "watchedAt": 1790024400000
+  },
+  {
+   "titleId": "tv:95480",
+   "season": 4,
+   "episode": 3,
+   "watchedAt": 1790197200000
+  },
+  {
+   "titleId": "tv:83867",
+   "season": 1,
+   "episode": 1,
+   "watchedAt": 1787432400000
+  },
+  {
+   "titleId": "tv:83867",
+   "season": 1,
+   "episode": 2,
+   "watchedAt": 1787605200000
+  },
+  {
+   "titleId": "tv:83867",
+   "season": 1,
+   "episode": 3,
+   "watchedAt": 1787778000000
+  },
+  {
+   "titleId": "tv:83867",
+   "season": 1,
+   "episode": 4,
+   "watchedAt": 1787950800000
+  },
+  {
+   "titleId": "tv:83867",
+   "season": 1,
+   "episode": 5,
+   "watchedAt": 1788123600000
+  },
+  {
+   "titleId": "tv:83867",
+   "season": 1,
+   "episode": 6,
+   "watchedAt": 1788296400000
+  },
+  {
+   "titleId": "tv:83867",
+   "season": 1,
+   "episode": 7,
+   "watchedAt": 1788469200000
+  },
+  {
+   "titleId": "tv:83867",
+   "season": 1,
+   "episode": 8,
+   "watchedAt": 1788642000000
+  },
+  {
+   "titleId": "tv:83867",
+   "season": 1,
+   "episode": 9,
+   "watchedAt": 1788814800000
+  },
+  {
+   "titleId": "tv:83867",
+   "season": 1,
+   "episode": 10,
+   "watchedAt": 1788987600000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 1,
+   "episode": 1,
+   "watchedAt": 1763067600000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 1,
+   "episode": 2,
+   "watchedAt": 1763240400000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 1,
+   "episode": 3,
+   "watchedAt": 1763413200000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 1,
+   "episode": 4,
+   "watchedAt": 1763586000000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 1,
+   "episode": 5,
+   "watchedAt": 1763758800000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 1,
+   "episode": 6,
+   "watchedAt": 1763931600000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 1,
+   "episode": 7,
+   "watchedAt": 1764104400000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 2,
+   "episode": 1,
+   "watchedAt": 1764277200000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 2,
+   "episode": 2,
+   "watchedAt": 1764450000000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 2,
+   "episode": 3,
+   "watchedAt": 1764622800000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 2,
+   "episode": 4,
+   "watchedAt": 1764795600000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 2,
+   "episode": 5,
+   "watchedAt": 1764968400000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 2,
+   "episode": 6,
+   "watchedAt": 1765141200000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 2,
+   "episode": 7,
+   "watchedAt": 1765314000000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 2,
+   "episode": 8,
+   "watchedAt": 1765486800000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 2,
+   "episode": 9,
+   "watchedAt": 1765659600000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 2,
+   "episode": 10,
+   "watchedAt": 1765832400000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 2,
+   "episode": 11,
+   "watchedAt": 1766005200000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 2,
+   "episode": 12,
+   "watchedAt": 1766178000000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 2,
+   "episode": 13,
+   "watchedAt": 1766350800000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 3,
+   "episode": 1,
+   "watchedAt": 1766523600000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 3,
+   "episode": 2,
+   "watchedAt": 1766696400000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 3,
+   "episode": 3,
+   "watchedAt": 1766869200000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 3,
+   "episode": 4,
+   "watchedAt": 1767042000000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 3,
+   "episode": 5,
+   "watchedAt": 1767214800000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 3,
+   "episode": 6,
+   "watchedAt": 1767387600000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 3,
+   "episode": 7,
+   "watchedAt": 1767560400000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 3,
+   "episode": 8,
+   "watchedAt": 1767733200000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 3,
+   "episode": 9,
+   "watchedAt": 1767906000000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 3,
+   "episode": 10,
+   "watchedAt": 1768078800000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 3,
+   "episode": 11,
+   "watchedAt": 1768251600000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 3,
+   "episode": 12,
+   "watchedAt": 1768424400000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 3,
+   "episode": 13,
+   "watchedAt": 1768597200000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 4,
+   "episode": 1,
+   "watchedAt": 1768770000000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 4,
+   "episode": 2,
+   "watchedAt": 1768942800000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 4,
+   "episode": 3,
+   "watchedAt": 1769115600000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 4,
+   "episode": 4,
+   "watchedAt": 1769288400000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 4,
+   "episode": 5,
+   "watchedAt": 1769461200000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 4,
+   "episode": 6,
+   "watchedAt": 1769634000000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 4,
+   "episode": 7,
+   "watchedAt": 1769806800000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 4,
+   "episode": 8,
+   "watchedAt": 1769979600000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 4,
+   "episode": 9,
+   "watchedAt": 1770152400000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 4,
+   "episode": 10,
+   "watchedAt": 1770325200000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 4,
+   "episode": 11,
+   "watchedAt": 1770498000000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 4,
+   "episode": 12,
+   "watchedAt": 1770670800000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 4,
+   "episode": 13,
+   "watchedAt": 1770843600000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 5,
+   "episode": 1,
+   "watchedAt": 1771016400000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 5,
+   "episode": 2,
+   "watchedAt": 1771189200000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 5,
+   "episode": 3,
+   "watchedAt": 1771362000000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 5,
+   "episode": 4,
+   "watchedAt": 1771534800000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 5,
+   "episode": 5,
+   "watchedAt": 1771707600000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 5,
+   "episode": 6,
+   "watchedAt": 1771880400000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 5,
+   "episode": 7,
+   "watchedAt": 1772053200000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 5,
+   "episode": 8,
+   "watchedAt": 1772226000000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 5,
+   "episode": 9,
+   "watchedAt": 1772398800000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 5,
+   "episode": 10,
+   "watchedAt": 1772571600000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 5,
+   "episode": 11,
+   "watchedAt": 1772744400000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 5,
+   "episode": 12,
+   "watchedAt": 1772917200000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 5,
+   "episode": 13,
+   "watchedAt": 1773090000000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 5,
+   "episode": 14,
+   "watchedAt": 1773262800000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 5,
+   "episode": 15,
+   "watchedAt": 1773435600000
+  },
+  {
+   "titleId": "tv:1396",
+   "season": 5,
+   "episode": 16,
+   "watchedAt": 1773608400000
+  },
+  {
+   "titleId": "tv:87108",
+   "season": 1,
+   "episode": 1,
+   "watchedAt": 1775509200000
+  },
+  {
+   "titleId": "tv:87108",
+   "season": 1,
+   "episode": 2,
+   "watchedAt": 1775682000000
+  },
+  {
+   "titleId": "tv:87108",
+   "season": 1,
+   "episode": 3,
+   "watchedAt": 1775854800000
+  },
+  {
+   "titleId": "tv:87108",
+   "season": 1,
+   "episode": 4,
+   "watchedAt": 1776027600000
+  },
+  {
+   "titleId": "tv:87108",
+   "season": 1,
+   "episode": 5,
+   "watchedAt": 1776200400000
+  },
+  {
+   "titleId": "tv:67070",
+   "season": 1,
+   "episode": 1,
+   "watchedAt": 1775163600000
+  },
+  {
+   "titleId": "tv:67070",
+   "season": 1,
+   "episode": 2,
+   "watchedAt": 1775336400000
+  },
+  {
+   "titleId": "tv:67070",
+   "season": 1,
+   "episode": 3,
+   "watchedAt": 1775509200000
+  },
+  {
+   "titleId": "tv:67070",
+   "season": 1,
+   "episode": 4,
+   "watchedAt": 1775682000000
+  },
+  {
+   "titleId": "tv:67070",
+   "season": 1,
+   "episode": 5,
+   "watchedAt": 1775854800000
+  },
+  {
+   "titleId": "tv:67070",
+   "season": 1,
+   "episode": 6,
+   "watchedAt": 1776027600000
+  },
+  {
+   "titleId": "tv:67070",
+   "season": 2,
+   "episode": 1,
+   "watchedAt": 1776200400000
+  },
+  {
+   "titleId": "tv:67070",
+   "season": 2,
+   "episode": 2,
+   "watchedAt": 1776373200000
+  },
+  {
+   "titleId": "tv:67070",
+   "season": 2,
+   "episode": 3,
+   "watchedAt": 1776546000000
+  },
+  {
+   "titleId": "tv:67070",
+   "season": 2,
+   "episode": 4,
+   "watchedAt": 1776718800000
+  },
+  {
+   "titleId": "tv:67070",
+   "season": 2,
+   "episode": 5,
+   "watchedAt": 1776891600000
+  },
+  {
+   "titleId": "tv:67070",
+   "season": 2,
+   "episode": 6,
+   "watchedAt": 1777064400000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 1,
+   "episode": 1,
+   "watchedAt": 1773954000000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 1,
+   "episode": 2,
+   "watchedAt": 1774126800000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 1,
+   "episode": 3,
+   "watchedAt": 1774299600000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 1,
+   "episode": 4,
+   "watchedAt": 1774472400000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 1,
+   "episode": 5,
+   "watchedAt": 1774645200000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 1,
+   "episode": 6,
+   "watchedAt": 1774818000000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 1,
+   "episode": 7,
+   "watchedAt": 1774990800000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 1,
+   "episode": 8,
+   "watchedAt": 1775163600000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 1,
+   "episode": 9,
+   "watchedAt": 1775336400000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 1,
+   "episode": 10,
+   "watchedAt": 1775509200000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 2,
+   "episode": 1,
+   "watchedAt": 1775682000000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 2,
+   "episode": 2,
+   "watchedAt": 1775854800000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 2,
+   "episode": 3,
+   "watchedAt": 1776027600000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 2,
+   "episode": 4,
+   "watchedAt": 1776200400000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 2,
+   "episode": 5,
+   "watchedAt": 1776373200000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 2,
+   "episode": 6,
+   "watchedAt": 1776546000000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 2,
+   "episode": 7,
+   "watchedAt": 1776718800000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 2,
+   "episode": 8,
+   "watchedAt": 1776891600000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 2,
+   "episode": 9,
+   "watchedAt": 1777064400000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 2,
+   "episode": 10,
+   "watchedAt": 1777237200000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 3,
+   "episode": 1,
+   "watchedAt": 1777410000000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 3,
+   "episode": 2,
+   "watchedAt": 1777582800000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 3,
+   "episode": 3,
+   "watchedAt": 1777755600000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 3,
+   "episode": 4,
+   "watchedAt": 1777928400000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 3,
+   "episode": 5,
+   "watchedAt": 1778101200000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 3,
+   "episode": 6,
+   "watchedAt": 1778274000000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 3,
+   "episode": 7,
+   "watchedAt": 1778446800000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 3,
+   "episode": 8,
+   "watchedAt": 1778619600000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 3,
+   "episode": 9,
+   "watchedAt": 1778792400000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 4,
+   "episode": 1,
+   "watchedAt": 1778965200000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 4,
+   "episode": 2,
+   "watchedAt": 1779138000000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 4,
+   "episode": 3,
+   "watchedAt": 1779310800000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 4,
+   "episode": 4,
+   "watchedAt": 1779483600000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 4,
+   "episode": 5,
+   "watchedAt": 1779656400000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 4,
+   "episode": 6,
+   "watchedAt": 1779829200000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 4,
+   "episode": 7,
+   "watchedAt": 1780002000000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 4,
+   "episode": 8,
+   "watchedAt": 1780174800000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 4,
+   "episode": 9,
+   "watchedAt": 1780347600000
+  },
+  {
+   "titleId": "tv:76331",
+   "season": 4,
+   "episode": 10,
+   "watchedAt": 1780520400000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 1,
+   "episode": 1,
+   "watchedAt": 1778360400000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 1,
+   "episode": 2,
+   "watchedAt": 1778533200000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 1,
+   "episode": 3,
+   "watchedAt": 1778706000000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 1,
+   "episode": 4,
+   "watchedAt": 1778878800000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 1,
+   "episode": 5,
+   "watchedAt": 1779051600000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 1,
+   "episode": 6,
+   "watchedAt": 1779224400000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 1,
+   "episode": 7,
+   "watchedAt": 1779397200000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 1,
+   "episode": 8,
+   "watchedAt": 1779570000000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 1,
+   "episode": 9,
+   "watchedAt": 1779742800000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 1,
+   "episode": 10,
+   "watchedAt": 1779915600000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 2,
+   "episode": 1,
+   "watchedAt": 1780088400000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 2,
+   "episode": 2,
+   "watchedAt": 1780261200000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 2,
+   "episode": 3,
+   "watchedAt": 1780434000000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 2,
+   "episode": 4,
+   "watchedAt": 1780606800000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 2,
+   "episode": 5,
+   "watchedAt": 1780779600000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 2,
+   "episode": 6,
+   "watchedAt": 1780952400000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 2,
+   "episode": 7,
+   "watchedAt": 1781125200000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 2,
+   "episode": 8,
+   "watchedAt": 1781298000000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 3,
+   "episode": 1,
+   "watchedAt": 1781470800000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 3,
+   "episode": 2,
+   "watchedAt": 1781643600000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 3,
+   "episode": 3,
+   "watchedAt": 1781816400000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 3,
+   "episode": 4,
+   "watchedAt": 1781989200000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 3,
+   "episode": 5,
+   "watchedAt": 1782162000000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 3,
+   "episode": 6,
+   "watchedAt": 1782334800000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 3,
+   "episode": 7,
+   "watchedAt": 1782507600000
+  },
+  {
+   "titleId": "tv:70523",
+   "season": 3,
+   "episode": 8,
+   "watchedAt": 1782680400000
+  },
+  {
+   "titleId": "tv:114922",
+   "season": 1,
+   "episode": 1,
+   "watchedAt": 1783890000000
+  },
+  {
+   "titleId": "tv:114922",
+   "season": 1,
+   "episode": 2,
+   "watchedAt": 1784062800000
+  },
+  {
+   "titleId": "tv:114922",
+   "season": 1,
+   "episode": 3,
+   "watchedAt": 1784235600000
+  },
+  {
+   "titleId": "tv:114922",
+   "season": 1,
+   "episode": 4,
+   "watchedAt": 1784408400000
+  }
+ ],
+ "settings": {
+  "enabledPlatformIds": [
+   "netflix",
+   "appletv",
+   "hbomax",
+   "primevideo",
+   "disneyplus"
+  ],
+  "icloudSyncEnabled": false,
+  "defaultRegion": "US",
+  "defaultLanguage": "en-US",
+  "filterDefaults": null
+ },
+ "titles": [
+  {
+   "id": "movie:693134",
+   "tmdbId": "693134",
+   "omdbId": null,
+   "imdbId": "tt15239678",
+   "title": "Dune: Part Two",
+   "originalTitle": "Dune: Part Two",
+   "posterPath": "https://image.tmdb.org/t/p/w342/6izwz7rsy95ARzTR3poZ8H6c5pp.jpg",
+   "overview": "Follow the mythic journey of Paul Atreides as he unites with Chani and the Fremen while on a path of revenge against the conspirators who destroyed his family. Facing a choice between the love of his life and the fate of the known universe, Paul endeavors to prevent a terrible future only he can foresee.",
+   "releaseDate": "2024-02-27",
+   "genres": [
+    "Science Fiction",
+    "Adventure"
+   ],
+   "runtimeMinutes": 167,
+   "mediaType": "movie",
+   "primaryRatingScore": 81.4,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Timothée Chalamet",
+    "Zendaya",
+    "Rebecca Ferguson",
+    "Javier Bardem",
+    "Josh Brolin",
+    "Austin Butler",
+    "Florence Pugh",
+    "Dave Bautista",
+    "Christopher Walken",
+    "Léa Seydoux"
+   ],
+   "certification": "PG-13",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:666277",
+   "tmdbId": "666277",
+   "omdbId": null,
+   "imdbId": "tt13238346",
+   "title": "Past Lives",
+   "originalTitle": "Past Lives",
+   "posterPath": "https://image.tmdb.org/t/p/w342/k3waqVXSnvCZWfJYNtdamTgTtTA.jpg",
+   "overview": "After decades apart, childhood friends Nora and Hae Sung are reunited in New York for one fateful weekend as they confront notions of destiny, love, and the choices that make a life.",
+   "releaseDate": "2023-06-02",
+   "genres": [
+    "Drama",
+    "Romance"
+   ],
+   "runtimeMinutes": 106,
+   "mediaType": "movie",
+   "primaryRatingScore": 77,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Greta Lee",
+    "Teo Yoo",
+    "John Magaro",
+    "Moon Seung-ah",
+    "Leem Seung-min",
+    "Yoon Ji-hye",
+    "Choi Won-young",
+    "An Min-young",
+    "Seo Yeon-woo",
+    "Chang Ki-ha"
+   ],
+   "certification": "PG-13",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:872585",
+   "tmdbId": "872585",
+   "omdbId": null,
+   "imdbId": "tt15398776",
+   "title": "Oppenheimer",
+   "originalTitle": "Oppenheimer",
+   "posterPath": "https://image.tmdb.org/t/p/w342/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
+   "overview": "The story of J. Robert Oppenheimer's role in the development of the atomic bomb during World War II.",
+   "releaseDate": "2023-07-19",
+   "genres": [
+    "Drama",
+    "History"
+   ],
+   "runtimeMinutes": 181,
+   "mediaType": "movie",
+   "primaryRatingScore": 80.2,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Cillian Murphy",
+    "Emily Blunt",
+    "Matt Damon",
+    "Robert Downey Jr.",
+    "Florence Pugh",
+    "Josh Hartnett",
+    "Casey Affleck",
+    "Rami Malek",
+    "Kenneth Branagh",
+    "Benny Safdie"
+   ],
+   "certification": "R",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:545611",
+   "tmdbId": "545611",
+   "omdbId": null,
+   "imdbId": "tt6710474",
+   "title": "Everything Everywhere All at Once",
+   "originalTitle": "Everything Everywhere All at Once",
+   "posterPath": "https://image.tmdb.org/t/p/w342/u68AjlvlutfEIcpmbYpKcdi09ut.jpg",
+   "overview": "An aging Chinese immigrant is swept up in an insane adventure, where she alone can save what's important to her by connecting with the lives she could have led in other universes.",
+   "releaseDate": "2022-03-24",
+   "genres": [
+    "Action",
+    "Adventure",
+    "Science Fiction"
+   ],
+   "runtimeMinutes": 140,
+   "mediaType": "movie",
+   "primaryRatingScore": 77,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Michelle Yeoh",
+    "Stephanie Hsu",
+    "Ke Huy Quan",
+    "James Hong",
+    "Jamie Lee Curtis",
+    "Tallie Medel",
+    "Jenny Slate",
+    "Harry Shum Jr.",
+    "Biff Wiff",
+    "Sunita Mani"
+   ],
+   "certification": "R",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:496243",
+   "tmdbId": "496243",
+   "omdbId": null,
+   "imdbId": "tt6751668",
+   "title": "Parasite",
+   "originalTitle": "기생충",
+   "posterPath": "https://image.tmdb.org/t/p/w342/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg",
+   "overview": "All unemployed, Ki-taek's family takes peculiar interest in the wealthy and glamorous Parks for their livelihood until they get entangled in an unexpected incident.",
+   "releaseDate": "2019-05-30",
+   "genres": [
+    "Comedy",
+    "Thriller",
+    "Drama"
+   ],
+   "runtimeMinutes": 133,
+   "mediaType": "movie",
+   "primaryRatingScore": 84.9,
+   "originalLanguage": "ko",
+   "originCountries": [
+    "KR"
+   ],
+   "castNames": [
+    "Song Kang-ho",
+    "Lee Sun-kyun",
+    "Cho Yeo-jeong",
+    "Choi Woo-shik",
+    "Park So-dam",
+    "Lee Jung-eun",
+    "Jang Hye-jin",
+    "Park Myung-hoon",
+    "Jung Zi-so",
+    "Jung Hyeon-jun"
+   ],
+   "certification": "R",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:569094",
+   "tmdbId": "569094",
+   "omdbId": null,
+   "imdbId": "tt9362722",
+   "title": "Spider-Man: Across the Spider-Verse",
+   "originalTitle": "Spider-Man: Across the Spider-Verse",
+   "posterPath": "https://image.tmdb.org/t/p/w342/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg",
+   "overview": "After reuniting with Gwen Stacy, Brooklyn’s full-time, friendly neighborhood Spider-Man is catapulted across the Multiverse, where he encounters the Spider Society, a team of Spider-People charged with protecting the Multiverse's very existence. But when the heroes clash on how to handle a new threat, Miles finds himself pitted against the other Spiders and must set out on his own to save those he loves most.",
+   "releaseDate": "2023-05-31",
+   "genres": [
+    "Animation",
+    "Action",
+    "Adventure",
+    "Science Fiction"
+   ],
+   "runtimeMinutes": 140,
+   "mediaType": "movie",
+   "primaryRatingScore": 83.5,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Shameik Moore",
+    "Hailee Steinfeld",
+    "Brian Tyree Henry",
+    "Luna Lauren Vélez",
+    "Jake Johnson",
+    "Oscar Isaac",
+    "Jason Schwartzman",
+    "Issa Rae",
+    "Daniel Kaluuya",
+    "Karan Soni"
+   ],
+   "certification": "PG",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:840430",
+   "tmdbId": "840430",
+   "omdbId": null,
+   "imdbId": "tt14849194",
+   "title": "The Holdovers",
+   "originalTitle": "The Holdovers",
+   "posterPath": "https://image.tmdb.org/t/p/w342/VHSzNBTwxV8vh7wylo7O9CLdac.jpg",
+   "overview": "A curmudgeonly instructor at a New England prep school is forced to remain on campus during Christmas break to babysit the handful of students with nowhere to go. Eventually, he forms an unlikely bond with one of them — a damaged, brainy troublemaker — and with the school’s head cook, who has just lost a son in Vietnam.",
+   "releaseDate": "2023-10-27",
+   "genres": [
+    "Drama",
+    "Comedy"
+   ],
+   "runtimeMinutes": 133,
+   "mediaType": "movie",
+   "primaryRatingScore": 76.5,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Paul Giamatti",
+    "Dominic Sessa",
+    "Da'Vine Joy Randolph",
+    "Carrie Preston",
+    "Brady Hepner",
+    "Ian Dolley",
+    "Jim Kaplan",
+    "Michael Provost",
+    "Andrew Garman",
+    "Naheem Garcia"
+   ],
+   "certification": "R",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:329865",
+   "tmdbId": "329865",
+   "omdbId": null,
+   "imdbId": "tt2543164",
+   "title": "Arrival",
+   "originalTitle": "Arrival",
+   "posterPath": "https://image.tmdb.org/t/p/w342/pEzNVQfdzYDzVK0XqxERIw2x2se.jpg",
+   "overview": "Taking place after alien crafts land around the world, an expert linguist is recruited by the military to determine whether they come in peace or are a threat.",
+   "releaseDate": "2016-11-10",
+   "genres": [
+    "Drama",
+    "Science Fiction",
+    "Mystery"
+   ],
+   "runtimeMinutes": 116,
+   "mediaType": "movie",
+   "primaryRatingScore": 76.4,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Amy Adams",
+    "Jeremy Renner",
+    "Forest Whitaker",
+    "Michael Stuhlbarg",
+    "Mark O'Brien",
+    "Tzi Ma",
+    "Abigail Pniowsky",
+    "Julia Scarlett Dan",
+    "Jadyn Malone",
+    "Frank Schorpion"
+   ],
+   "certification": "PG-13",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:546554",
+   "tmdbId": "546554",
+   "omdbId": null,
+   "imdbId": "tt8946378",
+   "title": "Knives Out",
+   "originalTitle": "Knives Out",
+   "posterPath": "https://image.tmdb.org/t/p/w342/pThyQovXQrw2m0s9x82twj48Jq4.jpg",
+   "overview": "When renowned crime novelist Harlan Thrombey is found dead at his estate just after his 85th birthday, the inquisitive and debonair Detective Benoit Blanc is mysteriously enlisted to investigate. From Harlan's dysfunctional family to his devoted staff, Blanc sifts through a web of red herrings and self-serving lies to uncover the truth behind Harlan's untimely death.",
+   "releaseDate": "2019-11-27",
+   "genres": [
+    "Comedy",
+    "Crime",
+    "Mystery"
+   ],
+   "runtimeMinutes": 131,
+   "mediaType": "movie",
+   "primaryRatingScore": 78.4,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Daniel Craig",
+    "Chris Evans",
+    "Ana de Armas",
+    "Jamie Lee Curtis",
+    "Michael Shannon",
+    "Don Johnson",
+    "Toni Collette",
+    "LaKeith Stanfield",
+    "Christopher Plummer",
+    "Katherine Langford"
+   ],
+   "certification": "PG-13",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:361743",
+   "tmdbId": "361743",
+   "omdbId": null,
+   "imdbId": "tt1745960",
+   "title": "Top Gun: Maverick",
+   "originalTitle": "Top Gun: Maverick",
+   "posterPath": "https://image.tmdb.org/t/p/w342/n0YuM4f5lvGAP6MAW2kBIzugXnc.jpg",
+   "overview": "After more than thirty years of service as one of the Navy’s top aviators, and dodging the advancement in rank that would ground him, Pete “Maverick” Mitchell finds himself training a detachment of TOP GUN graduates for a specialized mission the likes of which no living pilot has ever seen.",
+   "releaseDate": "2022-05-21",
+   "genres": [
+    "Action",
+    "Drama"
+   ],
+   "runtimeMinutes": 131,
+   "mediaType": "movie",
+   "primaryRatingScore": 81.6,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Tom Cruise",
+    "Miles Teller",
+    "Jennifer Connelly",
+    "Bashir Salahuddin",
+    "Jon Hamm",
+    "Charles Parnell",
+    "Monica Barbaro",
+    "Lewis Pullman",
+    "Jay Ellis",
+    "Danny Ramirez"
+   ],
+   "certification": "PG-13",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:915935",
+   "tmdbId": "915935",
+   "omdbId": null,
+   "imdbId": "tt17009710",
+   "title": "Anatomy of a Fall",
+   "originalTitle": "Anatomie d'une chute",
+   "posterPath": "https://image.tmdb.org/t/p/w342/kQs6keheMwCxJxrzV83VUwFtHkB.jpg",
+   "overview": "A woman is suspected of her husband's murder, and their blind son faces a moral dilemma as the sole witness.",
+   "releaseDate": "2023-08-23",
+   "genres": [
+    "Thriller",
+    "Mystery",
+    "Crime"
+   ],
+   "runtimeMinutes": 151,
+   "mediaType": "movie",
+   "primaryRatingScore": 75.1,
+   "originalLanguage": "fr",
+   "originCountries": [
+    "FR"
+   ],
+   "castNames": [
+    "Sandra Hüller",
+    "Swann Arlaud",
+    "Milo Machado-Graner",
+    "Antoine Reinartz",
+    "Samuel Theis",
+    "Jehnny Beth",
+    "Saadia Bentaïeb",
+    "Camille Rutherford",
+    "Anne Rotger",
+    "Sophie Fillières"
+   ],
+   "certification": "R",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:705996",
+   "tmdbId": "705996",
+   "omdbId": null,
+   "imdbId": "tt12477480",
+   "title": "Decision to Leave",
+   "originalTitle": "헤어질 결심",
+   "posterPath": "https://image.tmdb.org/t/p/w342/zI8KZ4EdLUymWKX1YEkpZ0gtPUa.jpg",
+   "overview": "From a mountain peak in South Korea, a man plummets to his death. Did he jump, or was he pushed? When detective Hae-joon arrives on the scene, he begins to suspect the dead man’s wife Seo-rae. But as he digs deeper into the investigation, he finds himself trapped in a web of deception and desire.",
+   "releaseDate": "2022-06-29",
+   "genres": [
+    "Thriller",
+    "Mystery",
+    "Romance"
+   ],
+   "runtimeMinutes": 139,
+   "mediaType": "movie",
+   "primaryRatingScore": 73.3,
+   "originalLanguage": "ko",
+   "originCountries": [
+    "KR"
+   ],
+   "castNames": [
+    "Tang Wei",
+    "Park Hae-il",
+    "Lee Jung-hyun",
+    "Go Kyung-pyo",
+    "Park Yong-woo",
+    "Kim Shin-young",
+    "Yoo Seung-mok",
+    "Jung Yi-seo",
+    "Jung Young-sook",
+    "Lee Hak-ju"
+   ],
+   "certification": "NR",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:414906",
+   "tmdbId": "414906",
+   "omdbId": null,
+   "imdbId": "tt1877830",
+   "title": "The Batman",
+   "originalTitle": "The Batman",
+   "posterPath": "https://image.tmdb.org/t/p/w342/74xTEgt7R36Fpooo50r9T25onhq.jpg",
+   "overview": "In his second year of fighting crime, Batman uncovers corruption in Gotham City that connects to his own family while facing a serial killer known as the Riddler.",
+   "releaseDate": "2022-03-01",
+   "genres": [
+    "Crime",
+    "Mystery",
+    "Thriller"
+   ],
+   "runtimeMinutes": 177,
+   "mediaType": "movie",
+   "primaryRatingScore": 76.7,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Robert Pattinson",
+    "Zoë Kravitz",
+    "Jeffrey Wright",
+    "Colin Farrell",
+    "Paul Dano",
+    "John Turturro",
+    "Andy Serkis",
+    "Peter Sarsgaard",
+    "Barry Keoghan",
+    "Jayme Lawson"
+   ],
+   "certification": "PG-13",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:346698",
+   "tmdbId": "346698",
+   "omdbId": null,
+   "imdbId": "tt1517268",
+   "title": "Barbie",
+   "originalTitle": "Barbie",
+   "posterPath": "https://image.tmdb.org/t/p/w342/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg",
+   "overview": "Barbie and Ken are having the time of their lives in the colorful and seemingly perfect world of Barbie Land. However, when they get a chance to go to the real world, they soon discover the joys and perils of living among humans.",
+   "releaseDate": "2023-07-19",
+   "genres": [
+    "Comedy",
+    "Adventure",
+    "Fantasy"
+   ],
+   "runtimeMinutes": 114,
+   "mediaType": "movie",
+   "primaryRatingScore": 69.1,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Margot Robbie",
+    "Ryan Gosling",
+    "America Ferrera",
+    "Ariana Greenblatt",
+    "Issa Rae",
+    "Kate McKinnon",
+    "Alexandra Shipp",
+    "Emma Mackey",
+    "Hari Nef",
+    "Sharon Rooney"
+   ],
+   "certification": "PG-13",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:792307",
+   "tmdbId": "792307",
+   "omdbId": null,
+   "imdbId": "tt14230458",
+   "title": "Poor Things",
+   "originalTitle": "Poor Things",
+   "posterPath": "https://image.tmdb.org/t/p/w342/kCGlIMHnOm8JPXq3rXM6c5wMxcT.jpg",
+   "overview": "Brought back to life by an unorthodox scientist, a young woman runs off with a lawyer on a whirlwind adventure across the continents. Free from the prejudices of her times, she grows steadfast in her purpose to stand for equality and liberation.",
+   "releaseDate": "2023-12-07",
+   "genres": [
+    "Science Fiction",
+    "Romance",
+    "Comedy"
+   ],
+   "runtimeMinutes": 141,
+   "mediaType": "movie",
+   "primaryRatingScore": 76.3,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Emma Stone",
+    "Mark Ruffalo",
+    "Willem Dafoe",
+    "Ramy Youssef",
+    "Christopher Abbott",
+    "Suzy Bemba",
+    "Jerrod Carmichael",
+    "Kathryn Hunter",
+    "Vicki Pepperdine",
+    "Hanna Schygulla"
+   ],
+   "certification": "R",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:974576",
+   "tmdbId": "974576",
+   "omdbId": null,
+   "imdbId": "tt20215234",
+   "title": "Conclave",
+   "originalTitle": "Conclave",
+   "posterPath": "https://image.tmdb.org/t/p/w342/m5x8D0bZ3eKqIVWZ5y7TnZ2oTVg.jpg",
+   "overview": "After the unexpected death of the Pope, Cardinal Lawrence is tasked with managing the covert and ancient ritual of electing a new one. Sequestered in the Vatican with the Catholic Church’s most powerful leaders until the process is complete, Lawrence finds himself at the center of a conspiracy that could lead to its downfall.",
+   "releaseDate": "2024-10-25",
+   "genres": [
+    "Drama",
+    "Thriller"
+   ],
+   "runtimeMinutes": 120,
+   "mediaType": "movie",
+   "primaryRatingScore": 71.9,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Ralph Fiennes",
+    "Stanley Tucci",
+    "John Lithgow",
+    "Isabella Rossellini",
+    "Lucian Msamati",
+    "Carlos Diehz",
+    "Sergio Castellitto",
+    "Brían F. O'Byrne",
+    "Merab Ninidze",
+    "Thomas Loibl"
+   ],
+   "certification": "PG",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:976893",
+   "tmdbId": "976893",
+   "omdbId": null,
+   "imdbId": "tt27503384",
+   "title": "Perfect Days",
+   "originalTitle": "PERFECT DAYS",
+   "posterPath": "https://image.tmdb.org/t/p/w342/tvUHVSTJV9ITON3oyHaWp7oaAc8.jpg",
+   "overview": "Hirayama is content with his life as a toilet cleaner in Tokyo. Outside of his structured routine, he cherishes music on cassette tapes, books, and taking photos of trees. Through unexpected encounters, he reflects on finding beauty in the world.",
+   "releaseDate": "2023-11-10",
+   "genres": [
+    "Drama"
+   ],
+   "runtimeMinutes": 124,
+   "mediaType": "movie",
+   "primaryRatingScore": 78,
+   "originalLanguage": "ja",
+   "originCountries": [
+    "JP"
+   ],
+   "castNames": [
+    "Koji Yakusho",
+    "Tokio Emoto",
+    "Arisa Nakano",
+    "Aoi Yamada",
+    "Yumi Aso",
+    "Sayuri Ishikawa",
+    "Tomokazu Miura",
+    "Min Tanaka",
+    "Miyako Tanaka",
+    "Ron Mizuma"
+   ],
+   "certification": "PG",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:467244",
+   "tmdbId": "467244",
+   "omdbId": null,
+   "imdbId": "tt7160372",
+   "title": "The Zone of Interest",
+   "originalTitle": "The Zone of Interest",
+   "posterPath": "https://image.tmdb.org/t/p/w342/hUu9zyZmDd8VZegKi1iK1Vk0RYS.jpg",
+   "overview": "The commandant of Auschwitz, Rudolf Höss, and his wife Hedwig, strive to build a dream life for their family in a house and garden next to the camp.",
+   "releaseDate": "2023-12-15",
+   "genres": [
+    "Drama",
+    "History",
+    "War"
+   ],
+   "runtimeMinutes": 105,
+   "mediaType": "movie",
+   "primaryRatingScore": 70.1,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Christian Friedel",
+    "Sandra Hüller",
+    "Johann Karthaus",
+    "Luis Noah Witte",
+    "Nele Ahrensmeier",
+    "Lilli Falk",
+    "Anastazja Drobniak",
+    "Cecylia Pekala",
+    "Kalman Wilson",
+    "Medusa Knopf"
+   ],
+   "certification": "PG-13",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:1064213",
+   "tmdbId": "1064213",
+   "omdbId": null,
+   "imdbId": "tt28607951",
+   "title": "Anora",
+   "originalTitle": "Anora",
+   "posterPath": "https://image.tmdb.org/t/p/w342/cgXk2tNYhJZLXdBDO5DidAVzQ82.jpg",
+   "overview": "A young sex worker from Brooklyn gets her chance at a Cinderella story when she meets and impulsively marries the son of an oligarch. Once the news reaches Russia, her fairytale is threatened as his parents set out to get the marriage annulled.",
+   "releaseDate": "2024-10-14",
+   "genres": [
+    "Drama",
+    "Comedy",
+    "Romance"
+   ],
+   "runtimeMinutes": 139,
+   "mediaType": "movie",
+   "primaryRatingScore": 71,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Mikey Madison",
+    "Mark Eydelshteyn",
+    "Yura Borisov",
+    "Karren Karagulian",
+    "Vache Tovmasyan",
+    "Luna Sofía Miranda",
+    "Lindsey Normington",
+    "Darya Ekamasova",
+    "Aleksey Serebryakov",
+    "Anton Bitter"
+   ],
+   "certification": "R",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "movie:929590",
+   "tmdbId": "929590",
+   "omdbId": null,
+   "imdbId": "tt17279496",
+   "title": "Civil War",
+   "originalTitle": "Civil War",
+   "posterPath": "https://image.tmdb.org/t/p/w342/sh7Rg8Er3tFcN9BpKIPOMvALgZd.jpg",
+   "overview": "In the near future, a group of war journalists attempt to survive while reporting the truth as the United States stands on the brink of civil war.",
+   "releaseDate": "2024-04-10",
+   "genres": [
+    "War",
+    "Action",
+    "Drama"
+   ],
+   "runtimeMinutes": 109,
+   "mediaType": "movie",
+   "primaryRatingScore": 68.4,
+   "originalLanguage": "en",
+   "originCountries": [
+    "GB",
+    "US"
+   ],
+   "castNames": [
+    "Kirsten Dunst",
+    "Wagner Moura",
+    "Cailee Spaeny",
+    "Stephen McKinley Henderson",
+    "Nelson Lee",
+    "Nick Offerman",
+    "Jefferson White",
+    "Evan Lai",
+    "Vince Pisani",
+    "Justin James Boykin"
+   ],
+   "certification": "R",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "tv:95396",
+   "tmdbId": "95396",
+   "omdbId": null,
+   "imdbId": "tt11280740",
+   "title": "Severance",
+   "originalTitle": "Severance",
+   "posterPath": "https://image.tmdb.org/t/p/w342/pPHpeI2X1qEd1CS1SeyrdhZ4qnT.jpg",
+   "overview": "Mark leads a team of office workers whose memories have been surgically divided between their work and personal lives. When a mysterious colleague appears outside of work, it begins a journey to discover the truth about their jobs.",
+   "releaseDate": "2022-02-17",
+   "genres": [
+    "Drama",
+    "Mystery",
+    "Sci-Fi & Fantasy"
+   ],
+   "runtimeMinutes": null,
+   "mediaType": "tv",
+   "primaryRatingScore": 84,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Adam Scott",
+    "Britt Lower",
+    "Tramell Tillman",
+    "Zach Cherry",
+    "Jen Tullock",
+    "Dichen Lachman",
+    "Sarah Bock",
+    "John Turturro",
+    "Christopher Walken",
+    "Patricia Arquette"
+   ],
+   "certification": "TV-MA",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "tv:136315",
+   "tmdbId": "136315",
+   "omdbId": null,
+   "imdbId": "tt14452776",
+   "title": "The Bear",
+   "originalTitle": "The Bear",
+   "posterPath": "https://image.tmdb.org/t/p/w342/eKfVzzEazSIjJMrw9ADa2x8ksLz.jpg",
+   "overview": "Carmy, a young fine-dining chef, comes home to Chicago to run his family sandwich shop. As he fights to transform the shop and himself, he works alongside a rough-around-the-edges crew that ultimately reveal themselves as his chosen family.",
+   "releaseDate": "2022-06-23",
+   "genres": [
+    "Drama",
+    "Comedy"
+   ],
+   "runtimeMinutes": null,
+   "mediaType": "tv",
+   "primaryRatingScore": 81.6,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Jeremy Allen White",
+    "Ebon Moss-Bachrach",
+    "Ayo Edebiri",
+    "Lionel Boyce",
+    "Abby Elliott",
+    "Matty Matheson",
+    "Liza Colón-Zayas",
+    "Edwin Lee Gibson"
+   ],
+   "certification": "TV-MA",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "tv:126308",
+   "tmdbId": "126308",
+   "omdbId": null,
+   "imdbId": "tt2788316",
+   "title": "Shōgun",
+   "originalTitle": "Shōgun",
+   "posterPath": "https://image.tmdb.org/t/p/w342/7O4iVfOMQmdCSxhOg1WnzG1AgYT.jpg",
+   "overview": "In Japan in the year 1600, at the dawn of a century-defining civil war, Lord Yoshii Toranaga is fighting for his life as his enemies on the Council of Regents unite against him, when a mysterious European ship is found marooned in a nearby fishing village.",
+   "releaseDate": "2024-02-27",
+   "genres": [
+    "Drama",
+    "War & Politics"
+   ],
+   "runtimeMinutes": null,
+   "mediaType": "tv",
+   "primaryRatingScore": 84.3,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Hiroyuki Sanada",
+    "Cosmo Jarvis",
+    "Anna Sawai",
+    "Tadanobu Asano",
+    "Takehiro Hira",
+    "Tommy Bastow",
+    "Fumi Nikaido"
+   ],
+   "certification": "TV-MA",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "tv:95480",
+   "tmdbId": "95480",
+   "omdbId": null,
+   "imdbId": "tt5875444",
+   "title": "Slow Horses",
+   "originalTitle": "Slow Horses",
+   "posterPath": "https://image.tmdb.org/t/p/w342/AdYr4DjOgXvDUMwu6vEhZy1Rnxk.jpg",
+   "overview": "Follow a dysfunctional team of MI5 agents—and their obnoxious boss, the notorious Jackson Lamb—as they navigate the espionage world's smoke and mirrors to defend England from sinister forces.",
+   "releaseDate": "2022-04-01",
+   "genres": [
+    "Crime",
+    "Drama",
+    "Mystery"
+   ],
+   "runtimeMinutes": null,
+   "mediaType": "tv",
+   "primaryRatingScore": 80,
+   "originalLanguage": "en",
+   "originCountries": [
+    "GB"
+   ],
+   "castNames": [
+    "Gary Oldman",
+    "Jack Lowden",
+    "Kristin Scott Thomas",
+    "Hugo Weaving",
+    "Saskia Reeves",
+    "Christopher Chung",
+    "Aimee-Ffion Edwards"
+   ],
+   "certification": "TV-MA",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "tv:83867",
+   "tmdbId": "83867",
+   "omdbId": null,
+   "imdbId": "tt9253284",
+   "title": "Andor",
+   "originalTitle": "Andor",
+   "posterPath": "https://image.tmdb.org/t/p/w342/khZqmwHQicTYoS7Flreb9EddFZC.jpg",
+   "overview": "In an era filled with danger, deception and intrigue, Cassian Andor will discover the difference he can make in the struggle against the tyrannical Galactic Empire. He embarks on a path that is destined to turn him into a rebel hero.",
+   "releaseDate": "2022-09-21",
+   "genres": [
+    "Sci-Fi & Fantasy",
+    "Action & Adventure",
+    "Drama"
+   ],
+   "runtimeMinutes": null,
+   "mediaType": "tv",
+   "primaryRatingScore": 83.1,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Diego Luna",
+    "Anton Lesser",
+    "Muhannad Bhaier",
+    "Stellan Skarsgård",
+    "Denise Gough",
+    "Kyle Soller",
+    "Adria Arjona",
+    "Genevieve O'Reilly",
+    "Faye Marsay",
+    "Elizabeth Dulau"
+   ],
+   "certification": "TV-14",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "tv:1396",
+   "tmdbId": "1396",
+   "omdbId": null,
+   "imdbId": "tt0903747",
+   "title": "Breaking Bad",
+   "originalTitle": "Breaking Bad",
+   "posterPath": "https://image.tmdb.org/t/p/w342/anFx9aTOOYqgS3v7x3R84Kz67ly.jpg",
+   "overview": "Walter White, a New Mexico chemistry teacher, is diagnosed with Stage III cancer and given a prognosis of only two years left to live. He becomes filled with a sense of fearlessness and an unrelenting desire to secure his family's financial future at any cost as he enters the dangerous world of drugs and crime.",
+   "releaseDate": "2008-01-20",
+   "genres": [
+    "Drama",
+    "Crime"
+   ],
+   "runtimeMinutes": null,
+   "mediaType": "tv",
+   "primaryRatingScore": 89.5,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Bryan Cranston",
+    "Aaron Paul",
+    "Anna Gunn",
+    "RJ Mitte",
+    "Dean Norris",
+    "Betsy Brandt",
+    "Bob Odenkirk",
+    "Jonathan Banks"
+   ],
+   "certification": "TV-MA",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "tv:87108",
+   "tmdbId": "87108",
+   "omdbId": null,
+   "imdbId": "tt7366338",
+   "title": "Chernobyl",
+   "originalTitle": "Chernobyl",
+   "posterPath": "https://image.tmdb.org/t/p/w342/hlLXt2tOPT6RRnjiUmoxyG1LTFi.jpg",
+   "overview": "The true story of one of the worst man-made catastrophes in history: the catastrophic nuclear accident at Chernobyl. A tale of the brave men and women who sacrificed to save Europe from unimaginable disaster.",
+   "releaseDate": "2019-05-06",
+   "genres": [
+    "Drama"
+   ],
+   "runtimeMinutes": null,
+   "mediaType": "tv",
+   "primaryRatingScore": 87.3,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Jared Harris",
+    "Stellan Skarsgård",
+    "Emily Watson",
+    "Paul Ritter",
+    "Jessie Buckley",
+    "Adam Nagaitis",
+    "Sam Troughton",
+    "Robert Emms",
+    "Con O'Neill",
+    "Adrian Rawlins"
+   ],
+   "certification": "TV-MA",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "tv:67070",
+   "tmdbId": "67070",
+   "omdbId": null,
+   "imdbId": "tt5687612",
+   "title": "Fleabag",
+   "originalTitle": "Fleabag",
+   "posterPath": "https://image.tmdb.org/t/p/w342/vFn0nLPcIggPH5LTWWaJ2hcsGlc.jpg",
+   "overview": "A portrait into the mind of a dry-witted, sexual, angry, porn-watching, grief-riddled woman, trying to make sense of the world. As she hurls herself headlong at modern living, Fleabag is thrown roughly up against the walls of contemporary London, with all its frenetic energy, late nights, and bright lights.",
+   "releaseDate": "2016-07-21",
+   "genres": [
+    "Comedy",
+    "Drama"
+   ],
+   "runtimeMinutes": null,
+   "mediaType": "tv",
+   "primaryRatingScore": 83,
+   "originalLanguage": "en",
+   "originCountries": [
+    "GB"
+   ],
+   "castNames": [
+    "Phoebe Waller-Bridge",
+    "Sian Clifford",
+    "Andrew Scott"
+   ],
+   "certification": "TV-MA",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "tv:76331",
+   "tmdbId": "76331",
+   "omdbId": null,
+   "imdbId": "tt7660850",
+   "title": "Succession",
+   "originalTitle": "Succession",
+   "posterPath": "https://image.tmdb.org/t/p/w342/z0XiwdrCQ9yVIr4O0pxzaAYRxdW.jpg",
+   "overview": "Follow the lives of the Roy family as they contemplate their future once their aging father begins to step back from the media and entertainment conglomerate they control.",
+   "releaseDate": "2018-06-03",
+   "genres": [
+    "Drama",
+    "Comedy"
+   ],
+   "runtimeMinutes": null,
+   "mediaType": "tv",
+   "primaryRatingScore": 83.1,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Jeremy Strong",
+    "Kieran Culkin",
+    "Sarah Snook",
+    "Brian Cox",
+    "Matthew Macfadyen",
+    "Alan Ruck",
+    "J. Smith-Cameron",
+    "Nicholas Braun",
+    "Dagmara Dominczyk",
+    "Peter Friedman"
+   ],
+   "certification": "TV-MA",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "tv:70523",
+   "tmdbId": "70523",
+   "omdbId": null,
+   "imdbId": "tt5753856",
+   "title": "Dark",
+   "originalTitle": "Dark",
+   "posterPath": "https://image.tmdb.org/t/p/w342/apbrbWs8M9lyOpJYU5WXrpFbk1Z.jpg",
+   "overview": "A missing child sets four families on a frantic hunt for answers as they unearth a mind-bending mystery that spans three generations.",
+   "releaseDate": "2017-12-01",
+   "genres": [
+    "Crime",
+    "Drama",
+    "Sci-Fi & Fantasy",
+    "Mystery"
+   ],
+   "runtimeMinutes": null,
+   "mediaType": "tv",
+   "primaryRatingScore": 84.2,
+   "originalLanguage": "de",
+   "originCountries": [
+    "DE"
+   ],
+   "castNames": [
+    "Louis Hofmann"
+   ],
+   "certification": "TV-MA",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "tv:114922",
+   "tmdbId": "114922",
+   "omdbId": null,
+   "imdbId": "tt9794044",
+   "title": "Citadel",
+   "originalTitle": "Citadel",
+   "posterPath": "https://image.tmdb.org/t/p/w342/5MHtxPEfmN4b0rHzfEZRcm6v9WI.jpg",
+   "overview": "What if you lost your memory? What if a spy didn't know they were a spy? Years ago, the top agents of Citadel, Mason Kane and Nadia Sinh, had their minds wiped. But, they're called back to action as sinister forces emerge from the past. With the help of spymaster Bernard Orlick, these former lovers must remember the past to save the future.",
+   "releaseDate": "2023-04-27",
+   "genres": [
+    "Drama",
+    "Crime",
+    "Action & Adventure"
+   ],
+   "runtimeMinutes": null,
+   "mediaType": "tv",
+   "primaryRatingScore": 68.7,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Richard Madden",
+    "Priyanka Chopra Jonas",
+    "Ashleigh Cummings",
+    "Roland Møller",
+    "Lesley Manville",
+    "Stanley Tucci",
+    "Gabriel Leone",
+    "Jack Reynor",
+    "Matt Berry",
+    "Lina El Arabi"
+   ],
+   "certification": "TV-14",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "tv:110382",
+   "tmdbId": "110382",
+   "omdbId": null,
+   "imdbId": "tt8888462",
+   "title": "Pachinko",
+   "originalTitle": "Pachinko",
+   "posterPath": "https://image.tmdb.org/t/p/w342/wUTXdmL6oNjhiStGveOaPeuFOYQ.jpg",
+   "overview": "This sweeping saga chronicles the hopes and dreams of a Korean immigrant family across four generations as they leave their homeland in an indomitable quest to survive and thrive.",
+   "releaseDate": "2022-03-24",
+   "genres": [
+    "Drama"
+   ],
+   "runtimeMinutes": null,
+   "mediaType": "tv",
+   "primaryRatingScore": 78.8,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Youn Yuh-jung",
+    "Soji Arai",
+    "Jin Ha",
+    "Jung Eun-chae",
+    "Kim Min-ha",
+    "Jeong In-ji",
+    "Kim Sung-kyu",
+    "Lee Min-ho",
+    "Steve Sanghyun Noh",
+    "Anna Sawai"
+   ],
+   "certification": "TV-MA",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "tv:111803",
+   "tmdbId": "111803",
+   "omdbId": null,
+   "imdbId": "tt13406094",
+   "title": "The White Lotus",
+   "originalTitle": "The White Lotus",
+   "posterPath": "https://image.tmdb.org/t/p/w342/gbSaK9v1CbcYH1ISgbM7XObD2dW.jpg",
+   "overview": "Follow the exploits of various guests and employees at an exclusive tropical resort over the span of a week as with each passing day, a darker complexity emerges in these picture-perfect travelers, the hotel’s cheerful employees and the idyllic locale itself.",
+   "releaseDate": "2021-07-11",
+   "genres": [
+    "Comedy",
+    "Drama",
+    "Mystery"
+   ],
+   "runtimeMinutes": null,
+   "mediaType": "tv",
+   "primaryRatingScore": 76,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Leslie Bibb",
+    "Carrie Coon",
+    "Walton Goggins",
+    "Sarah Catherine Hook",
+    "Jason Isaacs",
+    "Parker Posey",
+    "Patrick Schwarzenegger",
+    "Tayme Thapthimthong",
+    "Aimee Lou Wood",
+    "LISA"
+   ],
+   "certification": "TV-MA",
+   "fetchedAt": 1790856000000
+  },
+  {
+   "id": "tv:94028",
+   "tmdbId": "94028",
+   "omdbId": null,
+   "imdbId": "tt11016042",
+   "title": "RIPLEY",
+   "originalTitle": "RIPLEY",
+   "posterPath": "https://image.tmdb.org/t/p/w342/rpSo8z9alultGVTqQ3dkLEyU8xx.jpg",
+   "overview": "A grifter in 1960s New York is hired to convince a wealthy man's son to return home from Italy and begins a life of deceit, fraud and murder.",
+   "releaseDate": "2024-04-04",
+   "genres": [
+    "Drama"
+   ],
+   "runtimeMinutes": null,
+   "mediaType": "tv",
+   "primaryRatingScore": 79.2,
+   "originalLanguage": "en",
+   "originCountries": [
+    "US"
+   ],
+   "castNames": [
+    "Andrew Scott",
+    "Dakota Fanning",
+    "Johnny Flynn"
+   ],
+   "certification": "TV-MA",
+   "fetchedAt": 1790856000000
+  }
+ ],
+ "preferences": {
+  "genres": [
+   "Science Fiction",
+   "Thriller",
+   "Drama",
+   "Crime",
+   "Comedy"
+  ],
+  "topics": [
+   {
+    "id": 4379,
+    "name": "time travel"
+   },
+   {
+    "id": 10051,
+    "name": "heist"
+   }
+  ],
+  "languages": [
+   "en",
+   "ko",
+   "ja"
+  ],
+  "countries": [],
+  "mediaTypes": "both",
+  "onlyMyServices": true
+ }
+}

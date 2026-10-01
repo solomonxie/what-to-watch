@@ -3,8 +3,13 @@ const { DatabaseSync } = require('node:sqlite');
 
 const bind = params => (params ?? []).map(p => (p === undefined ? null : p));
 
-function open() {
-  const db = new DatabaseSync(':memory:');
+// Kept per name, so closing and reopening a database finds its data again.
+const files = new Map();
+
+function open({ name } = {}) {
+  const key = name ?? ':memory:';
+  if (!files.has(key)) files.set(key, new DatabaseSync(':memory:'));
+  const db = files.get(key);
   const run = (query, params) => {
     const stmt = db.prepare(query);
     if (stmt.columns().length === 0) {
@@ -33,7 +38,11 @@ function open() {
     executeSync: run,
     executeRaw: async (q, p) => runRaw(q, p),
     executeRawSync: runRaw,
-    close: () => db.close(),
+    close: () => {},
+    delete: () => {
+      files.delete(key);
+      db.close();
+    },
   };
 }
 
