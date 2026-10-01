@@ -1,4 +1,9 @@
-import { refreshPlatformRanking } from '../../catalog/catalogService';
+import {
+  cacheListTitle,
+  refreshPlatformRanking,
+} from '../../catalog/catalogService';
+import { filterQueries } from '../../catalog/filterQueries';
+import { discoverTitles } from '../../providers/tmdbProvider';
 import { getTitlesByIds } from '../../db/repositories/titlesRepo';
 import {
   readRecsCache,
@@ -7,6 +12,7 @@ import {
   type RecsScope,
 } from '../../recs/recsService';
 import type { PlatformConfig } from '../../config/platforms';
+import type { FilterState } from '../../types/domain';
 
 type CachedTitle = Awaited<ReturnType<typeof getTitlesByIds>>[number];
 
@@ -80,4 +86,29 @@ export async function popular(
     }
   }
   return { kind: 'popular', items };
+}
+
+/**
+ * The loaded feed is a few dozen titles, so narrow filters rarely match it.
+ * Ask TMDB for titles matching the filters on the same services.
+ */
+export async function filtered(
+  filters: FilterState,
+  scope: RecsScope,
+  platforms: PlatformConfig[],
+  region: string,
+): Promise<FeedItem[]> {
+  const providerIds = (scope ? [scope] : platforms).map(p => p.tmdbProviderId);
+  const queries = filterQueries(filters, { region, providerIds });
+  const lists = await Promise.all(
+    queries.map(q => discoverTitles(q.mediaType, q.params).catch(() => [])),
+  );
+  const ids: string[] = [];
+  for (const item of lists.flat().sort((a, b) => b.popularity - a.popularity))
+    ids.push(await cacheListTitle(item.details, item.ratings));
+  const titles = new Map((await getTitlesByIds(ids)).map(t => [t.id, t]));
+  return ids.flatMap(id => {
+    const title = titles.get(id);
+    return title ? [{ title }] : [];
+  });
 }

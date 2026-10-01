@@ -41,7 +41,15 @@ import {
 } from '../../ui/components';
 import { joinMeta, mediaLabel, score10 } from '../../ui/format';
 import { space, type, useColors } from '../../ui/theme';
-import { cachedPicks, freshPicks, popular, type Feed } from './feed';
+import { hasServerFilters } from '../../catalog/filterQueries';
+import {
+  cachedPicks,
+  filtered,
+  freshPicks,
+  popular,
+  type Feed,
+  type FeedItem,
+} from './feed';
 import type { DiscoverStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<DiscoverStackParamList, 'DiscoverHome'>;
@@ -68,6 +76,8 @@ export function DiscoverScreen({ navigation }: Props) {
   const [updateError, setUpdateError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [checkingAges, setCheckingAges] = useState(false);
+  const [matches, setMatches] = useState<FeedItem[] | null>(null);
+  const [matching, setMatching] = useState(false);
   const request = useRef(0);
 
   const region = settings?.defaultRegion ?? DEFAULT_REGION;
@@ -149,39 +159,55 @@ export function DiscoverScreen({ navigation }: Props) {
   // Ratings/rankings lack certifications; fetch them only once an age filter needs them.
   const needsAges =
     filters.ages.length > 0 &&
-    !!feed?.items.some(i => i.title.certification == null);
+    [...(feed?.items ?? []), ...(matches ?? [])].some(
+      i => i.title.certification == null,
+    );
   useEffect(() => {
     if (!needsAges || !feed) return;
     let live = true;
     setCheckingAges(true);
-    fillCertifications(
-      feed.items.map(i => i.title),
-      region,
-    )
+    const titles = [...feed.items, ...(matches ?? [])].map(i => i.title);
+    fillCertifications(titles, region)
       .then(async () => {
         const fresh = new Map(
-          (await getTitlesByIds(feed.items.map(i => i.title.id))).map(t => [
-            t.id,
-            t,
-          ]),
+          (await getTitlesByIds(titles.map(t => t.id))).map(t => [t.id, t]),
         );
         if (!live) return;
-        setFeed({
-          ...feed,
-          items: feed.items.map(i => ({
-            ...i,
-            title: {
-              ...i.title,
-              certification: fresh.get(i.title.id)?.certification ?? '',
-            },
-          })),
+        const withCert = (i: FeedItem): FeedItem => ({
+          ...i,
+          title: {
+            ...i.title,
+            certification: fresh.get(i.title.id)?.certification ?? '',
+          },
         });
+        setFeed({ ...feed, items: feed.items.map(withCert) });
+        if (matches) setMatches(matches.map(withCert));
       })
       .finally(() => live && setCheckingAges(false));
     return () => {
       live = false;
     };
-  }, [needsAges, feed, region]);
+  }, [needsAges, feed, matches, region]);
+
+  // Filters narrow more than the loaded feed holds; fetch matches from TMDB too.
+  const serverFilters = status === 'ready' && hasServerFilters(filters);
+  useEffect(() => {
+    setMatches(null);
+    if (!serverFilters) return;
+    let live = true;
+    setMatching(true);
+    const timer = setTimeout(() => {
+      filtered(filters, scope, platforms, region)
+        .then(found => live && setMatches(found))
+        .catch(() => {})
+        .finally(() => live && setMatching(false));
+    }, 400);
+    return () => {
+      live = false;
+      clearTimeout(timer);
+      setMatching(false);
+    };
+  }, [serverFilters, filters, scope, platforms, region]);
 
   const selectScope = (id: string) => {
     if (id === scopeId) return;
@@ -198,7 +224,12 @@ export function DiscoverScreen({ navigation }: Props) {
 
   const items = useMemo(() => {
     if (!feed) return [];
-    const withMeta = feed.items.map(i => ({
+    const seen = new Set(feed.items.map(i => i.title.id));
+    const all = [
+      ...feed.items,
+      ...(matches ?? []).filter(i => !seen.has(i.title.id)),
+    ];
+    const withMeta = all.map(i => ({
       title: { ...i.title, rank: i.rank, reasons: i.reasons },
       watchCount: 0,
     }));
@@ -217,7 +248,7 @@ export function DiscoverScreen({ navigation }: Props) {
             ]),
       }),
     );
-  }, [feed, filters, sort]);
+  }, [feed, matches, filters, sort]);
 
   const openTitle = (titleId: string) =>
     navigation.navigate('Title', { titleId });
@@ -248,7 +279,7 @@ export function DiscoverScreen({ navigation }: Props) {
   } else if (
     status === 'loading' ||
     (!feed && updating) ||
-    (checkingAges && items.length === 0)
+    ((checkingAges || matching) && items.length === 0)
   ) {
     body = <EmptyState loading />;
   } else if (status === 'error') {

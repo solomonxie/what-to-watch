@@ -61,6 +61,45 @@ describe('applyFilters', () => {
   });
 });
 
+describe('applyFilters genres across movie and tv', () => {
+  // TMDB tv genres are combos ("Sci-Fi & Fantasy") and have no Thriller.
+  const items = [
+    makeItem({ id: 'tv-mystery', mediaType: 'tv', genres: ['Mystery', 'Drama'] }),
+    makeItem({ id: 'tv-action', mediaType: 'tv', genres: ['Action & Adventure'] }),
+    makeItem({ id: 'tv-scifi', mediaType: 'tv', genres: ['Sci-Fi & Fantasy'] }),
+    makeItem({ id: 'movie-thriller', genres: ['Thriller'] }),
+    makeItem({ id: 'movie-mystery', genres: ['Mystery'] }),
+  ];
+  const ids = (genres: string[]) =>
+    applyFilters(items, { ...DEFAULT_FILTERS, genres }).map(r => r.title.id);
+
+  it('matches tv thrillers, filed under Mystery', () => {
+    expect(ids(['Thriller'])).toEqual(['tv-mystery', 'movie-thriller']);
+  });
+
+  it('matches tv combo genres by their unified names', () => {
+    expect(ids(['Action'])).toEqual(['tv-action']);
+    expect(ids(['Science Fiction'])).toEqual(['tv-scifi']);
+    expect(ids(['Fantasy'])).toEqual(['tv-scifi']);
+  });
+
+  it('finds English series thrillers rated 7+', () => {
+    const shows = [
+      makeItem({ id: 'hit', mediaType: 'tv', genres: ['Mystery', 'Crime'], originalLanguage: 'en', primaryRatingScore: 78 }),
+      makeItem({ id: 'low', mediaType: 'tv', genres: ['Mystery'], originalLanguage: 'en', primaryRatingScore: 61 }),
+      makeItem({ id: 'ko', mediaType: 'tv', genres: ['Mystery'], originalLanguage: 'ko', primaryRatingScore: 85 }),
+    ];
+    const result = applyFilters(shows, {
+      ...DEFAULT_FILTERS,
+      kinds: ['series'],
+      genres: ['Thriller'],
+      languages: ['en'],
+      ratingRange: [70, 100],
+    });
+    expect(result.map(r => r.title.id)).toEqual(['hit']);
+  });
+});
+
 describe('applyFilters kinds', () => {
   it('splits movies, series, documentaries and unscripted TV', () => {
     const items = [
