@@ -20,6 +20,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       maxAge: 30 * 24 * 60 * 60
     )
 
+    exposeBuildSettings()
+
     let delegate = ReactNativeDelegate()
     let factory = RCTReactNativeFactory(delegate: delegate)
     delegate.dependencyProvider = RCTAppDependencyProvider()
@@ -44,6 +46,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     options: [UIApplication.OpenURLOptionsKey: Any] = [:]
   ) -> Bool {
     RCTLinkingManager.application(app, open: url, options: options)
+  }
+
+  /// Build-time Info.plist values (scripts/install-config.sh), handed to JS through RN Settings.
+  private func exposeBuildSettings() {
+    let defaults = UserDefaults.standard
+    for (defaultsKey, plistKey) in [
+      ("appStoreRegion", "AppStoreRegion"),
+      ("demo.tmdbKey", "WTWDemoTMDBKey"),
+      ("demo.omdbKey", "WTWDemoOMDBKey"),
+    ] {
+      defaults.set(Bundle.main.object(forInfoDictionaryKey: plistKey) as? String ?? "", forKey: defaultsKey)
+    }
   }
 }
 

@@ -76,6 +76,12 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<key>AppStoreRegion</key>
+	<string>$(APP_STORE_REGION)</string>
+	<key>WTWDemoOMDBKey</key>
+	<string>$(WTW_DEMO_OMDB_KEY)</string>
+	<key>WTWDemoTMDBKey</key>
+	<string>$(WTW_DEMO_TMDB_KEY)</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 </dict>
