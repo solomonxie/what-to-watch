@@ -1,20 +1,20 @@
-// Repositories report user-data writes here; the backup service listens.
+// Repositories report user-data writes here; backup and Spotlight listen.
 // Kept free of imports so repositories can use it without a cycle.
 const QUIET_MS = 3000;
 
-let listener: (() => void) | null = null;
+const listeners = new Set<() => void>();
 let timer: ReturnType<typeof setTimeout> | null = null;
 
 export function onDataChanged(fn: () => void): void {
-  listener = fn;
+  listeners.add(fn);
 }
 
 /** Debounced: a burst of writes (an import, a season marked) is one change. */
 export function markDataChanged(): void {
-  if (!listener) return;
+  if (listeners.size === 0) return;
   if (timer) clearTimeout(timer);
   timer = setTimeout(() => {
     timer = null;
-    listener?.();
+    listeners.forEach(fn => fn());
   }, QUIET_MS);
 }
