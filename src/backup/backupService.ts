@@ -229,13 +229,18 @@ async function pruneICloud() {
 const RUN_LIMIT_MS = 5 * 60 * 1000;
 let queue: Promise<unknown> = Promise.resolve();
 function serial<T>(work: () => Promise<T>): Promise<T> {
-  const capped = () =>
-    Promise.race([
+  const capped = () => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    return Promise.race([
       work(),
-      new Promise<T>((_, reject) =>
-        setTimeout(() => reject(new Error('Backup timed out')), RUN_LIMIT_MS),
-      ),
-    ]);
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error('Backup timed out')),
+          RUN_LIMIT_MS,
+        );
+      }),
+    ]).finally(() => clearTimeout(timer));
+  };
   const run = queue.then(capped, capped);
   queue = run.catch(() => {});
   return run;
