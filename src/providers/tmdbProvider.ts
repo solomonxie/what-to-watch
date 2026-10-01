@@ -567,6 +567,7 @@ export const tmdbProvider: MetadataProvider = {
         providerId: 'tmdb' as const,
         externalId: String(r.id),
         title: (r.title ?? r.name)!,
+        originalTitle: r.original_title ?? r.original_name,
         year: parseYear(r.release_date ?? r.first_air_date),
         posterPath: image(r.poster_path),
         mediaType: mediaTypeOf(r),

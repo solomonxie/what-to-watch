@@ -32,6 +32,7 @@ export interface ProviderSearchResult {
   providerId: ProviderId;
   externalId: string;
   title: string;
+  originalTitle?: string;
   year?: number;
   posterPath?: string;
   mediaType: MediaType;
