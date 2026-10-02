@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -52,6 +52,47 @@ export function Chip({
         {label}
       </Text>
     </Pressable>
+  );
+}
+
+const FOLDED_COUNT = 8;
+
+/** Wrapping chips; long lists fold behind More. */
+export function ChipGrid<T extends string>({
+  options,
+  isSelected,
+  onPress,
+}: {
+  options: { value: T; label: string }[];
+  isSelected?: (v: T) => boolean;
+  onPress: (v: T) => void;
+}) {
+  const c = useColors();
+  const [open, setOpen] = useState(false);
+  const foldable = options.length > FOLDED_COUNT + 1;
+  const shown = foldable && !open ? options.slice(0, FOLDED_COUNT) : options;
+  return (
+    <View style={styles.chipGrid}>
+      {shown.map(o => (
+        <Chip
+          key={o.value}
+          label={o.label}
+          selected={isSelected?.(o.value) ?? false}
+          onPress={() => onPress(o.value)}
+        />
+      ))}
+      {foldable ? (
+        <Pressable
+          onPress={() => setOpen(!open)}
+          hitSlop={8}
+          style={styles.moreButton}
+        >
+          <Text style={[type.meta, styles.more, { color: c.accent }]}>
+            {open ? 'Less' : `More (${options.length - FOLDED_COUNT})`}
+          </Text>
+        </Pressable>
+      ) : null}
+    </View>
   );
 }
 
@@ -424,6 +465,14 @@ export function PosterGrid({
 }
 
 const styles = StyleSheet.create({
+  chipGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    paddingHorizontal: space.l,
+    gap: space.s,
+  },
+  moreButton: { paddingHorizontal: space.s, paddingVertical: space.s },
   sectionLabel: {
     paddingHorizontal: space.l,
     marginTop: space.xl,

@@ -1,4 +1,4 @@
-import type { AgeGroup } from '../types/domain';
+import type { AgeGroup, MediaType } from '../types/domain';
 
 const NAMED: Record<string, number> = {
   G: 0,
@@ -71,4 +71,22 @@ export function matchesAgeGroup(
     case 'adults':
       return age >= 17;
   }
+}
+
+export const US_CONTENT_RATINGS: Record<MediaType, string[]> = {
+  movie: ['G', 'PG', 'PG-13', 'R', 'NC-17'],
+  tv: ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14', 'TV-MA'],
+};
+
+// US ratings per group, as pickCertification prefers US; matchesAgeGroup still decides.
+const US_RATINGS: Record<AgeGroup, Record<MediaType, string[]>> = {
+  family: { movie: ['G', 'PG'], tv: ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG'] },
+  kids: { movie: ['G'], tv: ['TV-Y', 'TV-G'] },
+  children: { movie: ['PG'], tv: ['TV-Y7', 'TV-PG'] },
+  teens: { movie: ['PG-13'], tv: ['TV-14'] },
+  adults: { movie: ['R', 'NC-17'], tv: ['TV-MA'] },
+};
+
+export function usRatings(groups: AgeGroup[], mediaType: MediaType): string[] {
+  return Array.from(new Set(groups.flatMap(g => US_RATINGS[g][mediaType])));
 }

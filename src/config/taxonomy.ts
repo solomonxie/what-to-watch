@@ -1,3 +1,5 @@
+import type { AgeGroup, TitleKind } from '../types/domain';
+
 export interface GenreDef {
   name: string;
   movie?: number;
@@ -116,3 +118,21 @@ export function hasGenre(
   const id = genreId(wanted, mediaType);
   return id !== undefined && genres.some(g => genreId(g, mediaType) === id);
 }
+
+export const KINDS: { value: TitleKind; label: string }[] = [
+  { value: 'movie', label: 'Movie' },
+  { value: 'series', label: 'Series' },
+  { value: 'documentary', label: 'Documentary' },
+  { value: 'docuseries', label: 'Docuseries' },
+  { value: 'unscripted', label: 'Reality & talk' },
+  { value: 'animation', label: 'Animation' },
+  { value: 'anime', label: 'Anime' },
+];
+
+export const AGES: { value: AgeGroup; label: string }[] = [
+  { value: 'adults', label: 'Adults 17+' },
+  { value: 'teens', label: 'Teens 13–16' },
+  { value: 'children', label: '7–12' },
+  { value: 'kids', label: 'Kids 0–6' },
+  { value: 'family', label: 'Family' },
+];

@@ -158,7 +158,7 @@ export function DiscoverScreen({ navigation }: Props) {
 
   // Ratings/rankings lack certifications; fetch them only once an age filter needs them.
   const needsAges =
-    filters.ages.length > 0 &&
+    (filters.ages.length > 0 || filters.certifications.length > 0) &&
     [...(feed?.items ?? []), ...(matches ?? [])].some(
       i => i.title.certification == null,
     );

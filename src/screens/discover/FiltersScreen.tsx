@@ -14,16 +14,26 @@ import {
   countActiveFilters,
   useFilterStore,
 } from '../../state/filterStore';
+import {
+  describeFilters,
+  getFilterHistory,
+  saveFilterHistory,
+  withEntry,
+  type FilterHistoryEntry,
+} from '../../state/filterHistory';
+import { US_CONTENT_RATINGS } from '../../catalog/ageRating';
 import { getAllCachedTitles } from '../../db/repositories/titlesRepo';
 import {
+  AGES,
   countryName,
+  KINDS,
   languageName,
   unifiedGenres,
 } from '../../config/taxonomy';
-import { Chip, Segmented } from '../../ui/components';
+import { ChipGrid, Segmented } from '../../ui/components';
 import { space, type, useColors } from '../../ui/theme';
 import type { DiscoverStackParamList } from '../../navigation/types';
-import type { AgeGroup, SortKey, TitleKind } from '../../types/domain';
+import type { SortKey } from '../../types/domain';
 
 type Props = NativeStackScreenProps<DiscoverStackParamList, 'Filters'>;
 type FacetKey = 'genres' | 'languages' | 'regions';
@@ -33,22 +43,6 @@ const SORTS: { value: SortKey; label: string }[] = [
   { value: 'rating', label: 'Rating' },
   { value: 'year', label: 'Year' },
   { value: 'title', label: 'A–Z' },
-];
-
-const KINDS: { value: TitleKind; label: string }[] = [
-  { value: 'movie', label: 'Movie' },
-  { value: 'series', label: 'Series' },
-  { value: 'documentary', label: 'Documentary' },
-  { value: 'docuseries', label: 'Docuseries' },
-  { value: 'unscripted', label: 'Reality & talk' },
-];
-
-const AGES: { value: AgeGroup; label: string }[] = [
-  { value: 'family', label: 'Family' },
-  { value: 'kids', label: 'Kids 0–6' },
-  { value: 'children', label: '7–12' },
-  { value: 'teens', label: 'Teens 13–16' },
-  { value: 'adults', label: 'Adults 17+' },
 ];
 
 const MAX_YEAR = DEFAULT_FILTERS.yearRange[1];
@@ -79,16 +73,37 @@ const YEAR_OPTIONS: {
   { value: 'older', label: 'Older', range: [1900, 1999] },
 ];
 
-type Facets = Record<FacetKey, string[]>;
+const CONTENT_RATINGS = [
+  ...US_CONTENT_RATINGS.movie,
+  ...US_CONTENT_RATINGS.tv,
+].map(r => ({ value: r, label: r }));
+
+// Listed first, ahead of the by-popularity rest.
+const FIRST_CHOICES: Record<FacetKey, string[]> = {
+  genres: [],
+  languages: ['en', 'zh', 'ja', 'ko', 'fr'],
+  regions: ['US', 'CA', 'AU', 'CN', 'JP', 'KR', 'FR'],
+};
+
+/** Values by how many cached titles have them. */
+type Facets = Record<FacetKey, Map<string, number>>;
 
 async function loadFacets(): Promise<Facets> {
   const titles = await getAllCachedTitles();
   const collect = (
     pick: (t: (typeof titles)[number]) => Array<string | null | undefined>,
-  ) =>
-    Array.from(new Set(titles.flatMap(pick).filter((v): v is string => !!v)));
+  ) => {
+    const counts = new Map<string, number>();
+    for (const t of titles)
+      for (const v of new Set(pick(t)))
+        if (v) counts.set(v, (counts.get(v) ?? 0) + 1);
+    return counts;
+  };
   return {
-    genres: collect(t => t.genres.flatMap(unifiedGenres)),
+    // Animation is a type, not a genre.
+    genres: collect(t =>
+      t.genres.flatMap(unifiedGenres).filter(g => g !== 'Animation'),
+    ),
     languages: collect(t => [t.originalLanguage]),
     regions: collect(t => t.originCountries ?? []),
   };
@@ -130,68 +145,43 @@ function Section({
   );
 }
 
-/** One line of chips that scrolls sideways; never wraps. */
-function ChipLine<T extends string>({
-  options,
-  isSelected,
-  onPress,
-}: {
-  options: { value: T; label: string }[];
-  isSelected: (v: T) => boolean;
-  onPress: (v: T) => void;
-}) {
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.chipLine}
-      keyboardShouldPersistTaps="handled"
-    >
-      {options.map(o => (
-        <Chip
-          key={o.value}
-          label={o.label}
-          selected={isSelected(o.value)}
-          onPress={() => onPress(o.value)}
-        />
-      ))}
-    </ScrollView>
-  );
-}
-
 function MultiSection<T extends string>({
   title,
   options,
   selected,
   onChange,
+  chosenRow,
 }: {
   title: string;
   options: { value: T; label: string }[];
   selected: T[];
   onChange: (next: T[]) => void;
+  /** Lift choices into their own row above the rest. */
+  chosenRow?: boolean;
 }) {
   if (options.length === 0) return null;
-  // Selected first, so a choice never scrolls out of sight.
-  const ordered = [
-    ...options.filter(o => selected.includes(o.value)),
-    ...options.filter(o => !selected.includes(o.value)),
-  ];
+  const toggle = (v: T) =>
+    onChange(
+      selected.includes(v) ? selected.filter(x => x !== v) : [...selected, v],
+    );
+  const chosen = chosenRow
+    ? selected.flatMap(v => options.filter(o => o.value === v))
+    : [];
   return (
     <Section
       title={title}
       count={selected.length > 1 ? selected.length : undefined}
       onClear={selected.length ? () => onChange([]) : undefined}
     >
-      <ChipLine
-        options={ordered}
-        isSelected={v => selected.includes(v)}
-        onPress={v =>
-          onChange(
-            selected.includes(v)
-              ? selected.filter(x => x !== v)
-              : [...selected, v],
-          )
+      {chosen.length ? (
+        <ChipGrid options={chosen} isSelected={() => true} onPress={toggle} />
+      ) : null}
+      <ChipGrid
+        options={
+          chosenRow ? options.filter(o => !selected.includes(o.value)) : options
         }
+        isSelected={v => selected.includes(v)}
+        onPress={toggle}
       />
     </Section>
   );
@@ -201,22 +191,50 @@ export function FiltersScreen({ navigation }: Props) {
   const c = useColors();
   const { filters, sort, setFilters, setSort, resetFilters } = useFilterStore();
   const [facets, setFacets] = useState<Facets>({
-    genres: [],
-    languages: [],
-    regions: [],
+    genres: new Map(),
+    languages: new Map(),
+    regions: new Map(),
   });
+
+  const [history, setHistory] = useState<FilterHistoryEntry[]>([]);
 
   useEffect(() => {
     loadFacets().then(setFacets);
+    getFilterHistory().then(setHistory);
+    // Remember what was set when leaving.
+    return () => {
+      const { filters: f, sort: s } = useFilterStore.getState();
+      getFilterHistory().then(h =>
+        saveFilterHistory(withEntry(h, { filters: f, sort: s })),
+      );
+    };
   }, []);
+
+  const restore = (entry: FilterHistoryEntry) => {
+    setFilters({ ...DEFAULT_FILTERS, ...entry.filters });
+    setSort(entry.sort);
+  };
 
   const dirty =
     countActiveFilters(filters) > 0 || sort.key !== DEFAULT_SORT.key;
 
-  const facetOptions = (key: FacetKey, label: (v: string) => string) =>
-    Array.from(new Set([...filters[key], ...facets[key]]))
-      .map(v => ({ value: v, label: label(v) }))
-      .sort((x, y) => x.label.localeCompare(y.label));
+  const facetOptions = (key: FacetKey, label: (v: string) => string) => {
+    const first = FIRST_CHOICES[key];
+    const rank = (v: string) => {
+      const i = first.indexOf(v);
+      return i < 0 ? first.length : i;
+    };
+    return Array.from(
+      new Set([...first, ...filters[key], ...facets[key].keys()]),
+    )
+      .map(v => ({ value: v, label: label(v), n: facets[key].get(v) ?? 0 }))
+      .sort(
+        (x, y) =>
+          rank(x.value) - rank(y.value) ||
+          y.n - x.n ||
+          x.label.localeCompare(y.label),
+      );
+  };
 
   const yearKey =
     YEAR_OPTIONS.find(
@@ -275,7 +293,7 @@ export function FiltersScreen({ navigation }: Props) {
               : undefined
           }
         >
-          <ChipLine
+          <ChipGrid
             options={YEAR_OPTIONS}
             isSelected={v => v === yearKey}
             onPress={v =>
@@ -287,7 +305,7 @@ export function FiltersScreen({ navigation }: Props) {
         </Section>
 
         <Section title="Rating">
-          <ChipLine
+          <ChipGrid
             options={RATINGS}
             isSelected={v => Number(v) === filters.ratingRange[0]}
             onPress={v => setFilters({ ratingRange: [Number(v), 100] })}
@@ -302,19 +320,29 @@ export function FiltersScreen({ navigation }: Props) {
         />
 
         <MultiSection
+          title="Content rating"
+          options={CONTENT_RATINGS}
+          selected={filters.certifications}
+          onChange={certifications => setFilters({ certifications })}
+        />
+
+        <MultiSection
           title="Genre"
+          chosenRow
           options={facetOptions('genres', v => v)}
           selected={filters.genres}
           onChange={genres => setFilters({ genres })}
         />
         <MultiSection
           title="Language"
+          chosenRow
           options={facetOptions('languages', languageName)}
           selected={filters.languages}
           onChange={languages => setFilters({ languages })}
         />
         <MultiSection
           title="Country"
+          chosenRow
           options={facetOptions('regions', countryName)}
           selected={filters.regions}
           onChange={regions => setFilters({ regions })}
@@ -338,6 +366,34 @@ export function FiltersScreen({ navigation }: Props) {
             />
           </View>
         </Section>
+
+        {history.length ? (
+          <Section
+            title="Recent"
+            onClear={() => {
+              setHistory([]);
+              saveFilterHistory([]);
+            }}
+          >
+            {history.map(h => (
+              <Pressable
+                key={JSON.stringify(h)}
+                onPress={() => restore(h)}
+                style={({ pressed }) => [
+                  styles.recent,
+                  pressed && { backgroundColor: c.chip },
+                ]}
+              >
+                <Text
+                  style={[styles.recentText, { color: c.text }]}
+                  numberOfLines={1}
+                >
+                  {describeFilters(h)}
+                </Text>
+              </Pressable>
+            ))}
+          </Section>
+        ) : null}
       </ScrollView>
     </View>
   );
@@ -365,7 +421,6 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { flex: 1 },
   clear: { fontWeight: '600' },
-  chipLine: { paddingHorizontal: space.l, gap: space.s },
   divider: {
     height: StyleSheet.hairlineWidth,
     marginHorizontal: space.l,
@@ -377,4 +432,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.m,
   },
   input: { paddingVertical: 10, fontSize: 17 },
+  recent: { paddingHorizontal: space.l, paddingVertical: 10 },
+  recentText: { fontSize: 15 },
 });

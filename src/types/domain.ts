@@ -80,13 +80,17 @@ export type TitleKind =
   | 'series'
   | 'documentary'
   | 'docuseries'
-  | 'unscripted';
+  | 'unscripted'
+  | 'animation'
+  | 'anime';
 
 export type AgeGroup = 'family' | 'kids' | 'children' | 'teens' | 'adults';
 
 export interface FilterState {
   kinds: TitleKind[];
   ages: AgeGroup[];
+  /** US content ratings, e.g. PG-13, TV-MA. */
+  certifications: string[];
   ratingRange: [number, number];
   minWatchCount: number;
   genres: string[];
