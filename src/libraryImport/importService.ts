@@ -3,10 +3,9 @@ import {
   refreshSearchIndex,
   titleIdFor,
 } from '../catalog/catalogService';
-import {
-  getUserRatingForTitle,
-  importRating,
-} from '../db/repositories/ratingsRepo';
+import { getUserRatingForTitle } from '../db/repositories/ratingsRepo';
+import { importMark } from '../db/repositories/notesRepo';
+import { seasonOf } from './matcher';
 import {
   getWatchEntry,
   setImportedStatus,
@@ -22,6 +21,23 @@ import { resolveEntry } from './resolve';
 import type { ImportEntry, ParsedImport } from './types';
 
 const CONCURRENCY = 4;
+
+/** Runs `fn` after any earlier call for the same key has finished. */
+function serialized() {
+  const tails = new Map<string, Promise<unknown>>();
+  return <T>(key: string, fn: () => Promise<T>): Promise<T> => {
+    const run = (tails.get(key) ?? Promise.resolve()).then(fn, fn);
+    tails.set(
+      key,
+      run.catch(() => {}),
+    );
+    return run;
+  };
+}
+
+function seasonLabel(season: number | undefined) {
+  return season ? `Season ${season}` : 'Final season';
+}
 
 export interface ImportSummary {
   source: string;
@@ -59,6 +75,8 @@ export async function runImport(
   };
   let next = 0;
   let done = 0;
+  // Seasons of one show arrive as separate rows; one at a time per show.
+  const perTitle = serialized();
 
   const worker = async () => {
     while (next < parsed.entries.length) {
@@ -73,34 +91,55 @@ export async function runImport(
             match.details.mediaType,
             match.details.externalId,
           );
-          const at = entry.date ?? Date.now();
-          // An episode's score is for that episode, not the show.
-          if (match.episode) {
-            await setEpisodesWatched(id, [match.episode], true);
-            summary.episodes++;
-          }
-          const rated =
-            !match.episode && entry.rating
-              ? await importRating(id, entry.rating, entry.review, at)
-              : false;
-          const status = derivedStatus({
-            mediaType: match.details.mediaType,
-            source: match.episode ? undefined : entry.status,
-            rated: rated || !!(await getUserRatingForTitle(id)),
-            episodesWatched: (await getWatchedEpisodes(id)).size,
-            current: (await getWatchEntry(id))?.status as
-              | WatchStatus
-              | undefined,
+          await perTitle(id, async () => {
+            const at = entry.date ?? Date.now();
+            // An episode's score is for that episode, not the show.
+            if (match.episode) {
+              await setEpisodesWatched(id, [match.episode], true);
+              summary.episodes++;
+            }
+            const listing =
+              match.details.mediaType === 'tv' && !match.episode
+                ? seasonOf(entry.titles)
+                : null;
+            // Each rated row is a mark; a season's carries its name. The
+            // title's rating is then its latest mark's.
+            const review = entry.review?.trim() ?? '';
+            const rated =
+              !match.episode && entry.rating
+                ? await importMark(
+                    id,
+                    {
+                      rating: entry.rating,
+                      body: listing
+                        ? [seasonLabel(listing.season), review]
+                            .filter(Boolean)
+                            .join(' · ')
+                        : review,
+                      markedAt: at,
+                    },
+                    review,
+                  )
+                : false;
+            const status = derivedStatus({
+              mediaType: match.details.mediaType,
+              source: match.episode ? undefined : entry.status,
+              rated: rated || !!(await getUserRatingForTitle(id)),
+              episodesWatched: (await getWatchedEpisodes(id)).size,
+              current: (await getWatchEntry(id))?.status as
+                | WatchStatus
+                | undefined,
+            });
+            const wrote = await setImportedStatus(id, status, at);
+            if (wrote || rated || match.episode) summary.imported++;
+            else summary.skipped++;
+            if (wrote) {
+              if (status === 'completed') summary.watched++;
+              else if (status === 'toWatch') summary.toWatch++;
+              else summary.watching++;
+            }
+            if (rated) summary.rated++;
           });
-          const wrote = await setImportedStatus(id, status, at);
-          if (wrote || rated || match.episode) summary.imported++;
-          else summary.skipped++;
-          if (wrote) {
-            if (status === 'completed') summary.watched++;
-            else if (status === 'toWatch') summary.toWatch++;
-            else summary.watching++;
-          }
-          if (rated) summary.rated++;
         }
       } catch {
         summary.unmatched.push(entry);

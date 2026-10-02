@@ -6,6 +6,7 @@ import { EPISODE_WATCHES_STATEMENTS } from './0004_episode_watches';
 import { DERIVED_STATUS_STATEMENTS } from './0005_derived_status';
 import { RESPONSE_CACHE_STATEMENTS } from './0006_response_cache';
 import { NOTE_MARKS_STATEMENTS } from './0007_note_marks';
+import { MERGE_DUPLICATES_STATEMENTS } from './0008_merge_duplicates';
 import { POPULARITY_STATEMENTS } from './0009_popularity';
 import { RATED_MARKS_STATEMENTS } from './0010_rated_marks';
 
@@ -19,6 +20,7 @@ export const MIGRATIONS: string[][] = [
   DERIVED_STATUS_STATEMENTS,
   RESPONSE_CACHE_STATEMENTS,
   NOTE_MARKS_STATEMENTS,
+  MERGE_DUPLICATES_STATEMENTS,
   POPULARITY_STATEMENTS,
   RATED_MARKS_STATEMENTS,
 ];
