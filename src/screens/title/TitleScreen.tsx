@@ -238,7 +238,10 @@ export function TitleScreen({ route }: Props) {
 
 function OpenIn({ title, providers }: { title: Title; providers: Provider[] }) {
   const c = useColors();
-  const douban = doubanUrl(title.imdbId, title.title, year(title.releaseDate));
+  const released = year(title.releaseDate);
+  useEffect(() => {
+    prefetchDouban(title.imdbId, title.title, released);
+  }, [title.imdbId, title.title, released]);
   const unique = Array.from(
     new Map(
       providers
@@ -264,9 +267,14 @@ function OpenIn({ title, providers }: { title: Title; providers: Provider[] }) {
       logo: p.logoPath,
       url: platformUrl(p.platformId, title.title, p.link),
     })),
-    ...(title.imdbId
-      ? [{ key: 'imdb', label: 'IMDb', logo: null, url: imdbUrl(title.imdbId) }]
-      : []),
+    {
+      key: 'imdb',
+      label: 'IMDb',
+      logo: null,
+      url: title.imdbId
+        ? imdbUrl(title.imdbId)
+        : imdbSearchUrl(title.title, title.mediaType, released),
+    },
     ...(ref
       ? [
           {
@@ -285,7 +293,15 @@ function OpenIn({ title, providers }: { title: Title; providers: Provider[] }) {
     label: 'Douban',
     logo: null,
     url: null,
-    open: async () => Linking.openURL(await douban),
+    open: () => openDouban(title.imdbId, title.title, released),
+  });
+  const youtube = youtubeSearchUrl(title.title, title.mediaType, released);
+  links.push({
+    key: 'youtube',
+    label: 'YouTube',
+    logo: null,
+    url: youtube,
+    open: () => openInSafari(youtube),
   });
 
   return (
@@ -307,7 +323,7 @@ function OpenIn({ title, providers }: { title: Title; providers: Provider[] }) {
             ) : (
               <View style={[styles.logo, styles.badge, BADGE[l.key]]}>
                 <Text style={[styles.badgeText, BADGE_TEXT[l.key]]}>
-                  {l.key === 'douban' ? '豆瓣' : l.label}
+                  {BADGE_LABEL[l.key] ?? l.label}
                 </Text>
               </View>
             )}
@@ -738,9 +754,12 @@ const BADGE: Record<string, object> = {
   imdb: styles.imdbBadge,
   tmdb: styles.tmdbBadge,
   douban: styles.doubanBadge,
+  youtube: styles.youtubeBadge,
 };
+const BADGE_LABEL: Record<string, string> = { douban: '豆瓣', youtube: '▶' };
 const BADGE_TEXT: Record<string, object> = {
   imdb: styles.imdbText,
   tmdb: styles.tmdbText,
   douban: styles.doubanText,
+  youtube: styles.youtubeText,
 };
