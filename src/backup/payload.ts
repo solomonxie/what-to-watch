@@ -64,9 +64,13 @@ export function stripId<T extends { id?: unknown }>(row: T): Omit<T, 'id'> {
   return rest as Omit<T, 'id'>;
 }
 
-// Hash of the content only, so an unchanged dataset gates as unchanged.
+// Hash of the user's own records only, so an unchanged dataset gates as
+// unchanged. Titles are a re-fetchable cache and most of the bytes; hashing
+// them took seconds on the phone.
 export function contentHash(payload: BackupPayload): string {
-  return fnv1a(JSON.stringify({ ...payload, exportedAt: undefined }));
+  return fnv1a(
+    JSON.stringify({ ...payload, exportedAt: undefined, titles: undefined }),
+  );
 }
 
 /* eslint-disable no-bitwise */
