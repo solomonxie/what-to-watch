@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  Keyboard,
   KeyboardAvoidingView,
-  Pressable,
   StyleSheet,
-  Text,
   TextInput,
   View,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSettingsStore } from '../../state/settingsStore';
@@ -37,6 +37,32 @@ export function SearchScreen({ navigation, route }: Props) {
   const [history, setHistory] = useState<string[]>([]);
   const [library, setLibrary] = useState<Set<string>>(() => new Set());
   const [indexVersion, setIndexVersion] = useState(0);
+  const [keyboard, setKeyboard] = useState(false);
+  useEffect(() => {
+    const subs = [
+      Keyboard.addListener('keyboardWillShow', () => setKeyboard(true)),
+      Keyboard.addListener('keyboardWillHide', () => setKeyboard(false)),
+    ];
+    return () => subs.forEach(s => s.remove());
+  }, []);
+
+  // First pull hides the keyboard, the next leaves search.
+  const pullDown = () => {
+    if (keyboard) Keyboard.dismiss();
+    else navigation.getParent()?.goBack();
+  };
+  const input = useRef<React.ElementRef<typeof TextInput>>(null);
+
+  // Ready to type whenever the tab is opened or its button tapped again.
+  useFocusEffect(
+    useCallback(() => {
+      input.current?.focus();
+    }, []),
+  );
+  const focusRequest = route.params?.focus;
+  useEffect(() => {
+    if (focusRequest) input.current?.focus();
+  }, [focusRequest]);
 
   useEffect(() => {
     getSearchHistory()
@@ -73,6 +99,7 @@ export function SearchScreen({ navigation, route }: Props) {
             region={region}
             library={library}
             indexVersion={indexVersion}
+            onPullDown={pullDown}
             onOpen={titleId => {
               remember();
               navigation.navigate('Title', { titleId });
@@ -84,6 +111,7 @@ export function SearchScreen({ navigation, route }: Props) {
             onPick={setQuery}
             onRemove={q => updateHistory(history.filter(h => h !== q))}
             onClear={() => updateHistory([])}
+            onPullDown={pullDown}
           />
         )}
       </View>
@@ -92,7 +120,9 @@ export function SearchScreen({ navigation, route }: Props) {
           styles.bar,
           {
             borderTopColor: c.separator,
-            paddingBottom: Math.max(insets.bottom, space.m),
+            paddingBottom: keyboard
+              ? space.m
+              : Math.max(insets.bottom, space.m),
           },
         ]}
       >
@@ -102,15 +132,12 @@ export function SearchScreen({ navigation, route }: Props) {
           onChangeText={setQuery}
           placeholder="Movies, shows, cast"
           placeholderTextColor={c.secondary}
-          autoFocus
+          ref={input}
           autoCorrect={false}
           returnKeyType="search"
           onSubmitEditing={remember}
           clearButtonMode="while-editing"
         />
-        <Pressable onPress={() => navigation.getParent()?.goBack()} hitSlop={8}>
-          <Text style={[styles.cancel, { color: c.accent }]}>Cancel</Text>
-        </Pressable>
       </View>
     </KeyboardAvoidingView>
   );
@@ -134,5 +161,4 @@ const styles = StyleSheet.create({
     height: 46,
     fontSize: 17,
   },
-  cancel: { fontSize: 17 },
 });

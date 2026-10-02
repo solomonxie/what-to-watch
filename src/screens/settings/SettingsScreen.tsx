@@ -6,7 +6,7 @@ import { getApiKey } from '../../secureStorage/apiKeyStore';
 import { PLATFORMS, DEFAULT_REGION } from '../../config/platforms';
 import { useSettingsStore } from '../../state/settingsStore';
 import { usePrefsStore } from '../../prefs/prefsStore';
-import { FLOATING_CLEARANCE, GroupedSection, Row } from '../../ui/components';
+import { BOTTOM_CLEARANCE, GroupedSection, Row } from '../../ui/components';
 import { useColors } from '../../ui/theme';
 import { ICloudRow } from './ICloudRow';
 import { CsvImportRow } from './CsvImportRow';
@@ -173,5 +173,5 @@ export function SettingsScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingBottom: FLOATING_CLEARANCE },
+  content: { paddingBottom: BOTTOM_CLEARANCE },
 });

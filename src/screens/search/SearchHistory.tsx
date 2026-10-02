@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { pullToLeave } from './pullToLeave';
 import { EmptyState, SectionLabel } from '../../ui/components';
 import { space, type, useColors } from '../../ui/theme';
 
@@ -8,18 +9,34 @@ interface Props {
   onPick: (query: string) => void;
   onRemove: (query: string) => void;
   onClear: () => void;
+  onPullDown?: () => void;
 }
 
-export function SearchHistory({ history, onPick, onRemove, onClear }: Props) {
+export function SearchHistory({
+  history,
+  onPick,
+  onRemove,
+  onClear,
+  onPullDown,
+}: Props) {
   const c = useColors();
   if (history.length === 0) {
-    return <EmptyState message="Search your library and everything on TMDB." />;
+    return (
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        {...pullToLeave(onPullDown)}
+      >
+        <EmptyState message="Search your library and everything on TMDB." />
+      </ScrollView>
+    );
   }
   return (
     <ScrollView
       contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
-      keyboardDismissMode="on-drag"
+      keyboardDismissMode="interactive"
+      {...pullToLeave(onPullDown)}
     >
       <View style={styles.header}>
         <SectionLabel style={styles.label}>Recent</SectionLabel>

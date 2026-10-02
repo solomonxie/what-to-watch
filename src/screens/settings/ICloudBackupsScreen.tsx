@@ -12,7 +12,7 @@ import { useSettingsStore } from '../../state/settingsStore';
 import { usePrefsStore } from '../../prefs/prefsStore';
 import {
   EmptyState,
-  FLOATING_CLEARANCE,
+  BOTTOM_CLEARANCE,
   GroupedSection,
   Row,
 } from '../../ui/components';
@@ -161,6 +161,6 @@ export function ICloudBackupsScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingBottom: FLOATING_CLEARANCE },
+  content: { paddingBottom: BOTTOM_CLEARANCE },
   stats: { marginTop: 2 },
 });

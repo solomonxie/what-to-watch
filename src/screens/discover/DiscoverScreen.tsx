@@ -35,7 +35,7 @@ import {
   ChipRow,
   EmptyState,
   FilterButton,
-  FLOATING_CLEARANCE,
+  BOTTOM_CLEARANCE,
   PosterGrid,
   SectionLabel,
 } from '../../ui/components';
@@ -253,7 +253,7 @@ export function DiscoverScreen({ navigation }: Props) {
   const openTitle = (titleId: string) =>
     navigation.navigate('Title', { titleId });
   const goSettings = (screen: 'ApiKey' | 'SettingsHome') =>
-    navigation.getParent()?.navigate('SettingsTab', {
+    navigation.getParent()?.navigate('Settings', {
       screen,
       params: screen === 'ApiKey' ? { providerId: 'tmdb' } : undefined,
     });
@@ -303,7 +303,7 @@ export function DiscoverScreen({ navigation }: Props) {
           message="Nothing matched your taste here. Try more genres in Settings → Taste."
           action="Edit taste"
           onAction={() =>
-            navigation.getParent()?.navigate('SettingsTab', { screen: 'Taste' })
+            navigation.getParent()?.navigate('Settings', { screen: 'Taste' })
           }
         />
       );
@@ -383,7 +383,7 @@ export function DiscoverScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingBottom: FLOATING_CLEARANCE },
+  content: { paddingBottom: BOTTOM_CLEARANCE },
   scopeRow: { flexDirection: 'row', alignItems: 'center' },
   divider: {
     width: StyleSheet.hairlineWidth,
