@@ -117,6 +117,34 @@ describe('applyFilters kinds', () => {
     expect(ids(['unscripted'])).toEqual(['r']);
     expect(ids([])).toHaveLength(5);
   });
+
+  it('treats animation as a type, Japanese animation as anime', () => {
+    const items = [
+      makeItem({ id: 'a', genres: ['Animation'], originalLanguage: 'en' }),
+      makeItem({ id: 'j', mediaType: 'tv', genres: ['Animation'], originalLanguage: 'ja' }),
+      makeItem({ id: 's', mediaType: 'tv', genres: ['Drama'] }),
+    ];
+    const ids = (kinds: typeof DEFAULT_FILTERS.kinds) =>
+      applyFilters(items, { ...DEFAULT_FILTERS, kinds }).map(r => r.title.id);
+    expect(ids(['animation'])).toEqual(['a']);
+    expect(ids(['anime'])).toEqual(['j']);
+    expect(ids(['series'])).toEqual(['s']);
+  });
+});
+
+describe('applyFilters content ratings', () => {
+  it('matches the exact US rating', () => {
+    const items = [
+      makeItem({ id: 'r', certification: 'R' }),
+      makeItem({ id: 'n', certification: 'NC-17' }),
+      makeItem({ id: 'x' }),
+    ];
+    const result = applyFilters(items, {
+      ...DEFAULT_FILTERS,
+      certifications: ['NC-17'],
+    });
+    expect(result.map(r => r.title.id)).toEqual(['n']);
+  });
 });
 
 describe('applyFilters facets', () => {

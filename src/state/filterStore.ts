@@ -6,6 +6,7 @@ import type { FilterState, SortState, TitleKind } from '../types/domain';
 export const DEFAULT_FILTERS: FilterState = {
   kinds: [],
   ages: [],
+  certifications: [],
   ratingRange: [0, 100],
   minWatchCount: 0,
   genres: [],
@@ -49,6 +50,8 @@ const UNSCRIPTED = ['Reality', 'Talk', 'News'];
 
 export function kindOf(title: FilterableTitle): TitleKind {
   const tv = title.mediaType === 'tv';
+  if (title.genres.includes('Animation'))
+    return title.originalLanguage === 'ja' ? 'anime' : 'animation';
   if (title.genres.includes('Documentary'))
     return tv ? 'docuseries' : 'documentary';
   if (tv && title.genres.some(g => UNSCRIPTED.includes(g))) return 'unscripted';
@@ -72,6 +75,7 @@ export function countActiveFilters(filters: FilterState): number {
   return [
     filters.kinds.length > 0,
     filters.ages.length > 0,
+    filters.certifications.length > 0,
     filters.ratingRange[0] !== d.ratingRange[0] ||
       filters.ratingRange[1] !== d.ratingRange[1],
     filters.minWatchCount !== d.minWatchCount,
@@ -98,6 +102,13 @@ export function applyFilters<T extends FilterableTitle>(
     if (
       filters.ages.length &&
       !filters.ages.some(group => matchesAgeGroup(title, group))
+    )
+      return false;
+    if (
+      filters.certifications.length &&
+      !filters.certifications.includes(
+        (title.certification ?? '').trim().toUpperCase(),
+      )
     )
       return false;
     if (
