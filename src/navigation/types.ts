@@ -1,3 +1,4 @@
+import type { LibraryFacet } from '../screens/library/libraryFacets';
 import type { NavigatorScreenParams } from '@react-navigation/native';
 import type { Facet } from '../prefs/prefsStore';
 
@@ -17,7 +18,7 @@ export type DiscoverStackParamList = {
 
 export type LibraryStackParamList = {
   LibraryHome: undefined;
-  LibrarySection: { title: string };
+  LibrarySection: { title: string; facet?: LibraryFacet };
   Title: TitleParams;
 };
 
