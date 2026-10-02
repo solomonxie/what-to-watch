@@ -116,6 +116,16 @@ export function seasonOf(
     : null;
 }
 
+/** The number on "龙樱2" or "拳愿阿修罗 Part.2"; a 4-digit year doesn't count. */
+export function sequelNumber(titles: string[]): number | undefined {
+  for (const t of titles) {
+    const m = t.trim().match(/(?:Part\.?\s*(\d{1,2})|(?:^|[^\d])(\d{1,2}))$/i);
+    const n = m && Number(m[1] ?? m[2]);
+    if (n && n > 1) return n;
+  }
+  return undefined;
+}
+
 /**
  * The series name under an arc, part or numbered sequel:
  * "鬼灭之刃：游郭篇" → "鬼灭之刃", "龙樱2" → "龙樱", "拳愿阿修罗 Part.2" → "拳愿阿修罗".

@@ -150,7 +150,14 @@ describe('matcher', () => {
 });
 
 describe('season and series names', () => {
-  const { seasonOf, seriesNames, remakeOf } = require('../src/libraryImport/matcher');
+  const { seasonOf, seriesNames, remakeOf, sequelNumber } = require('../src/libraryImport/matcher');
+
+  it('reads a trailing sequel number, not a year or a 1', () => {
+    expect(sequelNumber(['龙樱2'])).toBe(2);
+    expect(sequelNumber(['拳愿阿修罗 Part.2'])).toBe(2);
+    expect(sequelNumber(['1917'])).toBeUndefined();
+    expect(sequelNumber(['Dune'])).toBeUndefined();
+  });
 
   it('reads the season and strips its marker', () => {
     expect(seasonOf(['葬送的芙莉莲 第二季', "Frieren: Beyond Journey's End Season 2"])).toEqual({
