@@ -263,6 +263,7 @@ function toDetails(
       : undefined,
     imdbId: data.imdb_id ?? data.external_ids?.imdb_id ?? undefined,
     tmdbId: String(data.id),
+    popularity: data.popularity,
   };
 }
 

@@ -69,6 +69,7 @@ export function mergeTitleDetails(
     imdbId: firstDefined(sorted, d => d.imdbId),
     tmdbId: firstDefined(sorted, d => d.tmdbId),
     omdbId: firstDefined(sorted, d => d.omdbId),
+    popularity: firstDefined(sorted, d => d.popularity),
     ratings,
     primaryRatingScore: averageNormalizedScore(ratings),
   };
