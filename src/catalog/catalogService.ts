@@ -1,3 +1,4 @@
+import { hasCjk } from '../libraryImport/matcher';
 import {
   discoverByPlatform,
   getCertification,
@@ -179,7 +180,10 @@ export async function searchOnline(
   query: string,
 ): Promise<ProviderSearchResult[]> {
   if (!query.trim() || !(await tmdbProvider.isConfigured())) return [];
-  return tmdbProvider.searchTitles(query);
+  // A Chinese query gets results named in Chinese.
+  return tmdbProvider.searchTitles(query, {
+    language: hasCjk(query) ? 'zh-CN' : 'en-US',
+  });
 }
 
 /** Cache a list result (discover/search) without an extra details request. */

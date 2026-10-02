@@ -83,6 +83,13 @@ type TmdbRegionProviders = Partial<
 > & { link?: string };
 
 interface TmdbDetailsResponse extends TmdbListItem {
+  translations?: {
+    translations: Array<{
+      iso_639_1: string;
+      iso_3166_1: string;
+      data?: { title?: string; name?: string };
+    }>;
+  };
   runtime?: number;
   episode_run_time?: number[];
   genres?: Array<{ name: string }>;
@@ -264,7 +271,25 @@ function toDetails(
     imdbId: data.imdb_id ?? data.external_ids?.imdb_id ?? undefined,
     tmdbId: String(data.id),
     popularity: data.popularity,
+    zhTitle: chineseTitle(data),
   };
+}
+
+// Simplified first; an empty translation means "same as the original".
+const ZH_REGIONS = ['CN', 'SG', 'TW', 'HK'];
+function chineseTitle(data: TmdbDetailsResponse): string | undefined {
+  const zh = (data.translations?.translations ?? [])
+    .filter(t => t.iso_639_1 === 'zh')
+    .sort(
+      (a, b) =>
+        ZH_REGIONS.indexOf(a.iso_3166_1) - ZH_REGIONS.indexOf(b.iso_3166_1),
+    )
+    .map(t => t.data?.title || t.data?.name)
+    .find(Boolean);
+  if (zh) return zh;
+  return data.original_language === 'zh' || data.original_language === 'cn'
+    ? data.original_title ?? data.original_name
+    : undefined;
 }
 
 /** Details, credits, ratings and region availability in one request. */
@@ -275,7 +300,7 @@ export async function getTmdbFullTitle(
 ): Promise<TmdbFullTitle> {
   const data = await get<TmdbDetailsResponse>(`/${mediaType}/${tmdbId}`, {
     language: 'en-US',
-    append_to_response: `credits,watch/providers,external_ids,${CERTIFICATION_PART[mediaType]}`,
+    append_to_response: `credits,watch/providers,external_ids,translations,${CERTIFICATION_PART[mediaType]}`,
   });
   const details = toDetails(data, mediaType);
   return {

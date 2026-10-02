@@ -19,6 +19,8 @@ export const cachedTitles = sqliteTable('cached_titles', {
   castNames: text('cast_names', { mode: 'json' }).$type<string[]>(),
   certification: text('certification'),
   popularity: real('popularity'),
+  /** Chinese title, from TMDB's translations or a Douban import. */
+  zhTitle: text('zh_title'),
   fetchedAt: integer('fetched_at').notNull(),
 });
 

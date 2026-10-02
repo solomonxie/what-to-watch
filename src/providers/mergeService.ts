@@ -70,6 +70,7 @@ export function mergeTitleDetails(
     tmdbId: firstDefined(sorted, d => d.tmdbId),
     omdbId: firstDefined(sorted, d => d.omdbId),
     popularity: firstDefined(sorted, d => d.popularity),
+    zhTitle: firstDefined(sorted, d => d.zhTitle),
     ratings,
     primaryRatingScore: averageNormalizedScore(ratings),
   };

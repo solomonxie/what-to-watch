@@ -177,6 +177,11 @@ export function TitleScreen({ route }: Props) {
         />
         <View style={styles.heroText}>
           <Text style={[type.title, { color: c.text }]}>{title.title}</Text>
+          {title.zhTitle && title.zhTitle !== title.title ? (
+            <Text style={[type.meta, styles.zhTitle, { color: c.secondary }]}>
+              {title.zhTitle}
+            </Text>
+          ) : null}
           <Text style={[type.meta, { color: c.secondary }]}>
             {joinMeta([
               year(title.releaseDate),
@@ -592,6 +597,7 @@ const styles = StyleSheet.create({
   },
   statValue: { fontSize: 20, fontWeight: '700' },
   ratedOn: { marginTop: space.xs },
+  zhTitle: { fontSize: 15 },
   stateLine: { paddingHorizontal: space.l, marginTop: space.xl },
   interested: {
     alignSelf: 'flex-start',

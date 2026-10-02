@@ -5,6 +5,7 @@ export interface SearchableTitle {
   id: string;
   title: string;
   originalTitle?: string | null;
+  zhTitle?: string | null;
   genres: string[];
   castNames?: string[] | null;
   posterPath?: string | null;
@@ -76,7 +77,7 @@ function entryScore(query: string, e: Entry): number {
 function toEntry(t: SearchableTitle): Entry {
   return {
     item: t,
-    names: [t.title, t.originalTitle]
+    names: [t.title, t.originalTitle, t.zhTitle]
       .filter((n): n is string => !!n)
       .map(normalize),
     cast: (t.castNames ?? []).map(normalize),

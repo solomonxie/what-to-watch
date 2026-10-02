@@ -59,6 +59,8 @@ export interface ProviderTitleDetails {
   omdbId?: string;
   /** TMDB's popularity score. */
   popularity?: number;
+  /** Chinese title, when known. */
+  zhTitle?: string;
 }
 
 export interface NormalizedTitle extends ProviderTitleDetails {
