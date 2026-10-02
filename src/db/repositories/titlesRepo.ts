@@ -1,4 +1,4 @@
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { db, ensureMigrated } from '../client';
 import { cachedTitles, cachedRatings, cachedWatchProviders } from '../schema';
 import type {
@@ -14,6 +14,7 @@ export async function upsertTitle(title: NormalizedTitle): Promise<void> {
     castNames: title.cast,
     certification: title.certification,
     popularity: title.popularity,
+    zhTitle: title.zhTitle,
   };
   await db
     .insert(cachedTitles)
@@ -112,6 +113,7 @@ export async function getSearchableTitles() {
       id: t.id,
       title: t.title,
       originalTitle: t.originalTitle,
+      zhTitle: t.zhTitle,
       genres: t.genres,
       castNames: t.castNames,
       posterPath: t.posterPath,
@@ -169,4 +171,13 @@ export async function replaceWatchProviders(
       fetchedAt: now,
     })),
   );
+}
+
+/** Keeps a known Chinese title (e.g. from Douban) unless one is stored. */
+export async function setZhTitleIfMissing(id: string, zhTitle: string) {
+  await ensureMigrated();
+  await db
+    .update(cachedTitles)
+    .set({ zhTitle })
+    .where(and(eq(cachedTitles.id, id), isNull(cachedTitles.zhTitle)));
 }

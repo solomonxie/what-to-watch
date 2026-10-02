@@ -32,9 +32,9 @@ export function spotlightItem(
       inLibrary && 'In your library',
     ]),
     keywords: [
-      ...(t.originalTitle && t.originalTitle !== t.title
-        ? [t.originalTitle]
-        : []),
+      ...[t.originalTitle, t.zhTitle].filter(
+        (n): n is string => !!n && n !== t.title,
+      ),
       ...t.genres,
       ...(t.castNames ?? []).slice(0, 5),
       ...(year ? [year] : []),
