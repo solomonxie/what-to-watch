@@ -1,14 +1,19 @@
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
-import type {
-  cachedTitles,
-  episodeWatches,
-  settings,
-  userNotes,
-  userRatings,
-  watchHistory,
-} from '../db/schema';
+import type { cachedTitles, settings } from '../db/schema';
+import {
+  FROM_WATCH_STATUS,
+  groupByTitle,
+  isTick,
+  onEpisode,
+  titleRating,
+  titleState,
+  type Mark,
+} from '../marks/derive';
+import type { WatchStatus } from '../types/domain';
 
-export const PAYLOAD_VERSION = 2;
+// v3: one `marks` list. v2 and older kept notes, ratings, watch history and
+// episode ticks apart; they're converted on read.
+export const PAYLOAD_VERSION = 3;
 export const BACKUP_SUFFIX = '-what-to-watch.json';
 export const ZIP_ENTRY = 'backup.json';
 export const SNAPSHOT_DIR = 'Snapshots';
@@ -22,11 +27,7 @@ type NoId<T> = Omit<T, 'id'> & { id?: unknown };
 export interface BackupPayload {
   version: number;
   exportedAt: string;
-  notes: NoId<typeof userNotes.$inferInsert>[];
-  ratings: NoId<typeof userRatings.$inferInsert>[];
-  watchHistory: NoId<typeof watchHistory.$inferInsert>[];
-  /** Absent in backups made before episode tracking. */
-  episodes?: NoId<typeof episodeWatches.$inferInsert>[];
+  marks: NoId<Mark>[];
   settings?: NoId<typeof settings.$inferInsert>;
   titles?: (typeof cachedTitles.$inferInsert)[];
   /** Taste profile (JSON of Preferences). */
@@ -48,14 +49,103 @@ export function parsePayload(text: string): BackupPayload {
   return {
     version: data.version,
     exportedAt: data.exportedAt ?? '',
-    notes: data.notes ?? [],
-    ratings: data.ratings ?? [],
-    watchHistory: data.watchHistory ?? [],
-    episodes: data.episodes ?? undefined,
+    marks: data.marks ?? legacyMarks(data),
     settings: data.settings ?? undefined,
     titles: data.titles ?? [],
     preferences: data.preferences ?? undefined,
   };
+}
+
+interface LegacyPayload {
+  notes?: {
+    titleId: string;
+    body: string;
+    rating?: number | null;
+    markedAt?: number | null;
+    createdAt: number;
+    updatedAt: number;
+  }[];
+  ratings?: {
+    titleId: string;
+    rating: number;
+    reviewText?: string | null;
+    createdAt: number;
+    updatedAt: number;
+  }[];
+  watchHistory?: { titleId: string; status: string; watchedAt: number }[];
+  episodes?: {
+    titleId: string;
+    season: number;
+    episode: number;
+    watchedAt: number;
+  }[];
+}
+
+const RATED_NOTE = /^(.*?)\s*·?\s*Rated (\d+(?:\.\d+)?)\/10\s*·?\s*(.*)$/s;
+const AUTO_NOTE = /^(Interested|Watched \d+ of \d+ episodes)$/;
+
+/** Older backups' separate lists, as marks (the same rules as migrations 0010-0011). */
+export function legacyMarks(data: LegacyPayload): NoId<Mark>[] {
+  const base = {
+    season: null,
+    episode: null,
+    status: null,
+    rating: null,
+    review: '',
+  };
+  const notes = (data.notes ?? []).flatMap(n => {
+    let { rating = null } = n;
+    let review = n.body;
+    const rated = rating === null ? review.match(RATED_NOTE) : null;
+    if (rated) {
+      rating = Number(rated[2]);
+      review = [rated[1], rated[3]].filter(Boolean).join(' · ');
+    } else if (rating === null && AUTO_NOTE.test(review)) return [];
+    return [
+      {
+        ...base,
+        titleId: n.titleId,
+        rating,
+        review,
+        markedAt: n.markedAt ?? n.createdAt,
+        createdAt: n.createdAt,
+        updatedAt: n.updatedAt,
+      },
+    ];
+  });
+  const ratedInNotes = new Set(
+    notes.filter(n => n.rating !== null).map(n => n.titleId),
+  );
+  const ratings = (data.ratings ?? [])
+    .filter(r => !ratedInNotes.has(r.titleId))
+    .map(r => ({
+      ...base,
+      titleId: r.titleId,
+      rating: r.rating,
+      review: r.reviewText ?? '',
+      markedAt: r.updatedAt,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt,
+    }));
+  const statuses = (data.watchHistory ?? []).map(h => ({
+    ...base,
+    titleId: h.titleId,
+    status: FROM_WATCH_STATUS[h.status as WatchStatus] ?? h.status,
+    markedAt: h.watchedAt,
+    createdAt: h.watchedAt,
+    updatedAt: h.watchedAt,
+  }));
+  const episodes = (data.episodes ?? []).map(e => ({
+    ...base,
+    titleId: e.titleId,
+    season: e.season,
+    episode: e.episode,
+    status: 'watched',
+    markedAt: e.watchedAt,
+    createdAt: e.watchedAt,
+    updatedAt: e.watchedAt,
+  }));
+  return [...notes, ...ratings, ...statuses, ...episodes];
 }
 
 export function stripId<T extends { id?: unknown }>(row: T): Omit<T, 'id'> {
@@ -110,10 +200,8 @@ export function shouldWrite(hash: string, lastHash: string | null): boolean {
   return hash !== lastHash;
 }
 
-export function hasUserData(
-  p: Pick<BackupPayload, 'notes' | 'ratings' | 'watchHistory'>,
-) {
-  return p.notes.length + p.ratings.length + p.watchHistory.length > 0;
+export function hasUserData(p: Pick<BackupPayload, 'marks'>) {
+  return p.marks.length > 0;
 }
 
 const pad = (n: number, width = 2) => String(n).padStart(width, '0');
@@ -126,15 +214,8 @@ export function dailyZipName(date: Date): string {
 }
 
 /** Everything the user made by hand; what a backup exists to keep. */
-export function userRecordCount(
-  p: Pick<BackupPayload, 'notes' | 'ratings' | 'watchHistory' | 'episodes'>,
-): number {
-  return (
-    p.notes.length +
-    p.ratings.length +
-    p.watchHistory.length +
-    (p.episodes?.length ?? 0)
-  );
+export function userRecordCount(p: Pick<BackupPayload, 'marks'>): number {
+  return p.marks.length;
 }
 
 /** Below this share of today's copy, a write is treated as a possible loss. */
@@ -265,14 +346,18 @@ export interface PayloadStats {
 }
 
 export function payloadStats(p: BackupPayload): PayloadStats {
-  const count = (test: (status: string) => boolean) =>
-    p.watchHistory.filter(h => test(h.status)).length;
+  const titles = [...groupByTitle(p.marks as Mark[]).values()];
+  const states = titles.map(titleState);
+  const count = (test: (status?: string) => boolean) =>
+    states.filter(s => test(s?.status)).length;
   return {
     watching: count(s => s === 'watching'),
     watched: count(s => s === 'completed' || s === 'dropped'),
     toWatch: count(s => s === 'toWatch'),
-    rated: p.ratings.length,
-    episodes: p.episodes?.length ?? 0,
-    notes: p.notes.length,
+    rated: titles.filter(t => titleRating(t)).length,
+    episodes: p.marks.filter(
+      m => onEpisode(m as Mark) && m.status === 'watched',
+    ).length,
+    notes: p.marks.filter(m => !isTick(m as Mark) && m.review).length,
   };
 }

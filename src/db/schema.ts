@@ -55,42 +55,24 @@ export const platformRankingsCache = sqliteTable('platform_rankings_cache', {
   ttlExpiresAt: integer('ttl_expires_at').notNull(),
 });
 
-export const userNotes = sqliteTable('user_notes', {
+/**
+ * Every user fact: on a title, a season or an episode, with an optional
+ * status, rating and review. Ratings, watch status and episode ticks are all
+ * read from here.
+ */
+export const marks = sqliteTable('marks', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   titleId: text('title_id').notNull(),
-  /** The review; may be empty. */
-  body: text('body').notNull(),
-  /** 1-10; older notes and backups may lack it. */
+  season: integer('season'),
+  episode: integer('episode'),
+  /** interested | watching | watched | dropped */
+  status: text('status'),
+  /** 1-10 */
   rating: real('rating'),
-  /** When it was watched; older backups lack it, so fall back to createdAt. */
-  markedAt: integer('marked_at'),
+  review: text('review').notNull().default(''),
+  markedAt: integer('marked_at').notNull(),
   createdAt: integer('created_at').notNull(),
   updatedAt: integer('updated_at').notNull(),
-});
-
-export const userRatings = sqliteTable('user_ratings', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  titleId: text('title_id').notNull(),
-  rating: real('rating').notNull(),
-  reviewText: text('review_text'),
-  createdAt: integer('created_at').notNull(),
-  updatedAt: integer('updated_at').notNull(),
-});
-
-export const watchHistory = sqliteTable('watch_history', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  titleId: text('title_id').notNull(),
-  watchedAt: integer('watched_at').notNull(),
-  status: text('status').notNull(),
-  rewatchCount: integer('rewatch_count').notNull().default(0),
-});
-
-export const episodeWatches = sqliteTable('episode_watches', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  titleId: text('title_id').notNull(),
-  season: integer('season').notNull(),
-  episode: integer('episode').notNull(),
-  watchedAt: integer('watched_at').notNull(),
 });
 
 export const settings = sqliteTable('settings', {

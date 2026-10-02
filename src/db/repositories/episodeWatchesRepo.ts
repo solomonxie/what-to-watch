@@ -1,68 +1,80 @@
-import { and, eq, inArray } from 'drizzle-orm';
-import { db, ensureMigrated } from '../client';
-import { episodeWatches } from '../schema';
-import { markDataChanged } from '../../backup/changeFeed';
+import {
+  addMarks,
+  deleteMarks,
+  getAllMarks,
+  getMarksForTitle,
+  setMarksStatus,
+} from './marksRepo';
+import {
+  episodeKey,
+  newestFirst,
+  onEpisode,
+  watchedEpisodes,
+  type Mark,
+} from '../../marks/derive';
+
+// A ticked episode is a "watched" mark on it.
 
 export interface EpisodeRef {
   season: number;
   episode: number;
 }
 
-export const episodeKey = (e: EpisodeRef) => `${e.season}:${e.episode}`;
+export { episodeKey };
+
+const isWatchedEpisode = (m: Mark) => onEpisode(m) && m.status === 'watched';
 
 export async function getWatchedEpisodes(
   titleId: string,
 ): Promise<Set<string>> {
-  await ensureMigrated();
-  const rows = await db
-    .select()
-    .from(episodeWatches)
-    .where(eq(episodeWatches.titleId, titleId));
-  return new Set(rows.map(episodeKey));
+  return watchedEpisodes(await getMarksForTitle(titleId));
 }
 
+/**
+ * Ticks or unticks episodes. Unticking deletes a plain tick; a mark with a
+ * rating or review stays and only loses "watched". `at` dates new ticks.
+ */
 export async function setEpisodesWatched(
   titleId: string,
   episodes: EpisodeRef[],
   watched: boolean,
+  at = Date.now(),
 ): Promise<void> {
-  markDataChanged();
-  await ensureMigrated();
-  if (episodes.length === 0) return;
+  const marks = await getMarksForTitle(titleId);
   if (watched) {
-    const watchedAt = Date.now();
-    await db
-      .insert(episodeWatches)
-      .values(episodes.map(e => ({ titleId, ...e, watchedAt })))
-      .onConflictDoNothing();
+    const seen = watchedEpisodes(marks);
+    const fresh = episodes.filter(e => !seen.has(episodeKey(e)));
+    await addMarks(
+      titleId,
+      fresh.map(e => ({ ...e, status: 'watched' as const, markedAt: at })),
+    );
     return;
   }
-  for (const season of new Set(episodes.map(e => e.season))) {
-    await db.delete(episodeWatches).where(
-      and(
-        eq(episodeWatches.titleId, titleId),
-        eq(episodeWatches.season, season),
-        inArray(
-          episodeWatches.episode,
-          episodes.filter(e => e.season === season).map(e => e.episode),
-        ),
-      ),
-    );
-  }
+  const keys = new Set(episodes.map(episodeKey));
+  const hits = marks.filter(
+    m =>
+      isWatchedEpisode(m) &&
+      keys.has(episodeKey({ season: m.season!, episode: m.episode! })),
+  );
+  const plain = hits.filter(m => m.rating === null && !m.review);
+  await deleteMarks(
+    titleId,
+    plain.map(m => m.id!),
+  );
+  await setMarksStatus(
+    titleId,
+    hits.filter(m => !plain.includes(m)).map(m => m.id!),
+    null,
+  );
 }
 
-/** Most recently marked episode per title. */
+/** Each show's most recently watched episode. */
 export async function getLatestEpisodes(): Promise<Map<string, EpisodeRef>> {
-  const rows = (await getAllEpisodeWatches()).sort(
-    (a, b) =>
-      a.watchedAt - b.watchedAt || a.season - b.season || a.episode - b.episode,
-  );
-  return new Map(
-    rows.map(r => [r.titleId, { season: r.season, episode: r.episode }]),
-  );
-}
-
-export async function getAllEpisodeWatches() {
-  await ensureMigrated();
-  return db.select().from(episodeWatches);
+  const latest = new Map<string, EpisodeRef>();
+  for (const m of (await getAllMarks())
+    .filter(isWatchedEpisode)
+    .sort(newestFirst))
+    if (!latest.has(m.titleId))
+      latest.set(m.titleId, { season: m.season!, episode: m.episode! });
+  return latest;
 }

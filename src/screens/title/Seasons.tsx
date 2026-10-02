@@ -37,12 +37,12 @@ type Mark = (episodes: EpisodeRef[], watched: boolean) => void;
 // Loads after the page renders; episodes load when a season is opened.
 export function Seasons({
   titleId,
-  completed,
+  completedAt,
   onProgress,
 }: {
   titleId: string;
-  /** Marked watched as a whole: every aired episode counts as seen. */
-  completed?: boolean;
+  /** When the show was marked watched as a whole: every aired episode counts as seen. */
+  completedAt?: number;
   /** Regular episodes watched vs aired; `touch` = the user just marked. */
   onProgress?: (watched: number, aired: number, touch: boolean) => void;
 }) {
@@ -68,7 +68,8 @@ export function Seasons({
   // A show marked watched (e.g. imported) checks every aired regular episode, once.
   const filled = useRef(false);
   useEffect(() => {
-    if (!completed || filled.current || !tmdbId || !watched) return;
+    if (completedAt === undefined || filled.current || !tmdbId || !watched)
+      return;
     if (!airedEpisodes || regularWatched(watched) >= airedEpisodes) return;
     filled.current = true;
     (async () => {
@@ -78,12 +79,13 @@ export function Seasons({
         for (const e of list.filter(aired))
           refs.push({ season: s.number, episode: e.number });
       }
-      await setEpisodesWatched(titleId, refs, true);
+      // Dated with the show, so filling them in doesn't count as a change.
+      await setEpisodesWatched(titleId, refs, true, completedAt);
       setWatched(await getWatchedEpisodes(titleId));
     })().catch(() => {
       filled.current = false;
     });
-  }, [completed, tmdbId, titleId, watched, seasons, airedEpisodes]);
+  }, [completedAt, tmdbId, titleId, watched, seasons, airedEpisodes]);
 
   const mark: Mark = useCallback(
     (episodes, value) => {

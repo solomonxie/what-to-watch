@@ -41,9 +41,10 @@ import { Seasons } from './Seasons';
 import { formatMarkDate, WatchMarks } from './WatchMarks';
 import { StarRating } from './StarRating';
 import {
-  getNotesForTitle,
+  getMarksForTitle,
   onMarksChanged,
-} from '../../db/repositories/notesRepo';
+} from '../../db/repositories/marksRepo';
+import { seasonRatings, titleRating } from '../../marks/derive';
 import { useSettingsStore } from '../../state/settingsStore';
 import { DEFAULT_REGION } from '../../config/platforms';
 import {
@@ -222,7 +223,9 @@ export function TitleScreen({ route }: Props) {
       {title.mediaType === 'tv' ? (
         <Seasons
           titleId={titleId}
-          completed={entry?.status === 'completed'}
+          completedAt={
+            entry?.status === 'completed' ? entry.watchedAt : undefined
+          }
           onProgress={onEpisodeProgress}
         />
       ) : null}
@@ -393,24 +396,29 @@ function WatchState({
       <Text
         style={[styles.interestedText, { color: on ? c.background : c.text }]}
       >
-        {on ? '✓ Interested' : '+ Interested'}
+        {on ? '✓ Watch next' : '+ Watch next'}
       </Text>
     </Pressable>
   );
 }
 
-/** My latest rating and its date; a tap on the stars writes a new mark. */
+/**
+ * My latest title-level rating and its date, with each season's latest after
+ * it; a tap on the stars writes a new mark.
+ */
 function MyRating({ titleId }: { titleId: string }) {
   const c = useColors();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [latest, setLatest] = useState<{ rating: number; at: number }>();
+  const [seasons, setSeasons] = useState<number[]>([]);
 
   useEffect(() => {
     const load = () =>
-      getNotesForTitle(titleId).then(marks => {
-        const m = marks.find(x => x.rating != null);
+      getMarksForTitle(titleId).then(marks => {
+        const m = titleRating(marks);
         setLatest(m ? { rating: m.rating!, at: m.markedAt } : undefined);
+        setSeasons(seasonRatings(marks).map(s => Math.round(s.rating)));
       });
     load();
     return onMarksChanged(id => id === titleId && load());
@@ -426,9 +434,14 @@ function MyRating({ titleId }: { titleId: string }) {
             navigation.navigate('WatchMark', { titleId, rating })
           }
         />
-        {latest ? (
+        {latest || seasons.length ? (
           <Text style={[type.meta, styles.ratedOn, { color: c.secondary }]}>
-            Rated {formatMarkDate(latest.at)}
+            {[
+              latest && `Rated ${formatMarkDate(latest.at)}`,
+              seasons.length && `Seasons (${seasons.join(', ')})`,
+            ]
+              .filter(Boolean)
+              .join('  ·  ')}
           </Text>
         ) : null}
       </View>

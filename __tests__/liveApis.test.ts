@@ -29,12 +29,8 @@ import {
   getRatingsForTitle,
 } from '../src/db/repositories/titlesRepo';
 import { getSettings } from '../src/db/repositories/settingsRepo';
-import {
-  getWatchCounts,
-  recordWatch,
-} from '../src/db/repositories/watchHistoryRepo';
 import { getAllUserRatings } from '../src/db/repositories/ratingsRepo';
-import { addMark, getAllNotes } from '../src/db/repositories/notesRepo';
+import { addMark, getAllMarks } from '../src/db/repositories/marksRepo';
 import { buildPayload, importPayload } from '../src/backup/backupService';
 import { applyFilters, DEFAULT_FILTERS } from '../src/state/filterStore';
 import { searchIndex } from '../src/search/titleIndex';
@@ -127,19 +123,19 @@ live('live TMDB/OMDb end to end', () => {
 
   it('records personal data and round-trips it through backup', async () => {
     const id = threeBodyIds[0];
-    await recordWatch(id, 'completed');
-    await recordWatch(id, 'completed');
-    expect((await getWatchCounts()).get(id)).toBe(2);
-    await addMark(id, { rating: 8.5, body: 'Great', markedAt: Date.now() });
+    await addMark(id, { status: 'watched', markedAt: 1 });
+    await addMark(id, { status: 'watched', markedAt: 2 });
+    expect((await getWatchEntry(id))?.rewatchCount).toBe(2);
+    await addMark(id, { rating: 8.5, review: 'Great', markedAt: 3 });
 
     const payload = await buildPayload();
     expect(JSON.stringify(payload)).not.toMatch(new RegExp(keys.tmdb!));
     expect((payload.titles ?? []).map(t => t.id)).toContain(id);
 
-    await importPayload({ ...payload, notes: [], ratings: [] });
-    expect(await getAllNotes()).toHaveLength(0);
+    await importPayload({ ...payload, marks: [] });
+    expect(await getAllMarks()).toHaveLength(0);
     await importPayload(payload);
-    expect(await getAllNotes()).toHaveLength(1);
+    expect(await getAllMarks()).toHaveLength(3);
     expect((await getAllUserRatings())[0].rating).toBe(8.5);
   });
 
