@@ -1,63 +1,34 @@
-import { eq } from 'drizzle-orm';
-import { db, ensureMigrated } from '../client';
-import { userRatings } from '../schema';
-import { markDataChanged } from '../../backup/changeFeed';
+import { getAllMarks, getMarksForTitle } from './marksRepo';
+import { groupByTitle, titleRating, type Mark } from '../../marks/derive';
+
+// A title's rating is read from its marks: the latest rated title-level one.
+
+export interface TitleRating {
+  titleId: string;
+  rating: number;
+  reviewText: string | null;
+  /** When it was rated. */
+  updatedAt: number;
+}
+
+function toRating(titleId: string, marks: Mark[]): TitleRating | undefined {
+  const m = titleRating(marks);
+  return m
+    ? {
+        titleId,
+        rating: m.rating!,
+        reviewText: m.review || null,
+        updatedAt: m.markedAt,
+      }
+    : undefined;
+}
 
 export async function getUserRatingForTitle(titleId: string) {
-  await ensureMigrated();
-  const rows = await db
-    .select()
-    .from(userRatings)
-    .where(eq(userRatings.titleId, titleId))
-    .limit(1);
-  return rows[0];
+  return toRating(titleId, await getMarksForTitle(titleId));
 }
 
-export async function setUserRating(
-  titleId: string,
-  rating: number,
-  reviewText?: string,
-) {
-  markDataChanged();
-  await ensureMigrated();
-  const existing = await getUserRatingForTitle(titleId);
-  const now = Date.now();
-  if (existing) {
-    await db
-      .update(userRatings)
-      .set({ rating, reviewText, updatedAt: now })
-      .where(eq(userRatings.id, existing.id));
-  } else {
-    await db.insert(userRatings).values({
-      titleId,
-      rating,
-      reviewText,
-      createdAt: now,
-      updatedAt: now,
-    });
-  }
-}
-
-export async function getAllUserRatings() {
-  await ensureMigrated();
-  return db.select().from(userRatings);
-}
-
-/** Adds an imported rating unless the title is already rated. Returns true if written. */
-export async function importRating(
-  titleId: string,
-  rating: number,
-  reviewText: string | undefined,
-  at: number,
-): Promise<boolean> {
-  markDataChanged();
-  if (await getUserRatingForTitle(titleId)) return false;
-  await db.insert(userRatings).values({
-    titleId,
-    rating,
-    reviewText,
-    createdAt: at,
-    updatedAt: at,
-  });
-  return true;
+export async function getAllUserRatings(): Promise<TitleRating[]> {
+  return [...groupByTitle(await getAllMarks())].flatMap(
+    ([titleId, marks]) => toRating(titleId, marks) ?? [],
+  );
 }

@@ -16,9 +16,7 @@ function payload(overrides: Partial<BackupPayload> = {}): BackupPayload {
   return {
     version: PAYLOAD_VERSION,
     exportedAt: '2026-09-25T00:00:00.000Z',
-    notes: [],
-    ratings: [],
-    watchHistory: [],
+    marks: [],
     titles: [],
     ...overrides,
   };
@@ -34,6 +32,48 @@ describe('parsePayload', () => {
       watchHistory: [],
     };
     expect(parsePayload(JSON.stringify(v1)).titles).toEqual([]);
+  });
+
+  it('turns v2 lists into marks', () => {
+    const v2 = {
+      version: 2,
+      notes: [
+        {
+          titleId: 'tv:1',
+          body: 'Season 2 · Rated 8/10 · tense',
+          createdAt: 5,
+          updatedAt: 5,
+        },
+        { titleId: 'tv:1', body: 'Interested', createdAt: 6, updatedAt: 6 },
+      ],
+      ratings: [
+        { titleId: 'tv:1', rating: 8, createdAt: 5, updatedAt: 5 },
+        {
+          titleId: 'movie:2',
+          rating: 7,
+          reviewText: 'ok',
+          createdAt: 3,
+          updatedAt: 4,
+        },
+      ],
+      watchHistory: [{ titleId: 'movie:2', status: 'completed', watchedAt: 4 }],
+      episodes: [{ titleId: 'tv:1', season: 1, episode: 3, watchedAt: 2 }],
+    };
+    const marks = parsePayload(JSON.stringify(v2)).marks.map(m => [
+      m.titleId,
+      m.season,
+      m.episode,
+      m.status,
+      m.rating,
+      m.review,
+      m.markedAt,
+    ]);
+    expect(marks).toEqual([
+      ['tv:1', null, null, null, 8, 'Season 2 · tense', 5],
+      ['movie:2', null, null, null, 7, 'ok', 4],
+      ['movie:2', null, null, 'watched', null, '', 4],
+      ['tv:1', 1, 3, 'watched', null, '', 2],
+    ]);
   });
 
   it('refuses a newer version', () => {
@@ -71,7 +111,19 @@ describe('hash gate', () => {
     const a = contentHash(payload());
     const b = contentHash(
       payload({
-        notes: [{ titleId: '1', body: 'hi', createdAt: 1, updatedAt: 1 }],
+        marks: [
+          {
+            titleId: '1',
+            season: null,
+            episode: null,
+            status: null,
+            rating: null,
+            review: 'hi',
+            markedAt: 1,
+            createdAt: 1,
+            updatedAt: 1,
+          },
+        ],
       }),
     );
     expect(shouldWrite(b, a)).toBe(true);
@@ -156,7 +208,7 @@ describe('snapshots and zips', () => {
     const back = payloadFromBytes(
       base64ToBytes(bytesToBase64(zipPayload(payload))),
     );
-    expect(back.ratings).toEqual(payload.ratings);
+    expect(back.marks.filter((m: { rating: unknown }) => m.rating)).toHaveLength(1);
     expect(payloadStats(back)).toEqual({
       watching: 1,
       watched: 1,
@@ -166,7 +218,7 @@ describe('snapshots and zips', () => {
       notes: 0,
     });
     const json = require('fflate').strToU8(JSON.stringify(payload));
-    expect(payloadFromBytes(json).watchHistory).toHaveLength(2);
+    expect(payloadFromBytes(json).marks).toHaveLength(4);
   });
 });
 
@@ -211,16 +263,7 @@ describe('iCloud safety rules', () => {
   });
 
   it('counts only what the user made', () => {
-    expect(
-      userRecordCount({
-        notes: [{}],
-        ratings: [{}, {}],
-        watchHistory: [{}],
-        episodes: [{}, {}, {}],
-      }),
-    ).toBe(7);
-    expect(userRecordCount({ notes: [], ratings: [], watchHistory: [] })).toBe(
-      0,
-    );
+    expect(userRecordCount({ marks: [{}, {}, {}] as never })).toBe(3);
+    expect(userRecordCount({ marks: [] })).toBe(0);
   });
 });

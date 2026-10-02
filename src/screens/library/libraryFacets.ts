@@ -1,10 +1,9 @@
-import { getAllWatchHistory } from '../../db/repositories/watchHistoryRepo';
-import { getAllUserRatings } from '../../db/repositories/ratingsRepo';
 import { getTitlesByIds } from '../../db/repositories/titlesRepo';
 import { languageName, unifiedGenres } from '../../config/taxonomy';
 import type { GridItem } from '../../ui/components';
 import { joinMeta, mediaLabel, year } from '../../ui/format';
-import { getAllNotes } from '../../db/repositories/notesRepo';
+import { getAllMarks } from '../../db/repositories/marksRepo';
+import { groupByTitle, lastChange } from '../../marks/derive';
 
 export interface LibraryFacet {
   kind: 'genre' | 'language';
@@ -20,23 +19,16 @@ export interface FacetCount {
 type LibraryTitle = Awaited<ReturnType<typeof getTitlesByIds>>[number];
 
 /**
- * When each title last changed by the user's hand: a rating, a status, or a
- * watch mark. Library lists sort by it, newest first; viewing never moves it.
+ * When each title last changed by the user's hand: its newest mark. Library
+ * lists sort by it, newest first; viewing never moves it.
  */
 export async function lastChanges(): Promise<Map<string, number>> {
-  const [history, ratings, marks] = await Promise.all([
-    getAllWatchHistory(),
-    getAllUserRatings(),
-    getAllNotes(),
-  ]);
-  const latest = new Map<string, number>();
-  for (const [id, at] of [
-    ...history.map(h => [h.titleId, h.watchedAt] as const),
-    ...ratings.map(r => [r.titleId, r.updatedAt] as const),
-    ...marks.map(m => [m.titleId, m.markedAt ?? m.createdAt] as const),
-  ])
-    latest.set(id, Math.max(at, latest.get(id) ?? 0));
-  return latest;
+  return new Map(
+    [...groupByTitle(await getAllMarks())].map(([id, marks]) => [
+      id,
+      lastChange(marks),
+    ]),
+  );
 }
 
 /** Everything watched, rated or marked, most recent change first. */

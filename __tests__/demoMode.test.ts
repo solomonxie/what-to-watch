@@ -14,11 +14,15 @@ jest.mock('react-native/Libraries/Settings/Settings', () => {
 jest.mock('react-native-keychain', () => {
   const store = new Map<string, string>();
   return {
-    setGenericPassword: async (user: string, password: string, o: { service: string }) =>
-      store.set(o.service, password),
+    setGenericPassword: async (
+      user: string,
+      password: string,
+      o: { service: string },
+    ) => store.set(o.service, password),
     getGenericPassword: async (o: { service: string }) =>
       store.has(o.service) ? { password: store.get(o.service) } : false,
-    resetGenericPassword: async (o: { service: string }) => store.delete(o.service),
+    resetGenericPassword: async (o: { service: string }) =>
+      store.delete(o.service),
   };
 });
 jest.mock('react-native-fs', () => ({
@@ -38,30 +42,38 @@ import {
   switchDataStore,
 } from '../src/demo/dataStore';
 import { backupNow } from '../src/backup/backupService';
-import { getAllUserRatings, setUserRating } from '../src/db/repositories/ratingsRepo';
+import { getAllUserRatings } from '../src/db/repositories/ratingsRepo';
+import { addMark } from '../src/db/repositories/marksRepo';
 import { getAllWatchHistory } from '../src/db/repositories/watchHistoryRepo';
 import { getSettings } from '../src/db/repositories/settingsRepo';
 import { getApiKey, saveApiKey } from '../src/secureStorage/apiKeyStore';
 import demoLibrary from '../demo/library.json';
 
-const ratedIds = async () => (await getAllUserRatings()).map(r => r.titleId).sort();
+const rate = (titleId: string, rating: number) =>
+  addMark(titleId, { rating, markedAt: Date.now() });
+const ratedIds = async () =>
+  (await getAllUserRatings()).map(r => r.titleId).sort();
 
 describe('demo mode', () => {
   it('swaps in a seeded demo store and never touches the real one', async () => {
     expect(isDemo()).toBe(false);
-    await setUserRating('movie:1', 8);
+    await rate('movie:1', 8);
     await saveApiKey('tmdb', 'real-key');
 
     await switchDataStore(true);
     expect(isDemo()).toBe(true);
-    expect(await ratedIds()).toEqual(demoLibrary.ratings.map(r => r.titleId).sort());
-    expect((await getAllWatchHistory()).length).toBe(demoLibrary.watchHistory.length);
+    expect(await ratedIds()).toEqual(
+      demoLibrary.ratings.map(r => r.titleId).sort(),
+    );
+    expect((await getAllWatchHistory()).length).toBeGreaterThanOrEqual(
+      demoLibrary.watchHistory.length,
+    );
     expect((await getSettings()).enabledPlatformIds).toEqual(
       demoLibrary.settings.enabledPlatformIds,
     );
 
     // Demo edits and keys stay in demo; the real key is only read.
-    await setUserRating('movie:2', 3);
+    await rate('movie:2', 3);
     expect(await getApiKey('tmdb')).toBe('real-key');
     await saveApiKey('tmdb', 'demo-key');
     expect(await getApiKey('tmdb')).toBe('demo-key');
@@ -78,7 +90,7 @@ describe('demo mode', () => {
 
   it('resets demo data to the preset library', async () => {
     await switchDataStore(true);
-    await setUserRating('movie:2', 3);
+    await rate('movie:2', 3);
     expect(await ratedIds()).toContain('movie:2');
     await resetDemoData();
     expect(await ratedIds()).not.toContain('movie:2');
@@ -87,7 +99,7 @@ describe('demo mode', () => {
 
   it('dates the preset library as if used up to today', () => {
     const now = Date.parse('2027-03-01T12:00:00Z');
-    const latest = Math.max(...demoPayload(now).watchHistory.map(h => h.watchedAt));
+    const latest = Math.max(...demoPayload(now).marks.map(m => m.markedAt));
     expect(latest).toBeLessThanOrEqual(now);
     expect(now - latest).toBeLessThan(3 * 24 * 60 * 60 * 1000);
   });

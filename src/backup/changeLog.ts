@@ -8,10 +8,7 @@ type Table = Record<string, Fields>;
 
 /** What the log compares: user data keyed by a stable id, no ids or caches. */
 export interface LogState {
-  watch: Table;
-  ratings: Table;
-  notes: Table;
-  episodes: Table;
+  marks: Table;
   settings: Table;
   preferences: Table;
 }
@@ -26,37 +23,35 @@ export interface ChangeEntry {
   after?: Fields;
 }
 
-const byKey = <T>(rows: T[], key: (r: T) => string, fields: (r: T) => Fields) =>
-  Object.fromEntries(rows.map(r => [key(r), fields(r)]));
+// Keys repeat when marks share a title, place and creation time; number them.
+const byKey = <T>(
+  rows: T[],
+  key: (r: T) => string,
+  fields: (r: T) => Fields,
+) => {
+  const table: Table = {};
+  for (const r of rows) {
+    let k = key(r);
+    for (let n = 2; table[k]; n++) k = `${key(r)}#${n}`;
+    table[k] = fields(r);
+  }
+  return table;
+};
 
 const single = (value: unknown): Table =>
   value && typeof value === 'object' ? { all: value as Fields } : {};
 
 export function logState(p: BackupPayload): LogState {
   return {
-    watch: byKey(
-      p.watchHistory,
-      r => r.titleId,
-      r => ({
-        status: r.status,
-        watchedAt: r.watchedAt,
-        rewatchCount: r.rewatchCount,
+    marks: byKey(
+      p.marks,
+      m => `${m.titleId}@${m.createdAt}/${m.season ?? ''}:${m.episode ?? ''}`,
+      m => ({
+        status: m.status ?? null,
+        rating: m.rating ?? null,
+        review: m.review ?? '',
+        markedAt: m.markedAt,
       }),
-    ),
-    ratings: byKey(
-      p.ratings,
-      r => r.titleId,
-      r => ({ rating: r.rating, reviewText: r.reviewText ?? null }),
-    ),
-    notes: byKey(
-      p.notes,
-      r => `${r.titleId}@${r.createdAt}`,
-      r => ({ body: r.body, markedAt: r.markedAt ?? null }),
-    ),
-    episodes: byKey(
-      p.episodes ?? [],
-      r => `${r.titleId}/S${r.season}E${r.episode}`,
-      r => ({ watchedAt: r.watchedAt }),
     ),
     settings: single(p.settings),
     preferences: single(p.preferences),

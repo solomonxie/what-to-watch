@@ -3,33 +3,33 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
-  getNotesForTitle,
+  getMarksForTitle,
   onMarksChanged,
-} from '../../db/repositories/notesRepo';
+} from '../../db/repositories/marksRepo';
+import { isTick, type Mark } from '../../marks/derive';
+import { markLine } from '../../marks/labels';
 import { SectionLabel } from '../../ui/components';
 import { space, useColors } from '../../ui/theme';
 import { StarRating } from './StarRating';
 import type { RootStackParamList } from '../../navigation/types';
 
-type WatchMark = Awaited<ReturnType<typeof getNotesForTitle>>[number];
+export { formatMarkDate } from '../../marks/labels';
 
-export function formatMarkDate(at: number) {
-  return new Date(at).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
-/** Every rating with its date and review, newest first; tap to edit. */
+/**
+ * Every mark on the title, its seasons and episodes, newest first; tap to
+ * edit. Plain episode ticks show as checkmarks in Seasons instead.
+ */
 export function WatchMarks({ titleId }: { titleId: string }) {
   const c = useColors();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [marks, setMarks] = useState<WatchMark[]>([]);
+  const [marks, setMarks] = useState<Mark[]>([]);
 
   const reload = useCallback(
-    () => getNotesForTitle(titleId).then(setMarks),
+    () =>
+      getMarksForTitle(titleId).then(all =>
+        setMarks(all.filter(m => !isTick(m))),
+      ),
     [titleId],
   );
   useEffect(() => {
@@ -53,12 +53,13 @@ export function WatchMarks({ titleId }: { titleId: string }) {
           <Text style={[styles.add, { color: c.accent }]}>+ Add</Text>
         </Pressable>
       </View>
-      {marks.map(m => (
+      {marks.map((m, i) => (
         <Pressable
           key={m.id}
-          onPress={() => open(m.id)}
+          onPress={() => open(m.id!)}
           style={({ pressed }) => [
             styles.mark,
+            i > 0 && [styles.divided, { borderTopColor: c.separator }],
             pressed && { backgroundColor: c.chip },
           ]}
         >
@@ -66,18 +67,18 @@ export function WatchMarks({ titleId }: { titleId: string }) {
             {m.rating ? (
               <StarRating value={m.rating} size={14} showValue={false} />
             ) : null}
-            <Text style={[styles.date, { color: c.secondary }]}>
-              {formatMarkDate(m.markedAt)}
+            <Text style={[styles.meta, { color: c.secondary }]}>
+              {markLine(m)}
             </Text>
           </View>
-          {m.body ? (
-            <Text style={[styles.body, { color: c.text }]}>{m.body}</Text>
+          {m.review ? (
+            <Text style={[styles.review, { color: c.text }]}>{m.review}</Text>
           ) : null}
         </Pressable>
       ))}
       {marks.length === 0 ? (
         <Text style={[styles.empty, { color: c.secondary }]}>
-          No marks yet. Rate it above to add one.
+          No marks yet.
         </Text>
       ) : null}
     </>
@@ -96,9 +97,10 @@ const styles = StyleSheet.create({
     paddingRight: space.l,
     marginBottom: space.s,
   },
-  mark: { paddingHorizontal: space.l, paddingVertical: space.s, gap: 4 },
+  mark: { marginHorizontal: space.l, paddingVertical: space.m, gap: 4 },
+  divided: { borderTopWidth: StyleSheet.hairlineWidth },
   line: { flexDirection: 'row', alignItems: 'center', gap: space.s },
-  date: { fontSize: 13, fontWeight: '600' },
-  body: { fontSize: 16, lineHeight: 22 },
+  meta: { fontSize: 13, fontWeight: '600', flexShrink: 1 },
+  review: { fontSize: 16, lineHeight: 22 },
   empty: { fontSize: 15, paddingHorizontal: space.l },
 });

@@ -2,14 +2,16 @@ jest.mock('@op-engineering/op-sqlite', () =>
   require('../test-support/nodeOpSqlite'),
 );
 
+import { addMark } from '../src/db/repositories/marksRepo';
 import {
-  applyShowRating,
   getWatchEntry,
   markFinished,
   setInterested,
   syncShowProgress,
 } from '../src/db/repositories/watchHistoryRepo';
 
+const rate = (id: string, rating: number) =>
+  addMark(id, { rating, markedAt: Date.now() });
 const status = async (id: string) => (await getWatchEntry(id))?.status;
 
 describe('derived watch status', () => {
@@ -49,17 +51,18 @@ describe('derived watch status', () => {
 describe('low scores and movies', () => {
   it('drops an unfinished show scored low, and resumes when raised', async () => {
     await syncShowProgress('tv:10', 2, 10);
-    await applyShowRating('tv:10', 3);
+    await rate('tv:10', 3);
     expect(await status('tv:10')).toBe('dropped');
-    await syncShowProgress('tv:10', 3, 10, { rating: 3 });
+    await syncShowProgress('tv:10', 3, 10);
     expect(await status('tv:10')).toBe('dropped');
-    await applyShowRating('tv:10', 7);
+    await new Promise<void>(r => setTimeout(r, 2));
+    await rate('tv:10', 7);
     expect(await status('tv:10')).toBe('watching');
   });
 
   it('a finished show stays completed even when scored low', async () => {
-    await syncShowProgress('tv:11', 10, 10, { rating: 2 });
-    await applyShowRating('tv:11', 2);
+    await syncShowProgress('tv:11', 10, 10);
+    await rate('tv:11', 2);
     expect(await status('tv:11')).toBe('completed');
   });
 
@@ -100,34 +103,5 @@ describe('derived status (imports ignore the source label)', () => {
     expect(d({ mediaType: 'tv', source: 'toWatch', episodesWatched: 3 })).toBe(
       'watching',
     );
-  });
-});
-
-describe('re-deriving stored statuses', () => {
-  const {
-    rederiveStatuses,
-  } = require('../src/db/repositories/watchHistoryRepo');
-  const { setUserRating } = require('../src/db/repositories/ratingsRepo');
-  const {
-    setEpisodesWatched,
-  } = require('../src/db/repositories/episodeWatchesRepo');
-  const { recordWatch } = require('../src/db/repositories/watchHistoryRepo');
-
-  it('fixes statuses copied from an import', async () => {
-    await recordWatch('movie:900', 'completed'); // watched per source, unrated
-    await recordWatch('movie:901', 'watching'); // rated below
-    await setUserRating('movie:901', 8);
-    await setUserRating('movie:902', 7); // rated, no status at all
-    await recordWatch('tv:900', 'watching'); // source said watching, no episodes
-    await recordWatch('tv:901', 'watching');
-    await setEpisodesWatched('tv:901', [{ season: 1, episode: 1 }], true);
-    await recordWatch('tv:902', 'completed'); // source said watched
-    await rederiveStatuses();
-    expect(await status('movie:900')).toBe('toWatch');
-    expect(await status('movie:901')).toBe('completed');
-    expect(await status('movie:902')).toBe('completed');
-    expect(await status('tv:900')).toBe('toWatch');
-    expect(await status('tv:901')).toBe('watching');
-    expect(await status('tv:902')).toBe('completed');
   });
 });

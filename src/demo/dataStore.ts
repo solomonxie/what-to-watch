@@ -22,7 +22,7 @@ const DEMO_EPOCH = Date.parse('2026-10-01T12:00:00Z');
 function shiftTimes<T>(rows: T[], delta: number): T[] {
   return rows.map(row => {
     const out = { ...row } as Record<string, unknown>;
-    for (const key of ['watchedAt', 'createdAt', 'updatedAt']) {
+    for (const key of ['markedAt', 'createdAt', 'updatedAt']) {
       if (typeof out[key] === 'number') out[key] = (out[key] as number) + delta;
     }
     return out as T;
@@ -35,10 +35,7 @@ export function demoPayload(now = Date.now()) {
   const delta = now - DEMO_EPOCH;
   return {
     ...payload,
-    notes: shiftTimes(payload.notes, delta),
-    ratings: shiftTimes(payload.ratings, delta),
-    watchHistory: shiftTimes(payload.watchHistory, delta),
-    episodes: payload.episodes && shiftTimes(payload.episodes, delta),
+    marks: shiftTimes(payload.marks, delta),
   };
 }
 

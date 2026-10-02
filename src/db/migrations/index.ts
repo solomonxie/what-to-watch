@@ -9,6 +9,7 @@ import { NOTE_MARKS_STATEMENTS } from './0007_note_marks';
 import { MERGE_DUPLICATES_STATEMENTS } from './0008_merge_duplicates';
 import { POPULARITY_STATEMENTS } from './0009_popularity';
 import { RATED_MARKS_STATEMENTS } from './0010_rated_marks';
+import { MARKS_STATEMENTS } from './0011_marks';
 
 // Index + 1 = the PRAGMA user_version after that step runs.
 export const MIGRATIONS: string[][] = [
@@ -23,6 +24,7 @@ export const MIGRATIONS: string[][] = [
   MERGE_DUPLICATES_STATEMENTS,
   POPULARITY_STATEMENTS,
   RATED_MARKS_STATEMENTS,
+  MARKS_STATEMENTS,
 ];
 
 export interface MigrationDb {

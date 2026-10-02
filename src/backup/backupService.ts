@@ -2,21 +2,8 @@ import RNFS from 'react-native-fs';
 import { AppState, Share } from 'react-native';
 import { pick, keepLocalCopy } from '@react-native-documents/picker';
 import { db, withTransaction } from '../db/client';
-import {
-  cachedTitles,
-  episodeWatches,
-  settings,
-  userNotes,
-  userRatings,
-  watchHistory,
-} from '../db/schema';
-import { getAllNotes } from '../db/repositories/notesRepo';
-import { getAllEpisodeWatches } from '../db/repositories/episodeWatchesRepo';
-import { getAllUserRatings } from '../db/repositories/ratingsRepo';
-import {
-  getAllWatchHistory,
-  rederiveStatuses,
-} from '../db/repositories/watchHistoryRepo';
+import { cachedTitles, marks, settings } from '../db/schema';
+import { getAllMarks } from '../db/repositories/marksRepo';
 import { getSettings, updateSettings } from '../db/repositories/settingsRepo';
 import { getTitlesByIds } from '../db/repositories/titlesRepo';
 import { getKv, setKv } from '../db/repositories/kvRepo';
@@ -58,6 +45,7 @@ import {
   shouldWrite,
   snapshotName,
   stripId,
+  payloadStats,
   zipPayload,
   type BackupPayload,
 } from './payload';
@@ -82,26 +70,16 @@ const LAUNCH_DELAY_MS = 8 * 1000;
 const DOCS = RNFS.DocumentDirectoryPath;
 
 export async function buildPayload(): Promise<BackupPayload> {
-  const [notes, ratings, history, episodes, appSettings] = await Promise.all([
-    getAllNotes(),
-    getAllUserRatings(),
-    getAllWatchHistory(),
-    getAllEpisodeWatches(),
+  const [allMarks, appSettings] = await Promise.all([
+    getAllMarks(),
     getSettings(),
   ]);
-  const titleIds = Array.from(
-    new Set(
-      [...notes, ...ratings, ...history, ...episodes].map(r => r.titleId),
-    ),
-  );
+  const titleIds = Array.from(new Set(allMarks.map(m => m.titleId)));
   const titles = await getTitlesByIds(titleIds);
   return {
     version: PAYLOAD_VERSION,
     exportedAt: new Date().toISOString(),
-    notes: notes.map(stripId),
-    ratings: ratings.map(stripId),
-    watchHistory: history.map(stripId),
-    episodes: episodes.map(stripId),
+    marks: allMarks.map(stripId),
     settings: stripId(appSettings),
     titles,
     preferences: await readPreferences(),
@@ -178,6 +156,11 @@ async function recordChanges(payload: BackupPayload) {
   const next = logState(payload);
   if (await RNFS.exists(LOG_STATE)) {
     const prev = JSON.parse(await RNFS.readFile(LOG_STATE, 'utf8'));
+    // From before marks: every line would read as new. Start the log afresh.
+    if (!prev.marks) {
+      await RNFS.writeFile(LOG_STATE, JSON.stringify(next), 'utf8');
+      return;
+    }
     const names = Object.fromEntries(
       (payload.titles ?? []).map(t => [t.id, t.title]),
     );
@@ -414,31 +397,17 @@ export async function importPayload(payload: BackupPayload) {
   await replaceAllData(payload);
   await setKv(KV.restoreChecked, '1');
   markDataChanged();
-  return {
-    ratings: payload.ratings.length,
-    notes: payload.notes.length,
-    watched: payload.watchHistory.length,
-  };
+  return payloadStats(payload);
 }
 
 export async function replaceAllData(payload: BackupPayload): Promise<void> {
   await withTransaction(async () => {
     const tx = db;
-    await tx.delete(userNotes);
-    if (payload.notes.length)
-      await tx.insert(userNotes).values(payload.notes.map(stripId));
-    await tx.delete(userRatings);
-    if (payload.ratings.length)
-      await tx.insert(userRatings).values(payload.ratings.map(stripId));
-    await tx.delete(watchHistory);
-    if (payload.watchHistory.length) {
-      await tx.insert(watchHistory).values(payload.watchHistory.map(stripId));
-    }
-    if (payload.episodes) {
-      await tx.delete(episodeWatches);
-      if (payload.episodes.length)
-        await tx.insert(episodeWatches).values(payload.episodes.map(stripId));
-    }
+    await tx.delete(marks);
+    const rows = payload.marks.map(stripId);
+    // Under SQLite's bound-variable limit.
+    for (let i = 0; i < rows.length; i += 500)
+      await tx.insert(marks).values(rows.slice(i, i + 500));
     if (payload.settings) {
       await tx.delete(settings);
       await tx.insert(settings).values(stripId(payload.settings));
@@ -453,6 +422,4 @@ export async function replaceAllData(payload: BackupPayload): Promise<void> {
       });
     }
   });
-  // Older backups hold statuses from before they were derived.
-  await rederiveStatuses();
 }

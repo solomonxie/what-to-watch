@@ -48,7 +48,7 @@ export function useImportExport() {
                 await loadSettings();
                 Alert.alert(
                   'Imported',
-                  `${n.ratings} ratings, ${n.notes} notes, ${n.watched} watched`,
+                  `${n.rated} ratings, ${n.notes} reviews, ${n.watched} watched`,
                 );
               } catch (error) {
                 Alert.alert('Import failed', message(error));
