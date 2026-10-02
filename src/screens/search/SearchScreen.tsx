@@ -134,7 +134,7 @@ export function SearchScreen({ navigation, route }: Props) {
           placeholderTextColor={c.secondary}
           ref={input}
           autoCorrect={false}
-          returnKeyType="search"
+          returnKeyType="done"
           onSubmitEditing={remember}
           clearButtonMode="while-editing"
         />
