@@ -1,11 +1,15 @@
 import {
   cacheListTitle,
   refreshSearchIndex,
+  showSeasons,
   titleIdFor,
 } from '../catalog/catalogService';
 import { getUserRatingForTitle } from '../db/repositories/ratingsRepo';
-import { importMark } from '../db/repositories/notesRepo';
-import { seasonOf } from './matcher';
+import { importMark } from '../db/repositories/marksRepo';
+import { hasCjk, normalizeTitle, seasonOf, sequelNumber } from './matcher';
+import { setZhTitleIfMissing } from '../db/repositories/titlesRepo';
+import type { MarkStatus } from '../marks/derive';
+import type { ResolvedEntry } from './resolve';
 import {
   getWatchEntry,
   setImportedStatus,
@@ -22,6 +26,44 @@ import type { ImportEntry, ParsedImport } from './types';
 
 const CONCURRENCY = 4;
 
+const SEASON_STATUS: Record<string, MarkStatus> = {
+  completed: 'watched',
+  watching: 'watching',
+  toWatch: 'interested',
+};
+
+async function lastSeason(tmdbId: string): Promise<number | null> {
+  try {
+    const numbers = (await showSeasons(tmdbId)).seasons
+      .map(s => s.number)
+      .filter(n => n > 0);
+    return numbers.length ? Math.max(...numbers) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Which season of the matched show a row is about: a season marker
+ * ("第二季", "Season 2"), "最终季" as the show's last season, or a trailing
+ * number ("龙樱2") when the show matched under a name without it.
+ */
+async function seasonOfRow(
+  entry: ImportEntry,
+  match: ResolvedEntry,
+): Promise<number | null> {
+  if (match.details.mediaType !== 'tv' || match.episode) return null;
+  const listing = seasonOf(entry.titles);
+  if (listing)
+    return listing.season ?? (await lastSeason(match.details.externalId));
+  const n = sequelNumber(entry.titles);
+  const names = [match.details.title, match.details.originalTitle]
+    .filter((t): t is string => !!t)
+    .map(normalizeTitle);
+  const ownName = entry.titles.some(t => names.includes(normalizeTitle(t)));
+  return n && !ownName ? n : null;
+}
+
 /** Runs `fn` after any earlier call for the same key has finished. */
 function serialized() {
   const tails = new Map<string, Promise<unknown>>();
@@ -33,10 +75,6 @@ function serialized() {
     );
     return run;
   };
-}
-
-function seasonLabel(season: number | undefined) {
-  return season ? `Season ${season}` : 'Final season';
 }
 
 export interface ImportSummary {
@@ -91,6 +129,11 @@ export async function runImport(
             match.details.mediaType,
             match.details.externalId,
           );
+          // Douban names it in Chinese: keep that, so it's searchable by it.
+          const zh = (seasonOf(entry.titles)?.titles ?? entry.titles).find(
+            hasCjk,
+          );
+          if (zh && !match.episode) await setZhTitleIfMissing(id, zh);
           await perTitle(id, async () => {
             const at = entry.date ?? Date.now();
             // An episode's score is for that episode, not the show.
@@ -98,29 +141,22 @@ export async function runImport(
               await setEpisodesWatched(id, [match.episode], true);
               summary.episodes++;
             }
-            const listing =
-              match.details.mediaType === 'tv' && !match.episode
-                ? seasonOf(entry.titles)
-                : null;
-            // Each rated row is a mark; a season's carries its name. The
-            // title's rating is then its latest mark's.
+            // A season row is a mark on that season: its rating, comment,
+            // date and status. Other rated rows are marks on the show.
+            const season = await seasonOfRow(entry, match);
             const review = entry.review?.trim() ?? '';
-            const rated =
-              !match.episode && entry.rating
-                ? await importMark(
-                    id,
-                    {
-                      rating: entry.rating,
-                      body: listing
-                        ? [seasonLabel(listing.season), review]
-                            .filter(Boolean)
-                            .join(' · ')
-                        : review,
-                      markedAt: at,
-                    },
+            const added =
+              season !== null || (!match.episode && entry.rating)
+                ? await importMark(id, {
+                    season,
+                    status:
+                      season !== null ? SEASON_STATUS[entry.status] : null,
+                    rating: entry.rating ?? null,
                     review,
-                  )
+                    markedAt: at,
+                  })
                 : false;
+            const rated = added && !!entry.rating;
             const status = derivedStatus({
               mediaType: match.details.mediaType,
               source: match.episode ? undefined : entry.status,
@@ -131,7 +167,7 @@ export async function runImport(
                 | undefined,
             });
             const wrote = await setImportedStatus(id, status, at);
-            if (wrote || rated || match.episode) summary.imported++;
+            if (wrote || added || match.episode) summary.imported++;
             else summary.skipped++;
             if (wrote) {
               if (status === 'completed') summary.watched++;
