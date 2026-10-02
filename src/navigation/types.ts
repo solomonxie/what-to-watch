@@ -29,17 +29,17 @@ export type SettingsStackParamList = TasteStackParamList & {
 };
 
 export type SearchStackParamList = {
-  SearchHome: { q?: string } | undefined;
+  SearchHome: { q?: string; focus?: number } | undefined;
   Title: TitleParams;
 };
 
 export type TabParamList = {
   DiscoverTab: NavigatorScreenParams<DiscoverStackParamList>;
+  SearchTab: NavigatorScreenParams<SearchStackParamList>;
   LibraryTab: NavigatorScreenParams<LibraryStackParamList>;
-  SettingsTab: NavigatorScreenParams<SettingsStackParamList>;
 };
 
 export type RootStackParamList = {
   Tabs: NavigatorScreenParams<TabParamList>;
-  Search: NavigatorScreenParams<SearchStackParamList>;
+  Settings: NavigatorScreenParams<SettingsStackParamList>;
 };

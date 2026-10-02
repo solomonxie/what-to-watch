@@ -13,6 +13,7 @@ import { isProviderActive } from '../../providers/providerRegistry';
 import { EmptyState, Poster } from '../../ui/components';
 import { joinMeta, mediaLabel, score10 } from '../../ui/format';
 import { space, type, useColors } from '../../ui/theme';
+import { pullToLeave } from './pullToLeave';
 import type { ProviderSearchResult } from '../../types/domain';
 
 const DEBOUNCE_MS = 350;
@@ -31,6 +32,7 @@ interface Props {
   /** Bumped when the local index is rebuilt. */
   indexVersion: number;
   onOpen: (titleId: string) => void;
+  onPullDown?: () => void;
 }
 
 export function SearchResults({
@@ -39,6 +41,7 @@ export function SearchResults({
   library,
   indexVersion,
   onOpen,
+  onPullDown,
 }: Props) {
   const c = useColors();
   // Typing stays responsive; the local match catches up a frame later.
@@ -112,7 +115,8 @@ export function SearchResults({
       style={{ backgroundColor: c.background }}
       contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
-      keyboardDismissMode="on-drag"
+      keyboardDismissMode="interactive"
+      {...pullToLeave(onPullDown)}
     >
       {nothing ? <EmptyState message={`No results for "${query}"`} /> : null}
 

@@ -39,18 +39,18 @@ export const linking = {
               LibrarySection: 'library/:title',
             },
           },
-          SettingsTab: {
-            initialRouteName: 'SettingsHome',
-            screens: {
-              SettingsHome: 'settings',
-              Taste: 'taste',
-              Region: 'region',
-              ICloudBackups: 'backups',
-            },
-          },
+          SearchTab: { screens: { SearchHome: 'search' } },
         },
       },
-      Search: { screens: { SearchHome: 'search' } },
+      Settings: {
+        initialRouteName: 'SettingsHome',
+        screens: {
+          SettingsHome: 'settings',
+          Taste: 'taste',
+          Region: 'region',
+          ICloudBackups: 'backups',
+        },
+      },
     },
   },
 } as LinkingOptions<RootStackParamList>;

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import type { NavigationProp } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable';
 import { DiscoverScreen } from '../screens/discover/DiscoverScreen';
@@ -14,7 +15,7 @@ import { ICloudBackupsScreen } from '../screens/settings/ICloudBackupsScreen';
 import { TasteScreen } from '../screens/taste/TasteScreen';
 import { AddFacetScreen } from '../screens/taste/AddFacetScreen';
 import { SearchScreen } from '../screens/search/SearchScreen';
-import { SearchPill } from '../screens/search/SearchPill';
+import { SearchTabButton } from '../screens/search/SearchTabButton';
 import type {
   DiscoverStackParamList,
   LibraryStackParamList,
@@ -68,7 +69,21 @@ function LibraryNavigator() {
       <LibraryStack.Screen
         name="LibraryHome"
         component={LibraryScreen}
-        options={{ title: 'Library', ...largeTitle }}
+        options={({ navigation }) => ({
+          title: 'Library',
+          ...largeTitle,
+          unstable_headerRightItems: () => [
+            {
+              type: 'button',
+              label: 'Settings',
+              icon: { type: 'sfSymbol', name: 'gearshape' },
+              onPress: () =>
+                navigation
+                  .getParent<NavigationProp<RootStackParamList>>('Root')
+                  ?.navigate('Settings', { screen: 'SettingsHome' }),
+            },
+          ],
+        })}
       />
       <LibraryStack.Screen
         name="LibrarySection"
@@ -89,7 +104,18 @@ function SettingsNavigator() {
       <SettingsStack.Screen
         name="SettingsHome"
         component={SettingsScreen}
-        options={{ title: 'Settings', ...largeTitle }}
+        options={({ navigation }) => ({
+          title: 'Settings',
+          ...largeTitle,
+          unstable_headerRightItems: () => [
+            {
+              type: 'button',
+              label: 'Done',
+              labelStyle: { fontWeight: '600' },
+              onPress: () => navigation.getParent()?.goBack(),
+            },
+          ],
+        })}
       />
       <SettingsStack.Screen name="ApiKey" component={ApiKeyScreen} />
       <SettingsStack.Screen
@@ -129,10 +155,13 @@ function SearchNavigator() {
   );
 }
 
-function TabsWithSearch() {
+function TabsNavigator() {
   return (
     <View style={styles.fill}>
-      <Tabs.Navigator screenOptions={{ headerShown: false }}>
+      <Tabs.Navigator
+        backBehavior="history"
+        screenOptions={{ headerShown: false }}
+      >
         <Tabs.Screen
           name="DiscoverTab"
           component={DiscoverNavigator}
@@ -145,6 +174,19 @@ function TabsWithSearch() {
           }}
         />
         <Tabs.Screen
+          name="SearchTab"
+          component={SearchNavigator}
+          options={{
+            title: 'Search',
+            // SearchTabButton draws the big icon over this item.
+            tabBarLabel: '',
+            tabBarIcon: {
+              type: 'image',
+              source: require('../assets/tab-blank.png'),
+            },
+          }}
+        />
+        <Tabs.Screen
           name="LibraryTab"
           component={LibraryNavigator}
           options={{
@@ -152,28 +194,20 @@ function TabsWithSearch() {
             tabBarIcon: { type: 'sfSymbol', name: 'books.vertical' },
           }}
         />
-        <Tabs.Screen
-          name="SettingsTab"
-          component={SettingsNavigator}
-          options={{
-            title: 'Settings',
-            tabBarIcon: { type: 'sfSymbol', name: 'gearshape' },
-          }}
-        />
       </Tabs.Navigator>
-      <SearchPill />
+      <SearchTabButton />
     </View>
   );
 }
 
 export function RootNavigator() {
   return (
-    <Root.Navigator screenOptions={{ headerShown: false }}>
-      <Root.Screen name="Tabs" component={TabsWithSearch} />
+    <Root.Navigator id="Root" screenOptions={{ headerShown: false }}>
+      <Root.Screen name="Tabs" component={TabsNavigator} />
       <Root.Screen
-        name="Search"
-        component={SearchNavigator}
-        options={{ presentation: 'fullScreenModal', animation: 'fade' }}
+        name="Settings"
+        component={SettingsNavigator}
+        options={{ presentation: 'modal' }}
       />
     </Root.Navigator>
   );

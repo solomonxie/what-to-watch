@@ -43,7 +43,7 @@ import {
   EmptyState,
   Poster,
   SectionLabel,
-  FLOATING_CLEARANCE,
+  BOTTOM_CLEARANCE,
 } from '../../ui/components';
 import { formatDate, joinMeta, mediaLabel, year } from '../../ui/format';
 import { space, type, useColors } from '../../ui/theme';
@@ -666,9 +666,11 @@ const styles = StyleSheet.create({
   tmdbText: { color: '#01B4E4' },
   doubanBadge: { backgroundColor: '#2E963D' },
   doubanText: { color: '#FFFFFF' },
+  youtubeBadge: { backgroundColor: '#FF0000' },
+  youtubeText: { color: '#FFFFFF' },
   linkLabel: { fontSize: 11 },
   fill: { flex: 1 },
-  content: { paddingBottom: FLOATING_CLEARANCE + 24 },
+  content: { paddingBottom: BOTTOM_CLEARANCE + 24 },
   hero: {
     flexDirection: 'row',
     gap: space.l,
