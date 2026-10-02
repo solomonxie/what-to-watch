@@ -74,7 +74,10 @@ const KV = {
 };
 
 /** After a change, iCloud is refreshed at most this often (plus on leaving the app). */
-const ICLOUD_MIN_INTERVAL_MS = 10 * 60 * 1000;
+/** Changes settle this long before a local backup runs, so a burst is one run. */
+const CHANGE_DEBOUNCE_MS = 10 * 1000;
+/** The launch catch-up waits until the first screens have loaded. */
+const LAUNCH_DELAY_MS = 8 * 1000;
 
 const DOCS = RNFS.DocumentDirectoryPath;
 
@@ -130,6 +133,16 @@ async function pruneLocal() {
   );
 }
 
+const hashes = new WeakMap<BackupPayload, string>();
+function hashOf(payload: BackupPayload) {
+  let hash = hashes.get(payload);
+  if (!hash) {
+    hash = contentHash(payload);
+    hashes.set(payload, hash);
+  }
+  return hash;
+}
+
 /** Records the outcome per destination; the hash only after a successful write. */
 async function gated(
   dest: Destination,
@@ -137,7 +150,7 @@ async function gated(
   force: boolean,
   write: () => Promise<void>,
 ) {
-  const hash = contentHash(payload);
+  const hash = hashOf(payload);
   if (!force && !shouldWrite(hash, await getKv(KV.hash(dest)))) return;
   try {
     await write();
@@ -293,17 +306,19 @@ let schedulerStarted = false;
 export function startBackupScheduler(): void {
   if (schedulerStarted) return;
   schedulerStarted = true;
-  let lastICloudAt = 0;
+  // In use: local snapshot only. Zipping for iCloud takes seconds on the JS
+  // thread, so it waits for leaving the app.
+  let pending: ReturnType<typeof setTimeout> | undefined;
   onDataChanged(() => {
-    serial(async () => {
-      if (isDemo()) return;
-      const payload = await buildPayload();
-      await recordChanges(payload).catch(() => {});
-      await backupLocal(payload).catch(() => {});
-      if (Date.now() - lastICloudAt < ICLOUD_MIN_INTERVAL_MS) return;
-      lastICloudAt = Date.now();
-      await backupICloud(payload, false);
-    }).catch(() => {});
+    clearTimeout(pending);
+    pending = setTimeout(() => {
+      serial(async () => {
+        if (isDemo()) return;
+        const payload = await buildPayload();
+        await recordChanges(payload).catch(() => {});
+        await backupLocal(payload).catch(() => {});
+      }).catch(() => {});
+    }, CHANGE_DEBOUNCE_MS);
   });
   AppState.addEventListener('change', state => {
     if (state !== 'background') return;
@@ -311,10 +326,12 @@ export function startBackupScheduler(): void {
   });
   // Catch up: a backup cut short last time (app left, killed) completes now.
   // Unchanged data is skipped by the hash gate, so this is cheap.
-  defaultICloudOn()
-    .catch(() => {})
-    .then(() => backupNow())
-    .catch(() => {});
+  setTimeout(() => {
+    defaultICloudOn()
+      .catch(() => {})
+      .then(() => backupNow())
+      .catch(() => {});
+  }, LAUNCH_DELAY_MS);
 }
 
 /** Backups stay off-phone by default: switch iCloud on once, where it can work. */
