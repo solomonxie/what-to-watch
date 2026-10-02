@@ -18,6 +18,7 @@ export const cachedTitles = sqliteTable('cached_titles', {
   originCountries: text('origin_countries', { mode: 'json' }).$type<string[]>(),
   castNames: text('cast_names', { mode: 'json' }).$type<string[]>(),
   certification: text('certification'),
+  popularity: real('popularity'),
   fetchedAt: integer('fetched_at').notNull(),
 });
 

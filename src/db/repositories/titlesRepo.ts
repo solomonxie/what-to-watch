@@ -13,6 +13,7 @@ export async function upsertTitle(title: NormalizedTitle): Promise<void> {
     originCountries: title.originCountries,
     castNames: title.cast,
     certification: title.certification,
+    popularity: title.popularity,
   };
   await db
     .insert(cachedTitles)

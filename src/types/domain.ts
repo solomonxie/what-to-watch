@@ -57,6 +57,8 @@ export interface ProviderTitleDetails {
   imdbId?: string;
   tmdbId?: string;
   omdbId?: string;
+  /** TMDB's popularity score. */
+  popularity?: number;
 }
 
 export interface NormalizedTitle extends ProviderTitleDetails {
