@@ -51,7 +51,7 @@ export function logState(p: BackupPayload): LogState {
     notes: byKey(
       p.notes,
       r => `${r.titleId}@${r.createdAt}`,
-      r => ({ body: r.body }),
+      r => ({ body: r.body, markedAt: r.markedAt ?? null }),
     ),
     episodes: byKey(
       p.episodes ?? [],

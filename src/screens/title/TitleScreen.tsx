@@ -1,42 +1,49 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  Alert,
   Image,
   Linking,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { doubanUrl, imdbUrl, platformUrl, tmdbUrl } from '../../config/links';
+import { useNavigation } from '@react-navigation/native';
+import type {
+  NativeStackNavigationProp,
+  NativeStackScreenProps,
+} from '@react-navigation/native-stack';
+import {
+  openDouban,
+  openInSafari,
+  prefetchDouban,
+  imdbSearchUrl,
+  imdbUrl,
+  platformUrl,
+  tmdbUrl,
+  youtubeSearchUrl,
+} from '../../config/links';
 import {
   getRatingsForTitle,
   getTitleById,
   getWatchProvidersForTitle,
 } from '../../db/repositories/titlesRepo';
 import {
-  applyShowRating,
   getWatchEntry,
-  markFinished,
   setInterested,
   syncShowProgress,
 } from '../../db/repositories/watchHistoryRepo';
-import {
-  getUserRatingForTitle,
-  setUserRating,
-} from '../../db/repositories/ratingsRepo';
-import {
-  addNote,
-  deleteNote,
-  getNotesForTitle,
-} from '../../db/repositories/notesRepo';
+import { getUserRatingForTitle } from '../../db/repositories/ratingsRepo';
 import { fetchAndCacheTitle, parseTitleId } from '../../catalog/catalogService';
 import { isProviderActive } from '../../providers/providerRegistry';
 import { getReviews, type TmdbReview } from '../../providers/tmdbProvider';
 import { Seasons } from './Seasons';
+import { formatMarkDate, WatchMarks } from './WatchMarks';
+import { StarRating } from './StarRating';
+import {
+  getNotesForTitle,
+  onMarksChanged,
+} from '../../db/repositories/notesRepo';
 import { useSettingsStore } from '../../state/settingsStore';
 import { DEFAULT_REGION } from '../../config/platforms';
 import {
@@ -47,14 +54,16 @@ import {
 } from '../../ui/components';
 import { formatDate, joinMeta, mediaLabel, year } from '../../ui/format';
 import { space, type, useColors } from '../../ui/theme';
-import type { DiscoverStackParamList } from '../../navigation/types';
+import type {
+  DiscoverStackParamList,
+  RootStackParamList,
+} from '../../navigation/types';
 
 type Props = NativeStackScreenProps<DiscoverStackParamList, 'Title'>;
 type Title = NonNullable<Awaited<ReturnType<typeof getTitleById>>>;
 type Rating = Awaited<ReturnType<typeof getRatingsForTitle>>[number];
 type Provider = Awaited<ReturnType<typeof getWatchProvidersForTitle>>[number];
 type Entry = Awaited<ReturnType<typeof getWatchEntry>>;
-type Note = Awaited<ReturnType<typeof getNotesForTitle>>[number];
 
 const SOURCE: Record<string, string> = {
   tmdb: 'TMDB',
@@ -122,20 +131,13 @@ export function TitleScreen({ route }: Props) {
   );
   useEffect(() => {
     reloadEntry();
-  }, [reloadEntry]);
+    // A saved mark can finish a movie or drop a show.
+    return onMarksChanged(id => id === titleId && reloadEntry());
+  }, [reloadEntry, titleId]);
   const onEpisodeProgress = useCallback(
     async (watched: number, aired: number, touch: boolean) => {
       const rating = (await getUserRatingForTitle(titleId))?.rating;
       await syncShowProgress(titleId, watched, aired, { touch, rating });
-      reloadEntry();
-    },
-    [titleId, reloadEntry],
-  );
-  const onRated = useCallback(
-    async (rating: number) => {
-      if (parseTitleId(titleId)?.mediaType === 'movie')
-        await markFinished(titleId);
-      else await applyShowRating(titleId, rating);
       reloadEntry();
     },
     [titleId, reloadEntry],
@@ -161,6 +163,7 @@ export function TitleScreen({ route }: Props) {
     <ScrollView
       style={{ backgroundColor: c.background }}
       contentInsetAdjustmentBehavior="automatic"
+      automaticallyAdjustKeyboardInsets
       keyboardDismissMode="interactive"
       contentContainerStyle={styles.content}
     >
@@ -212,7 +215,7 @@ export function TitleScreen({ route }: Props) {
       <OpenIn title={title} providers={providers} />
 
       <WatchState titleId={titleId} entry={entry} onChange={reloadEntry} />
-      <MyRating titleId={titleId} onRated={onRated} />
+      <MyRating titleId={titleId} />
 
       {title.overview ? <Overview text={title.overview} /> : null}
 
@@ -231,7 +234,7 @@ export function TitleScreen({ route }: Props) {
 
       <Reviews titleId={titleId} />
 
-      <Notes titleId={titleId} />
+      <WatchMarks titleId={titleId} />
     </ScrollView>
   );
 }
@@ -392,90 +395,39 @@ function WatchState({
   );
 }
 
-const STAR = 32;
-
-/** Five stars in half steps; each half star is one point of a 10-point score. */
-function StarRating({
-  value,
-  onChange,
-}: {
-  value: number;
-  onChange: (value: number) => void;
-}) {
+/** My latest rating and its date; a tap on the stars writes a new mark. */
+function MyRating({ titleId }: { titleId: string }) {
   const c = useColors();
-  return (
-    <View style={styles.starsRow}>
-      {[0, 1, 2, 3, 4].map(i => {
-        const fill = Math.min(Math.max(value - i * 2, 0), 2) / 2;
-        return (
-          <Pressable
-            key={i}
-            accessibilityLabel={`${i + 1} star${i ? 's' : ''}`}
-            onPress={e =>
-              onChange(i * 2 + (e.nativeEvent.locationX < STAR / 2 ? 1 : 2))
-            }
-            style={styles.starBox}
-          >
-            <Text style={[styles.star, { color: c.placeholder }]}>★</Text>
-            <View style={[styles.starFill, { width: STAR * fill }]}>
-              <Text style={[styles.star, { color: c.star }]}>★</Text>
-            </View>
-          </Pressable>
-        );
-      })}
-      <Text style={[type.meta, styles.ratingValue, { color: c.secondary }]}>
-        {value ? `${value} / 10` : ''}
-      </Text>
-    </View>
-  );
-}
-
-function MyRating({
-  titleId,
-  onRated,
-}: {
-  titleId: string;
-  onRated: (rating: number) => void;
-}) {
-  const c = useColors();
-  const [rating, setRating] = useState(0);
-  const [review, setReview] = useState('');
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [latest, setLatest] = useState<{ rating: number; at: number }>();
 
   useEffect(() => {
-    getUserRatingForTitle(titleId).then(r => {
-      if (!r) return;
-      setRating(r.rating);
-      setReview(r.reviewText ?? '');
-    });
+    const load = () =>
+      getNotesForTitle(titleId).then(marks => {
+        const m = marks.find(x => x.rating != null);
+        setLatest(m ? { rating: m.rating!, at: m.markedAt } : undefined);
+      });
+    load();
+    return onMarksChanged(id => id === titleId && load());
   }, [titleId]);
-
-  const save = async (value: number, text: string) => {
-    if (!value) return;
-    await setUserRating(titleId, value, text.trim() || undefined);
-    onRated(value);
-  };
 
   return (
     <>
       <SectionLabel>My rating</SectionLabel>
-      <StarRating
-        value={rating}
-        onChange={v => {
-          setRating(v);
-          save(v, review);
-        }}
-      />
-      {rating ? (
-        <TextInput
-          style={[styles.input, { backgroundColor: c.chip, color: c.text }]}
-          placeholder="Add a review…"
-          placeholderTextColor={c.secondary}
-          multiline
-          value={review}
-          onChangeText={setReview}
-          onBlur={() => save(rating, review)}
+      <View style={styles.inset}>
+        <StarRating
+          value={latest?.rating ?? 0}
+          onChange={rating =>
+            navigation.navigate('WatchMark', { titleId, rating })
+          }
         />
-      ) : null}
+        {latest ? (
+          <Text style={[type.meta, styles.ratedOn, { color: c.secondary }]}>
+            Rated {formatMarkDate(latest.at)}
+          </Text>
+        ) : null}
+      </View>
     </>
   );
 }
@@ -590,69 +542,6 @@ function Review({ review }: { review: TmdbReview }) {
   );
 }
 
-function Notes({ titleId }: { titleId: string }) {
-  const c = useColors();
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [draft, setDraft] = useState('');
-
-  const reload = useCallback(
-    () => getNotesForTitle(titleId).then(setNotes),
-    [titleId],
-  );
-  useEffect(() => {
-    reload();
-  }, [reload]);
-
-  const add = async () => {
-    if (!draft.trim()) return;
-    await addNote(titleId, draft.trim());
-    setDraft('');
-    reload();
-  };
-
-  const remove = (note: Note) =>
-    Alert.alert('Delete note?', note.body, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          await deleteNote(note.id);
-          reload();
-        },
-      },
-    ]);
-
-  return (
-    <>
-      <SectionLabel>Notes</SectionLabel>
-      {notes.map(n => (
-        <Pressable key={n.id} onLongPress={() => remove(n)}>
-          <Text style={[styles.paragraph, styles.note, { color: c.text }]}>
-            {n.body}
-          </Text>
-        </Pressable>
-      ))}
-      <View style={[styles.noteInput, { backgroundColor: c.chip }]}>
-        <TextInput
-          style={[styles.noteField, { color: c.text }]}
-          placeholder="Add a note…"
-          placeholderTextColor={c.secondary}
-          value={draft}
-          onChangeText={setDraft}
-          onSubmitEditing={add}
-          returnKeyType="done"
-        />
-        {draft.trim() ? (
-          <Pressable onPress={add} hitSlop={8}>
-            <Text style={[styles.addText, { color: c.accent }]}>Add</Text>
-          </Pressable>
-        ) : null}
-      </View>
-    </>
-  );
-}
-
 const styles = StyleSheet.create({
   links: { paddingHorizontal: space.l, gap: space.l },
   link: { alignItems: 'center', width: 60, gap: 6 },
@@ -685,22 +574,7 @@ const styles = StyleSheet.create({
     marginTop: space.xl,
   },
   statValue: { fontSize: 20, fontWeight: '700' },
-  starsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    paddingHorizontal: space.l,
-  },
-  starBox: { width: STAR, height: STAR, justifyContent: 'center' },
-  star: { fontSize: 30, width: STAR, textAlign: 'center' },
-  starFill: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    overflow: 'hidden',
-    justifyContent: 'center',
-  },
+  ratedOn: { marginTop: space.xs },
   stateLine: { paddingHorizontal: space.l, marginTop: space.xl },
   interested: {
     alignSelf: 'flex-start',
@@ -712,15 +586,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   interestedText: { fontSize: 15, fontWeight: '600' },
-  ratingValue: { marginLeft: space.s },
-  input: {
-    marginHorizontal: space.l,
-    marginTop: space.m,
-    borderRadius: 10,
-    padding: space.m,
-    minHeight: 72,
-    fontSize: 16,
-  },
   overview: { paddingHorizontal: space.l, marginTop: space.xl },
   paragraph: { fontSize: 16, lineHeight: 23 },
   inset: { paddingHorizontal: space.l },
@@ -739,17 +604,6 @@ const styles = StyleSheet.create({
   },
   reviewBody: { fontSize: 15, lineHeight: 21 },
   reviewAction: { fontSize: 15, fontWeight: '600', paddingVertical: space.s },
-  note: { paddingHorizontal: space.l, paddingVertical: space.xs },
-  noteInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: space.l,
-    marginTop: space.s,
-    borderRadius: 10,
-    paddingHorizontal: space.m,
-  },
-  noteField: { flex: 1, paddingVertical: 10, fontSize: 16 },
-  addText: { fontSize: 16, fontWeight: '600' },
 });
 
 const BADGE: Record<string, object> = {

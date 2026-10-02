@@ -33,11 +33,8 @@ import {
   getWatchCounts,
   recordWatch,
 } from '../src/db/repositories/watchHistoryRepo';
-import {
-  setUserRating,
-  getAllUserRatings,
-} from '../src/db/repositories/ratingsRepo';
-import { addNote, getAllNotes } from '../src/db/repositories/notesRepo';
+import { getAllUserRatings } from '../src/db/repositories/ratingsRepo';
+import { addMark, getAllNotes } from '../src/db/repositories/notesRepo';
 import { buildPayload, importPayload } from '../src/backup/backupService';
 import { applyFilters, DEFAULT_FILTERS } from '../src/state/filterStore';
 import { searchIndex } from '../src/search/titleIndex';
@@ -106,7 +103,11 @@ live('live TMDB/OMDb end to end', () => {
 
   it('loads platform rankings and filters them', async () => {
     for (const platform of PLATFORMS) {
-      const rows = await refreshPlatformRanking(platform, platform.regions?.[0] ?? 'US', true);
+      const rows = await refreshPlatformRanking(
+        platform,
+        platform.regions?.[0] ?? 'US',
+        true,
+      );
       expect(rows.length).toBeGreaterThan(5);
     }
     const rows = await refreshPlatformRanking(PLATFORMS[0], 'US');
@@ -129,8 +130,7 @@ live('live TMDB/OMDb end to end', () => {
     await recordWatch(id, 'completed');
     await recordWatch(id, 'completed');
     expect((await getWatchCounts()).get(id)).toBe(2);
-    await setUserRating(id, 8.5, 'Great');
-    await addNote(id, 'Watch with subtitles');
+    await addMark(id, { rating: 8.5, body: 'Great', markedAt: Date.now() });
 
     const payload = await buildPayload();
     expect(JSON.stringify(payload)).not.toMatch(new RegExp(keys.tmdb!));

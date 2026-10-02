@@ -5,7 +5,9 @@ import { CERTIFICATION_STATEMENTS } from './0003_certification';
 import { EPISODE_WATCHES_STATEMENTS } from './0004_episode_watches';
 import { DERIVED_STATUS_STATEMENTS } from './0005_derived_status';
 import { RESPONSE_CACHE_STATEMENTS } from './0006_response_cache';
+import { NOTE_MARKS_STATEMENTS } from './0007_note_marks';
 import { POPULARITY_STATEMENTS } from './0009_popularity';
+import { RATED_MARKS_STATEMENTS } from './0010_rated_marks';
 
 // Index + 1 = the PRAGMA user_version after that step runs.
 export const MIGRATIONS: string[][] = [
@@ -16,7 +18,9 @@ export const MIGRATIONS: string[][] = [
   EPISODE_WATCHES_STATEMENTS,
   DERIVED_STATUS_STATEMENTS,
   RESPONSE_CACHE_STATEMENTS,
+  NOTE_MARKS_STATEMENTS,
   POPULARITY_STATEMENTS,
+  RATED_MARKS_STATEMENTS,
 ];
 
 export interface MigrationDb {
