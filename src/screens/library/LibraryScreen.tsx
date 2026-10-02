@@ -14,11 +14,18 @@ import { getAllUserRatings } from '../../db/repositories/ratingsRepo';
 import { getLatestEpisodes } from '../../db/repositories/episodeWatchesRepo';
 import { getTitlesByIds } from '../../db/repositories/titlesRepo';
 import {
+  lastChanges,
+  loadLibraryFacets,
+  type FacetCount,
+  type LibraryFacet,
+} from './libraryFacets';
+import {
+  ChipGrid,
   EmptyState,
   PosterTile,
   SectionLabel,
   type GridItem,
-  FLOATING_CLEARANCE,
+  BOTTOM_CLEARANCE,
 } from '../../ui/components';
 import { joinMeta, mediaLabel, year } from '../../ui/format';
 import { space, type, useColors } from '../../ui/theme';
@@ -41,10 +48,11 @@ const TOP = 8;
 const SO_SO = 5;
 
 export async function loadSections(): Promise<Section[]> {
-  const [history, ratings, latest] = await Promise.all([
+  const [history, ratings, latest, changed] = await Promise.all([
     getAllWatchHistory(),
     getAllUserRatings(),
     getLatestEpisodes(),
+    lastChanges(),
   ]);
   const rating = new Map(ratings.map(r => [r.titleId, r]));
   const byActivity = [...history].sort((a, b) => b.watchedAt - a.watchedAt);
@@ -102,22 +110,26 @@ export async function loadSections(): Promise<Section[]> {
   return groups
     .map(([title, entries]) => ({
       title,
-      items: entries.flatMap(e => {
-        const t = titles.get(e.titleId);
-        if (!t) return [];
-        return [
-          {
-            id: t.id,
-            title: t.title,
-            posterPath: t.posterPath,
-            badge: e.badge,
-            badgeCorner: 'right' as const,
-            meta:
-              e.meta ??
-              joinMeta([year(t.releaseDate), mediaLabel(t.mediaType)]),
-          },
-        ];
-      }),
+      items: entries
+        .flatMap(e => {
+          const t = titles.get(e.titleId);
+          return t ? [{ e, t }] : [];
+        })
+        .sort((x, y) => (changed.get(y.t.id) ?? 0) - (changed.get(x.t.id) ?? 0))
+        .flatMap(({ e, t }) => {
+          return [
+            {
+              id: t.id,
+              title: t.title,
+              posterPath: t.posterPath,
+              badge: e.badge,
+              badgeCorner: 'right' as const,
+              meta:
+                e.meta ??
+                joinMeta([year(t.releaseDate), mediaLabel(t.mediaType)]),
+            },
+          ];
+        }),
     }))
     .filter(s => s.items.length > 0);
 }
@@ -125,12 +137,24 @@ export async function loadSections(): Promise<Section[]> {
 export function LibraryScreen({ navigation }: Props) {
   const c = useColors();
   const [sections, setSections] = useState<Section[] | null>(null);
+  const [facets, setFacets] = useState<{
+    genres: FacetCount[];
+    languages: FacetCount[];
+  } | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       loadSections().then(setSections);
+      loadLibraryFacets().then(setFacets);
     }, []),
   );
+
+  const facetGroups: [string, LibraryFacet['kind'], FacetCount[]][] = facets
+    ? [
+        ['Genres', 'genre', facets.genres],
+        ['Languages', 'language', facets.languages],
+      ]
+    : [];
 
   const open = (titleId: string) => navigation.navigate('Title', { titleId });
 
@@ -138,7 +162,7 @@ export function LibraryScreen({ navigation }: Props) {
     <ScrollView
       style={{ backgroundColor: c.background }}
       contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{ paddingBottom: FLOATING_CLEARANCE }}
+      contentContainerStyle={{ paddingBottom: BOTTOM_CLEARANCE }}
     >
       {sections === null ? (
         <EmptyState loading />
@@ -179,6 +203,27 @@ export function LibraryScreen({ navigation }: Props) {
           </View>
         ))
       )}
+      {sections?.length
+        ? facetGroups
+            .filter(([, , list]) => list.length > 0)
+            .map(([title, kind, list]) => (
+              <View key={title} style={styles.facets}>
+                <SectionLabel>{title}</SectionLabel>
+                <ChipGrid
+                  options={list.map(f => ({
+                    value: f.value,
+                    label: `${f.label} (${f.count})`,
+                  }))}
+                  onPress={value =>
+                    navigation.navigate('LibrarySection', {
+                      title: list.find(f => f.value === value)!.label,
+                      facet: { kind, value },
+                    })
+                  }
+                />
+              </View>
+            ))
+        : null}
     </ScrollView>
   );
 }
@@ -196,4 +241,5 @@ const styles = StyleSheet.create({
   },
   pressed: { opacity: 0.5 },
   row: { paddingHorizontal: space.l, gap: space.m },
+  facets: { marginBottom: space.s },
 });

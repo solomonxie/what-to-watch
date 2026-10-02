@@ -37,12 +37,14 @@ export async function recordWatch(titleId: string, status: WatchStatus) {
 async function writeStatus(
   titleId: string,
   status: WatchStatus,
-  existing?: { id: number; rewatchCount: number },
+  existing?: { id: number; rewatchCount: number; watchedAt: number },
+  { keepTime = false } = {},
 ) {
   markDataChanged();
   const values = {
     status,
-    watchedAt: Date.now(),
+    // A status re-derived on viewing isn't the user's change; its date stays.
+    watchedAt: keepTime && existing ? existing.watchedAt : Date.now(),
     rewatchCount:
       status === 'completed' ? Math.max(1, existing?.rewatchCount ?? 0) : 0,
   };
@@ -104,7 +106,7 @@ export async function syncShowProgress(
       ? 'dropped'
       : 'watching';
   if (!touch && existing?.status === status) return;
-  await writeStatus(titleId, status, existing);
+  await writeStatus(titleId, status, existing, { keepTime: !touch });
 }
 
 /** A low score drops a show in progress; raising it picks it back up. */
