@@ -220,7 +220,11 @@ export function TitleScreen({ route }: Props) {
       {title.overview ? <Overview text={title.overview} /> : null}
 
       {title.mediaType === 'tv' ? (
-        <Seasons titleId={titleId} onProgress={onEpisodeProgress} />
+        <Seasons
+          titleId={titleId}
+          completed={entry?.status === 'completed'}
+          onProgress={onEpisodeProgress}
+        />
       ) : null}
 
       {title.castNames?.length ? (
