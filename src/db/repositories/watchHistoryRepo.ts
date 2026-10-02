@@ -4,6 +4,7 @@ import { DERIVED_STATUS_STATEMENTS } from '../migrations/0005_derived_status';
 import { watchHistory } from '../schema';
 import type { WatchStatus } from '../../types/domain';
 import { markDataChanged } from '../../backup/changeFeed';
+import { getUserRatingForTitle } from './ratingsRepo';
 
 export async function recordWatch(titleId: string, status: WatchStatus) {
   markDataChanged();
@@ -117,6 +118,14 @@ export async function applyShowRating(titleId: string, rating: number) {
     await writeStatus(titleId, 'dropped', existing);
   else if (existing?.status === 'dropped' && !isLow(rating))
     await writeStatus(titleId, 'watching', existing);
+}
+
+/** After the rating changed: a rated movie is watched; a show may drop or resume. */
+export async function applyRatingToStatus(titleId: string) {
+  const rating = (await getUserRatingForTitle(titleId))?.rating;
+  if (rating === undefined) return;
+  if (titleId.startsWith('movie:')) await markFinished(titleId);
+  else await applyShowRating(titleId, rating);
 }
 
 export async function getRecentlyWatched(limit = 20) {

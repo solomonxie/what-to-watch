@@ -58,7 +58,12 @@ export const platformRankingsCache = sqliteTable('platform_rankings_cache', {
 export const userNotes = sqliteTable('user_notes', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   titleId: text('title_id').notNull(),
+  /** The review; may be empty. */
   body: text('body').notNull(),
+  /** 1-10; older notes and backups may lack it. */
+  rating: real('rating'),
+  /** When it was watched; older backups lack it, so fall back to createdAt. */
+  markedAt: integer('marked_at'),
   createdAt: integer('created_at').notNull(),
   updatedAt: integer('updated_at').notNull(),
 });

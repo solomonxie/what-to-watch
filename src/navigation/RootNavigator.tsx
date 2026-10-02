@@ -8,6 +8,7 @@ import { FiltersScreen } from '../screens/discover/FiltersScreen';
 import { LibraryScreen } from '../screens/library/LibraryScreen';
 import { LibrarySectionScreen } from '../screens/library/LibrarySectionScreen';
 import { TitleScreen } from '../screens/title/TitleScreen';
+import { WatchMarkSheet } from '../screens/title/WatchMarkSheet';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { ApiKeyScreen } from '../screens/settings/ApiKeyScreen';
 import { RegionScreen } from '../screens/settings/RegionScreen';
@@ -208,6 +209,16 @@ export function RootNavigator() {
         name="Settings"
         component={SettingsNavigator}
         options={{ presentation: 'modal' }}
+      />
+      <Root.Screen
+        name="WatchMark"
+        component={WatchMarkSheet}
+        options={{
+          presentation: 'formSheet',
+          sheetAllowedDetents: [0.55, 1],
+          sheetGrabberVisible: true,
+          sheetCornerRadius: 16,
+        }}
       />
     </Root.Navigator>
   );

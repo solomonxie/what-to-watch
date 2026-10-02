@@ -43,4 +43,5 @@ export type TabParamList = {
 export type RootStackParamList = {
   Tabs: NavigatorScreenParams<TabParamList>;
   Settings: NavigatorScreenParams<SettingsStackParamList>;
+  WatchMark: { titleId: string; markId?: number; rating?: number };
 };
