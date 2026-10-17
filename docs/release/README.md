@@ -4,7 +4,7 @@ Bundle ID from `ios/Local.xcconfig` · iOS 15.1+ · iPhone only, portrait.
 
 - [`listing.md`](listing.md) — step-by-step plan and every App Store Connect field, ready to paste
 - [`privacy-policy.md`](privacy-policy.md) — the policy; its GitHub URL is the Privacy Policy URL
-- `screenshots/6.9`, `screenshots/6.5` — upload-ready, from `make screenshots SHOTS=<dir>`
+- `screenshots/` — 7 shots, Demo mode, captured 2026-10-02; ready, upload in filename order (listing.md → Screenshots)
 
 Signing: `ios/Local.xcconfig` (gitignored) holds `DEVELOPMENT_TEAM` and `PRODUCT_BUNDLE_IDENTIFIER`;
 `ios/Signing.xcconfig` has placeholders only. This repo is public — keep account identifiers out of it.

@@ -72,6 +72,7 @@ Add a TMDB and/or OMDb API key in the app's Settings section to enable metadata,
 - Preset library: `demo/library.json` (backup format, dates shifted to today on first launch). Regenerate: `node scripts/make-demo-data.js`.
 - Keys: `.env.demo` (copy `.env.demo.example`), baked in by `make ios` only (never `make release`); used only in demo mode. Order: key set in demo mode → `.env.demo` → real key (read only).
 - Screenshots in demo mode: `DEMO=1 scripts/screenshot.sh discover /tmp/out.png` (`-demoMode 1` launch argument, that run only).
+- Simulator screenshots: see docs/release/listing.md → Screenshots (`SCREENSHOTS` build flag, `-openURL` launch argument).
 
 ## Spotlight
 
@@ -79,10 +80,10 @@ Every cached title (library, browsed, rankings, picks) is indexed in iOS Spotlig
 
 ## Screenshots
 
-| **Discover** · picks for you, by service | **Title** · ratings, where to watch, your rating | **Library** · next watch, top rated |
+| **Discover** · picks on your services | **Title** · your rating, where to find it | **Library** · continue, next, top rated |
 |:-:|:-:|:-:|
-| <img src="docs/release/screenshots/6.9/01-discover.jpg" width="240"> | <img src="docs/release/screenshots/6.9/02-title.jpg" width="240"> | <img src="docs/release/screenshots/6.9/03-library.jpg" width="240"> |
-| **Filters** · sort, type, year, rating, genre | **Search** · recent searches, tap to reuse | **Taste** · rank genres that drive picks |
-| <img src="docs/release/screenshots/6.9/04-filters.jpg" width="240"> | <img src="docs/release/screenshots/6.9/05-search.jpg" width="240"> | <img src="docs/release/screenshots/6.9/06-taste.jpg" width="240"> |
-| **Settings** · data sources, streaming services |  |  |
-| <img src="docs/release/screenshots/6.9/07-settings.jpg" width="240"> |  |  |
+| <img src="docs/release/screenshots/01-discover.jpg" width="250"> | <img src="docs/release/screenshots/02-title.jpg" width="250"> | <img src="docs/release/screenshots/03-library.jpg" width="250"> |
+| **Filters** · type, year, rating, age | **Search** · library and TMDB as you type | **Taste** · rank what drives picks |
+| <img src="docs/release/screenshots/04-filters.jpg" width="250"> | <img src="docs/release/screenshots/05-search.jpg" width="250"> | <img src="docs/release/screenshots/06-taste.jpg" width="250"> |
+| **Settings** · data sources, services |  |  |
+| <img src="docs/release/screenshots/07-settings.jpg" width="250"> |  |  |
