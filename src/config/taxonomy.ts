@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { AgeGroup, TitleKind } from '../types/domain';
 
 export interface GenreDef {
@@ -76,9 +77,10 @@ export const COUNTRIES: [string, string][] = [
 ];
 
 export const languageName = (code: string) =>
-  LANGUAGES.find(([c]) => c === code)?.[1] ?? code.toUpperCase();
+  t(LANGUAGES.find(([c]) => c === code)?.[1] ?? code.toUpperCase());
 export const countryName = (code: string) =>
-  COUNTRIES.find(([c]) => c === code)?.[1] ?? code;
+  t(COUNTRIES.find(([c]) => c === code)?.[1] ?? code);
+export const genreLabel = (name: string) => t(name);
 
 /** Genre names TMDB returns (incl. tv-only combos) → unified name(s). */
 export function unifiedGenres(tmdbName: string): string[] {
@@ -120,19 +122,19 @@ export function hasGenre(
 }
 
 export const KINDS: { value: TitleKind; label: string }[] = [
-  { value: 'movie', label: 'Movie' },
-  { value: 'series', label: 'Series' },
-  { value: 'documentary', label: 'Documentary' },
-  { value: 'docuseries', label: 'Docuseries' },
-  { value: 'unscripted', label: 'Reality & talk' },
-  { value: 'animation', label: 'Animation' },
-  { value: 'anime', label: 'Anime' },
+  { value: 'movie', label: t('Movie') },
+  { value: 'series', label: t('Series') },
+  { value: 'documentary', label: t('Documentary') },
+  { value: 'docuseries', label: t('Docuseries') },
+  { value: 'unscripted', label: t('Reality & talk') },
+  { value: 'animation', label: t('Animation') },
+  { value: 'anime', label: t('Anime') },
 ];
 
 export const AGES: { value: AgeGroup; label: string }[] = [
-  { value: 'adults', label: 'Adults 17+' },
-  { value: 'teens', label: 'Teens 13–16' },
-  { value: 'children', label: '7–12' },
-  { value: 'kids', label: 'Kids 0–6' },
-  { value: 'family', label: 'Family' },
+  { value: 'adults', label: t('Adults 17+') },
+  { value: 'teens', label: t('Teens 13–16') },
+  { value: 'children', label: t('7–12') },
+  { value: 'kids', label: t('Kids 0–6') },
+  { value: 'family', label: t('Family') },
 ];

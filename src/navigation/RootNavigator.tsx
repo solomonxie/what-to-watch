@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import type { NavigationProp } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable';
+import { t } from '../i18n';
 import { DiscoverScreen } from '../screens/discover/DiscoverScreen';
 import { FiltersScreen } from '../screens/discover/FiltersScreen';
 import { LibraryScreen } from '../screens/library/LibraryScreen';
@@ -48,7 +49,7 @@ function DiscoverNavigator() {
       <DiscoverStack.Screen
         name="DiscoverHome"
         component={DiscoverScreen}
-        options={{ title: 'What to Watch', ...largeTitle }}
+        options={{ title: t('What to Watch'), ...largeTitle }}
       />
       <DiscoverStack.Screen
         name="Title"
@@ -71,12 +72,12 @@ function LibraryNavigator() {
         name="LibraryHome"
         component={LibraryScreen}
         options={({ navigation }) => ({
-          title: 'Library',
+          title: t('Library'),
           ...largeTitle,
           unstable_headerRightItems: () => [
             {
               type: 'button',
-              label: 'Settings',
+              label: t('Settings'),
               icon: { type: 'sfSymbol', name: 'gearshape' },
               onPress: () =>
                 navigation
@@ -106,12 +107,12 @@ function SettingsNavigator() {
         name="SettingsHome"
         component={SettingsScreen}
         options={({ navigation }) => ({
-          title: 'Settings',
+          title: t('Settings'),
           ...largeTitle,
           unstable_headerRightItems: () => [
             {
               type: 'button',
-              label: 'Done',
+              label: t('Done'),
               labelStyle: { fontWeight: '600' },
               onPress: () => navigation.getParent()?.goBack(),
             },
@@ -122,18 +123,18 @@ function SettingsNavigator() {
       <SettingsStack.Screen
         name="Region"
         component={RegionScreen}
-        options={{ title: 'Region' }}
+        options={{ title: t('Region') }}
       />
       <SettingsStack.Screen
         name="Taste"
         component={TasteScreen}
-        options={{ title: 'Taste' }}
+        options={{ title: t('Taste') }}
       />
       <SettingsStack.Screen name="AddFacet" component={AddFacetScreen} />
       <SettingsStack.Screen
         name="ICloudBackups"
         component={ICloudBackupsScreen}
-        options={{ title: 'iCloud Backups' }}
+        options={{ title: t('iCloud Backups') }}
       />
     </SettingsStack.Navigator>
   );
@@ -167,7 +168,7 @@ function TabsNavigator() {
           name="DiscoverTab"
           component={DiscoverNavigator}
           options={{
-            title: 'Discover',
+            title: t('Discover'),
             tabBarIcon: {
               type: 'sfSymbol',
               name: 'play.rectangle.on.rectangle',
@@ -178,7 +179,7 @@ function TabsNavigator() {
           name="SearchTab"
           component={SearchNavigator}
           options={{
-            title: 'Search',
+            title: t('Search'),
             // SearchTabButton draws the big icon over this item.
             tabBarLabel: '',
             tabBarIcon: {
@@ -191,7 +192,7 @@ function TabsNavigator() {
           name="LibraryTab"
           component={LibraryNavigator}
           options={{
-            title: 'Library',
+            title: t('Library'),
             tabBarIcon: { type: 'sfSymbol', name: 'books.vertical' },
           }}
         />

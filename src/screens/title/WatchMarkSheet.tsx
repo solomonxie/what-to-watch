@@ -30,6 +30,7 @@ import { ChipGrid } from '../../ui/components';
 import { space, useColors } from '../../ui/theme';
 import { StarRating } from './StarRating';
 import type { RootStackParamList } from '../../navigation/types';
+import { t, tf } from '../../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'WatchMark'>;
 type Row = 'date' | 'status' | 'season' | 'episode';
@@ -105,10 +106,10 @@ export function WatchMarkSheet({ navigation, route }: Props) {
     close();
   };
   const remove = () =>
-    Alert.alert('Delete this mark?', undefined, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('Delete this mark?'), undefined, [
+      { text: t('Cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('Delete'),
         style: 'destructive',
         onPress: async () => {
           await deleteMark(markId!);
@@ -118,7 +119,7 @@ export function WatchMarkSheet({ navigation, route }: Props) {
     ]);
 
   const seasonName = (n: number) =>
-    seasons.find(s => s.number === n)?.name ?? `Season ${n}`;
+    seasons.find(s => s.number === n)?.name ?? tf('Season {0}', n);
 
   return (
     <ScrollView
@@ -128,14 +129,16 @@ export function WatchMarkSheet({ navigation, route }: Props) {
     >
       <View style={styles.bar}>
         <Pressable onPress={close} hitSlop={10}>
-          <Text style={[styles.action, { color: c.accent }]}>Cancel</Text>
+          <Text style={[styles.action, { color: c.accent }]}>
+            {t('Cancel')}
+          </Text>
         </Pressable>
         <Text style={[styles.title, { color: c.text }]}>
-          {markId === undefined ? 'New watch mark' : 'Watch mark'}
+          {markId === undefined ? t('New watch mark') : t('Watch mark')}
         </Text>
         <Pressable onPress={save} hitSlop={10}>
           <Text style={[styles.action, styles.bold, { color: c.accent }]}>
-            Save
+            {t('Save')}
           </Text>
         </Pressable>
       </View>
@@ -151,15 +154,15 @@ export function WatchMarkSheet({ navigation, route }: Props) {
       {seasons.length ? (
         <>
           <DropdownRow
-            label="Season"
-            value={season === null ? 'Whole show' : seasonName(season)}
+            label={t('Season')}
+            value={season === null ? t('Whole show') : seasonName(season)}
             open={open === 'season'}
             onPress={() => toggle('season')}
           />
           {open === 'season' ? (
             <ChipGrid
               options={[
-                { value: 'all', label: 'Whole show' },
+                { value: 'all', label: t('Whole show') },
                 ...seasons.map(s => ({
                   value: String(s.number),
                   label: s.name,
@@ -178,15 +181,17 @@ export function WatchMarkSheet({ navigation, route }: Props) {
       {season !== null && episodes.length ? (
         <>
           <DropdownRow
-            label="Episode"
-            value={episode === null ? 'Whole season' : `Episode ${episode}`}
+            label={t('Episode')}
+            value={
+              episode === null ? t('Whole season') : tf('Episode {0}', episode)
+            }
             open={open === 'episode'}
             onPress={() => toggle('episode')}
           />
           {open === 'episode' ? (
             <ChipGrid
               options={[
-                { value: 'all', label: 'Whole season' },
+                { value: 'all', label: t('Whole season') },
                 ...episodes.map(e => ({
                   value: String(e.number),
                   label: `E${e.number}`,
@@ -205,15 +210,15 @@ export function WatchMarkSheet({ navigation, route }: Props) {
       ) : null}
 
       <DropdownRow
-        label="Status"
-        value={status ? STATUS_LABELS[status] : 'None'}
+        label={t('Status')}
+        value={status ? STATUS_LABELS[status] : t('None')}
         open={open === 'status'}
         onPress={() => toggle('status')}
       />
       {open === 'status' ? (
         <ChipGrid
           options={[
-            { value: 'none', label: 'None' },
+            { value: 'none', label: t('None') },
             ...STATUSES.map(([value, label]) => ({ value, label })),
           ]}
           isSelected={v => v === (status ?? 'none')}
@@ -225,7 +230,7 @@ export function WatchMarkSheet({ navigation, route }: Props) {
       ) : null}
 
       <DropdownRow
-        label="Date"
+        label={t('Date')}
         value={formatMarkDate(markedAt)}
         open={open === 'date'}
         onPress={() => toggle('date')}
@@ -242,7 +247,7 @@ export function WatchMarkSheet({ navigation, route }: Props) {
 
       <TextInput
         style={[styles.field, { color: c.text, backgroundColor: c.chip }]}
-        placeholder="Review (optional)"
+        placeholder={t('Review (optional)')}
         placeholderTextColor={c.secondary}
         value={review}
         onChangeText={setReview}
@@ -251,7 +256,9 @@ export function WatchMarkSheet({ navigation, route }: Props) {
       />
       {markId !== undefined ? (
         <Pressable onPress={remove} hitSlop={8} style={styles.delete}>
-          <Text style={[styles.action, { color: c.danger }]}>Delete mark</Text>
+          <Text style={[styles.action, { color: c.danger }]}>
+            {t('Delete mark')}
+          </Text>
         </Pressable>
       ) : null}
     </ScrollView>

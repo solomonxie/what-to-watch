@@ -20,6 +20,7 @@ import { verifyApiKey } from '../../providers/keyCheck';
 import { refreshSearchIndex } from '../../catalog/catalogService';
 import { space, type, useColors } from '../../ui/theme';
 import type { SettingsStackParamList } from '../../navigation/types';
+import { t, tf } from '../../i18n';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'ApiKey'>;
 
@@ -27,12 +28,16 @@ const INFO = {
   tmdb: {
     name: 'TMDB',
     url: 'https://www.themoviedb.org/settings/api',
-    hint: 'Get a free key at themoviedb.org → Settings → API. Use the short "API Key", not the Read Access Token.',
+    hint: t(
+      'Get a free key at themoviedb.org → Settings → API. Use the short "API Key", not the Read Access Token.',
+    ),
   },
   omdb: {
     name: 'OMDb',
     url: 'https://www.omdbapi.com/apikey.aspx',
-    hint: 'Get a free key at omdbapi.com and activate it from the email they send.',
+    hint: t(
+      'Get a free key at omdbapi.com and activate it from the email they send.',
+    ),
   },
 };
 
@@ -77,10 +82,10 @@ export function ApiKeyScreen({ route, navigation }: Props) {
   };
 
   const onRemove = () =>
-    Alert.alert(`Remove ${info.name} key?`, undefined, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(tf('Remove {0} key?', info.name), undefined, [
+      { text: t('Cancel'), style: 'cancel' },
       {
-        text: 'Remove',
+        text: t('Remove'),
         style: 'destructive',
         onPress: async () => {
           await clearApiKey(providerId);
@@ -100,11 +105,11 @@ export function ApiKeyScreen({ route, navigation }: Props) {
         <TextInput
           style={[styles.input, { color: c.text }]}
           value={value}
-          onChangeText={t => {
-            setValue(t);
+          onChangeText={text => {
+            setValue(text);
             setError(null);
           }}
-          placeholder="API key"
+          placeholder={t('API key')}
           placeholderTextColor={c.tertiary}
           secureTextEntry={!reveal}
           autoCapitalize="none"
@@ -116,7 +121,7 @@ export function ApiKeyScreen({ route, navigation }: Props) {
         />
         <Pressable onPress={() => setReveal(r => !r)} hitSlop={8}>
           <Text style={[styles.inline, { color: c.accent }]}>
-            {reveal ? 'Hide' : 'Show'}
+            {reveal ? t('Hide') : t('Show')}
           </Text>
         </Pressable>
       </View>
@@ -132,7 +137,7 @@ export function ApiKeyScreen({ route, navigation }: Props) {
           style={{ color: c.accent }}
           onPress={() => Linking.openURL(info.url)}
         >
-          Open site
+          {t('Open site')}
         </Text>
       </Text>
 
@@ -148,13 +153,15 @@ export function ApiKeyScreen({ route, navigation }: Props) {
         {checking ? (
           <ActivityIndicator color="white" />
         ) : (
-          <Text style={styles.saveText}>Save</Text>
+          <Text style={styles.saveText}>{t('Save')}</Text>
         )}
       </Pressable>
 
       {saved ? (
         <Pressable onPress={onRemove} style={styles.remove} hitSlop={8}>
-          <Text style={[type.body, { color: c.danger }]}>Remove key</Text>
+          <Text style={[type.body, { color: c.danger }]}>
+            {t('Remove key')}
+          </Text>
         </Pressable>
       ) : null}
     </ScrollView>

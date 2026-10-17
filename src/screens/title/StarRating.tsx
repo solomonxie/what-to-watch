@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { space, type, useColors } from '../../ui/theme';
+import { tf } from '../../i18n';
 
 /** Five stars in half steps; each half star is one point of a 10-point score. */
 export function StarRating({
@@ -25,7 +26,7 @@ export function StarRating({
           <Pressable
             key={i}
             disabled={!onChange}
-            accessibilityLabel={`${i + 1} star${i ? 's' : ''}`}
+            accessibilityLabel={tf(i ? '{0} stars' : '{0} star', i + 1)}
             onPress={e =>
               onChange?.(i * 2 + (e.nativeEvent.locationX < size / 2 ? 1 : 2))
             }

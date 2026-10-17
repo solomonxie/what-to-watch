@@ -26,6 +26,7 @@ import { getAllCachedTitles } from '../../db/repositories/titlesRepo';
 import {
   AGES,
   countryName,
+  genreLabel,
   KINDS,
   languageName,
   unifiedGenres,
@@ -34,20 +35,21 @@ import { ChipGrid, Segmented } from '../../ui/components';
 import { space, type, useColors } from '../../ui/theme';
 import type { DiscoverStackParamList } from '../../navigation/types';
 import type { SortKey } from '../../types/domain';
+import { t } from '../../i18n';
 
 type Props = NativeStackScreenProps<DiscoverStackParamList, 'Filters'>;
 type FacetKey = 'genres' | 'languages' | 'regions';
 
 const SORTS: { value: SortKey; label: string }[] = [
-  { value: 'popularity', label: 'Popular' },
-  { value: 'rating', label: 'Rating' },
-  { value: 'year', label: 'Year' },
+  { value: 'popularity', label: t('Popular') },
+  { value: 'rating', label: t('Rating') },
+  { value: 'year', label: t('Year') },
   { value: 'title', label: 'A–Z' },
 ];
 
 const MAX_YEAR = DEFAULT_FILTERS.yearRange[1];
 const RATINGS = [
-  { value: '0', label: 'Any' },
+  { value: '0', label: t('Any') },
   { value: '60', label: '★ 6+' },
   { value: '70', label: '★ 7+' },
   { value: '80', label: '★ 8+' },
@@ -61,7 +63,7 @@ const YEAR_OPTIONS: {
   label: string;
   range: [number, number];
 }[] = [
-  { value: 'any', label: 'Any', range: DEFAULT_FILTERS.yearRange },
+  { value: 'any', label: t('Any'), range: DEFAULT_FILTERS.yearRange },
   ...RECENT.map(y => ({
     value: String(y),
     label: String(y),
@@ -70,7 +72,7 @@ const YEAR_OPTIONS: {
   { value: '2020s', label: '2020s', range: [2020, MAX_YEAR] },
   { value: '2010s', label: '2010s', range: [2010, 2019] },
   { value: '2000s', label: '2000s', range: [2000, 2009] },
-  { value: 'older', label: 'Older', range: [1900, 1999] },
+  { value: 'older', label: t('Older'), range: [1900, 1999] },
 ];
 
 const CONTENT_RATINGS = [
@@ -91,21 +93,21 @@ type Facets = Record<FacetKey, Map<string, number>>;
 async function loadFacets(): Promise<Facets> {
   const titles = await getAllCachedTitles();
   const collect = (
-    pick: (t: (typeof titles)[number]) => Array<string | null | undefined>,
+    pick: (ti: (typeof titles)[number]) => Array<string | null | undefined>,
   ) => {
     const counts = new Map<string, number>();
-    for (const t of titles)
-      for (const v of new Set(pick(t)))
+    for (const ti of titles)
+      for (const v of new Set(pick(ti)))
         if (v) counts.set(v, (counts.get(v) ?? 0) + 1);
     return counts;
   };
   return {
     // Animation is a type, not a genre.
-    genres: collect(t =>
-      t.genres.flatMap(unifiedGenres).filter(g => g !== 'Animation'),
+    genres: collect(ti =>
+      ti.genres.flatMap(unifiedGenres).filter(g => g !== 'Animation'),
     ),
-    languages: collect(t => [t.originalLanguage]),
-    regions: collect(t => t.originCountries ?? []),
+    languages: collect(ti => [ti.originalLanguage]),
+    regions: collect(ti => ti.originCountries ?? []),
   };
 }
 
@@ -135,7 +137,7 @@ function Section({
         {onClear ? (
           <Pressable onPress={onClear} hitSlop={10}>
             <Text style={[type.meta, styles.clear, { color: c.accent }]}>
-              Clear
+              {t('Clear')}
             </Text>
           </Pressable>
         ) : null}
@@ -251,13 +253,13 @@ export function FiltersScreen({ navigation }: Props) {
           <Text
             style={[styles.action, { color: dirty ? c.accent : c.tertiary }]}
           >
-            Reset
+            {t('Reset')}
           </Text>
         </Pressable>
-        <Text style={[styles.title, { color: c.text }]}>Filters</Text>
+        <Text style={[styles.title, { color: c.text }]}>{t('Filters')}</Text>
         <Pressable onPress={() => navigation.goBack()} hitSlop={8}>
           <Text style={[styles.action, styles.done, { color: c.accent }]}>
-            Done
+            {t('Done')}
           </Text>
         </Pressable>
       </View>
@@ -266,7 +268,7 @@ export function FiltersScreen({ navigation }: Props) {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
-        <Section title="Sort by">
+        <Section title={t('Sort by')}>
           <Segmented
             options={SORTS}
             value={sort.key}
@@ -279,14 +281,14 @@ export function FiltersScreen({ navigation }: Props) {
         <View style={[styles.divider, { backgroundColor: c.separator }]} />
 
         <MultiSection
-          title="Type"
+          title={t('Type')}
           options={KINDS}
           selected={filters.kinds}
           onChange={kinds => setFilters({ kinds })}
         />
 
         <Section
-          title="Released"
+          title={t('Released')}
           onClear={
             yearKey !== 'any'
               ? () => setFilters({ yearRange: DEFAULT_FILTERS.yearRange })
@@ -304,7 +306,7 @@ export function FiltersScreen({ navigation }: Props) {
           />
         </Section>
 
-        <Section title="Rating">
+        <Section title={t('Rating')}>
           <ChipGrid
             options={RATINGS}
             isSelected={v => Number(v) === filters.ratingRange[0]}
@@ -313,35 +315,35 @@ export function FiltersScreen({ navigation }: Props) {
         </Section>
 
         <MultiSection
-          title="Age"
+          title={t('Age')}
           options={AGES}
           selected={filters.ages}
           onChange={ages => setFilters({ ages })}
         />
 
         <MultiSection
-          title="Content rating"
+          title={t('Content rating')}
           options={CONTENT_RATINGS}
           selected={filters.certifications}
           onChange={certifications => setFilters({ certifications })}
         />
 
         <MultiSection
-          title="Genre"
+          title={t('Genre')}
           chosenRow
-          options={facetOptions('genres', v => v)}
+          options={facetOptions('genres', genreLabel)}
           selected={filters.genres}
           onChange={genres => setFilters({ genres })}
         />
         <MultiSection
-          title="Language"
+          title={t('Language')}
           chosenRow
           options={facetOptions('languages', languageName)}
           selected={filters.languages}
           onChange={languages => setFilters({ languages })}
         />
         <MultiSection
-          title="Country"
+          title={t('Country')}
           chosenRow
           options={facetOptions('regions', countryName)}
           selected={filters.regions}
@@ -349,13 +351,13 @@ export function FiltersScreen({ navigation }: Props) {
         />
 
         <Section
-          title="Cast"
+          title={t('Cast')}
           onClear={castText ? () => setFilters({ cast: [] }) : undefined}
         >
           <View style={[styles.field, { backgroundColor: c.chip }]}>
             <TextInput
               style={[styles.input, { color: c.text }]}
-              placeholder="Actor names, comma-separated"
+              placeholder={t('Actor names, comma-separated')}
               placeholderTextColor={c.secondary}
               autoCorrect={false}
               returnKeyType="done"
@@ -369,7 +371,7 @@ export function FiltersScreen({ navigation }: Props) {
 
         {history.length ? (
           <Section
-            title="Recent"
+            title={t('Recent')}
             onClear={() => {
               setHistory([]);
               saveFilterHistory([]);

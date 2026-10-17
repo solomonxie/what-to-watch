@@ -1,5 +1,5 @@
 import { getTitlesByIds } from '../../db/repositories/titlesRepo';
-import { languageName, unifiedGenres } from '../../config/taxonomy';
+import { genreLabel, languageName, unifiedGenres } from '../../config/taxonomy';
 import type { GridItem } from '../../ui/components';
 import { joinMeta, mediaLabel, year } from '../../ui/format';
 import { getAllMarks } from '../../db/repositories/marksRepo';
@@ -65,7 +65,7 @@ function counts(
     .map(([value, count]) => ({
       value,
       count,
-      label: kind === 'language' ? languageName(value) : value,
+      label: kind === 'language' ? languageName(value) : genreLabel(value),
     }))
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
 }

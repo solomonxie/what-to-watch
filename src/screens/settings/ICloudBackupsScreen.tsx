@@ -18,6 +18,7 @@ import {
 } from '../../ui/components';
 import { joinMeta } from '../../ui/format';
 import { type, useColors } from '../../ui/theme';
+import { t, tf } from '../../i18n';
 
 type Stats = PayloadStats | 'loading' | 'failed';
 
@@ -29,7 +30,7 @@ function when(ms: number): string {
     minute: '2-digit',
   });
   const day = today
-    ? 'Today'
+    ? t('Today')
     : d.toLocaleDateString(undefined, {
         month: 'short',
         day: 'numeric',
@@ -41,17 +42,17 @@ function when(ms: number): string {
 const kb = (bytes: number) => `${Math.max(1, Math.round(bytes / 1024))} KB`;
 
 function describe(stats?: Stats): string {
-  if (!stats || stats === 'loading') return 'Reading…';
-  if (stats === 'failed') return "Couldn't read this backup";
+  if (!stats || stats === 'loading') return t('Reading…');
+  if (stats === 'failed') return t("Couldn't read this backup");
   return (
     joinMeta([
-      stats.watching && `${stats.watching} watching`,
-      stats.watched && `${stats.watched} watched`,
-      stats.toWatch && `${stats.toWatch} to watch`,
-      stats.rated && `${stats.rated} rated`,
-      stats.episodes && `${stats.episodes} episodes`,
-      stats.notes && `${stats.notes} notes`,
-    ]) || 'Empty'
+      stats.watching && tf('{0} watching', stats.watching),
+      stats.watched && tf('{0} watched', stats.watched),
+      stats.toWatch && tf('{0} to watch', stats.toWatch),
+      stats.rated && tf('{0} rated', stats.rated),
+      stats.episodes && tf('{0} episodes', stats.episodes),
+      stats.notes && tf('{0} notes', stats.notes),
+    ]) || t('Empty')
   );
 }
 
@@ -86,26 +87,29 @@ export function ICloudBackupsScreen() {
       await importPayload(await readICloudBackup(file.name));
       await Promise.all([loadSettings(), loadPrefs()]);
       Alert.alert(
-        'Restored',
-        `Your data is now as of ${when(file.modifiedAt)}.`,
+        t('Restored'),
+        tf('Your data is now as of {0}.', when(file.modifiedAt)),
       );
     } catch (e) {
-      Alert.alert('Restore failed', e instanceof Error ? e.message : String(e));
+      Alert.alert(
+        t('Restore failed'),
+        e instanceof Error ? e.message : String(e),
+      );
     }
   };
 
   const remove = (file: ICloudBackupFile) =>
-    Alert.alert('Delete this backup?', "This can't be undone.", [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('Delete this backup?'), t("This can't be undone."), [
+      { text: t('Cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('Delete'),
         style: 'destructive',
         onPress: async () => {
           try {
             await deleteICloudBackup(file.name);
           } catch (e) {
             Alert.alert(
-              'Delete failed',
+              t('Delete failed'),
               e instanceof Error ? e.message : String(e),
             );
           }
@@ -116,12 +120,18 @@ export function ICloudBackupsScreen() {
 
   const open = (file: ICloudBackupFile) =>
     Alert.alert(
-      `Backup from ${when(file.modifiedAt)}`,
-      'Restoring replaces your current data. A copy of it is kept on this device first.',
+      tf('Backup from {0}', when(file.modifiedAt)),
+      t(
+        'Restoring replaces your current data. A copy of it is kept on this device first.',
+      ),
       [
-        { text: 'Restore', onPress: () => restore(file) },
-        { text: 'Delete', style: 'destructive', onPress: () => remove(file) },
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('Restore'), onPress: () => restore(file) },
+        {
+          text: t('Delete'),
+          style: 'destructive',
+          onPress: () => remove(file),
+        },
+        { text: t('Cancel'), style: 'cancel' },
       ],
     );
 
@@ -134,11 +144,17 @@ export function ICloudBackupsScreen() {
       {files === null ? (
         <EmptyState loading />
       ) : files.length === 0 ? (
-        <EmptyState message="No backups in iCloud Drive yet. One is written each day the app is used." />
+        <EmptyState
+          message={t(
+            'No backups in iCloud Drive yet. One is written each day the app is used.',
+          )}
+        />
       ) : (
         <GroupedSection
-          header="Daily backups"
-          footer="Files → iCloud Drive → What to Watch. Every day for 30 days, then one a month for a year."
+          header={t('Daily backups')}
+          footer={t(
+            'Files → iCloud Drive → What to Watch. Every day for 30 days, then one a month for a year.',
+          )}
         >
           {files.map(f => (
             <Row

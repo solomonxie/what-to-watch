@@ -36,6 +36,7 @@ import {
 import { getUserRatingForTitle } from '../../db/repositories/ratingsRepo';
 import { fetchAndCacheTitle, parseTitleId } from '../../catalog/catalogService';
 import { isProviderActive } from '../../providers/providerRegistry';
+import { t, tf } from '../../i18n';
 import { getReviews, type TmdbReview } from '../../providers/tmdbProvider';
 import { Seasons } from './Seasons';
 import { formatMarkDate, WatchMarks } from './WatchMarks';
@@ -51,6 +52,7 @@ import {
   EmptyState,
   Poster,
   SectionLabel,
+import { countryName, genreLabel, languageName } from '../../config/taxonomy';
   BOTTOM_CLEARANCE,
 } from '../../ui/components';
 import { formatDate, joinMeta, mediaLabel, year } from '../../ui/format';
@@ -91,15 +93,15 @@ export function TitleScreen({ route }: Props) {
   const [error, setError] = useState(false);
 
   const readCache = useCallback(async () => {
-    const [t, r, p] = await Promise.all([
+    const [ti, r, p] = await Promise.all([
       getTitleById(titleId),
       getRatingsForTitle(titleId),
       getWatchProvidersForTitle(titleId),
     ]);
-    setTitle(t ?? null);
+    setTitle(ti ?? null);
     setRatings(r);
     setProviders(p.filter(x => x.region === region));
-    return { title: t, missingLogos: p.some(x => !x.logoPath) };
+    return { title: ti, missingLogos: p.some(x => !x.logoPath) };
   }, [titleId, region]);
 
   const load = useCallback(async () => {
@@ -149,8 +151,8 @@ export function TitleScreen({ route }: Props) {
       <View style={[styles.fill, { backgroundColor: c.background }]}>
         {error ? (
           <EmptyState
-            message="Couldn't load this title."
-            action="Try again"
+            message={t("Couldn't load this title.")}
+            action={t('Try again')}
             onAction={load}
           />
         ) : (
@@ -186,18 +188,18 @@ export function TitleScreen({ route }: Props) {
             {joinMeta([
               year(title.releaseDate),
               mediaLabel(title.mediaType),
-              title.runtimeMinutes && `${title.runtimeMinutes} min`,
+              title.runtimeMinutes && tf('{0} min', title.runtimeMinutes),
             ])}
           </Text>
           {title.genres.length ? (
             <Text style={[type.meta, { color: c.secondary }]}>
-              {title.genres.join(' · ')}
+              {title.genres.map(genreLabel).join(' · ')}
             </Text>
           ) : null}
           <Text style={[type.meta, { color: c.secondary }]}>
             {joinMeta([
-              ...(title.originCountries ?? []),
-              title.originalLanguage?.toUpperCase(),
+              ...(title.originCountries ?? []).map(countryName),
+              title.originalLanguage && languageName(title.originalLanguage),
             ])}
           </Text>
         </View>
@@ -237,7 +239,7 @@ export function TitleScreen({ route }: Props) {
 
       {title.castNames?.length ? (
         <>
-          <SectionLabel>Cast</SectionLabel>
+          <SectionLabel>{t('Cast')}</SectionLabel>
           <Text style={[styles.paragraph, styles.inset, { color: c.text }]}>
             {title.castNames.join(' · ')}
           </Text>
@@ -321,7 +323,9 @@ function OpenIn({ title, providers }: { title: Title; providers: Provider[] }) {
 
   return (
     <>
-      <SectionLabel>{streaming.length ? 'Watch on' : 'More on'}</SectionLabel>
+      <SectionLabel>
+        {streaming.length ? t('Watch on') : t('More on')}
+      </SectionLabel>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -371,10 +375,10 @@ function WatchState({
     const date = formatDate(entry.watchedAt);
     const line =
       status === 'watching' && !isMovie
-        ? `Watching · last activity ${date}`
+        ? tf('Watching · last activity {0}', date)
         : status === 'dropped'
-        ? `Dropped · scored low · ${date}`
-        : `✓ Watched · ${date}`;
+        ? tf('Dropped · scored low · {0}', date)
+        : tf('✓ Watched · {0}', date);
     return (
       <Text style={[type.meta, styles.stateLine, { color: c.secondary }]}>
         {line}
@@ -401,7 +405,7 @@ function WatchState({
       <Text
         style={[styles.interestedText, { color: on ? c.background : c.text }]}
       >
-        {on ? '✓ Watch next' : '+ Watch next'}
+        {on ? t('✓ Watch next') : t('+ Watch next')}
       </Text>
     </Pressable>
   );
@@ -431,7 +435,7 @@ function MyRating({ titleId }: { titleId: string }) {
 
   return (
     <>
-      <SectionLabel>My rating</SectionLabel>
+      <SectionLabel>{t('My rating')}</SectionLabel>
       <View style={styles.inset}>
         <StarRating
           value={latest?.rating ?? 0}
@@ -442,8 +446,8 @@ function MyRating({ titleId }: { titleId: string }) {
         {latest || seasons.length ? (
           <Text style={[type.meta, styles.ratedOn, { color: c.secondary }]}>
             {[
-              latest && `Rated ${formatMarkDate(latest.at)}`,
-              seasons.length && `Seasons (${seasons.join(', ')})`,
+              latest && tf('Rated {0}', formatMarkDate(latest.at)),
+              seasons.length && tf('Seasons ({0})', seasons.join(', ')),
             ]
               .filter(Boolean)
               .join('  ·  ')}
@@ -466,7 +470,9 @@ function Overview({ text }: { text: string }) {
         {text}
       </Text>
       {expanded ? null : (
-        <Text style={[type.meta, styles.more, { color: c.accent }]}>More</Text>
+        <Text style={[type.meta, styles.more, { color: c.accent }]}>
+          {t('More')}
+        </Text>
       )}
     </Pressable>
   );
@@ -499,7 +505,7 @@ function Reviews({ titleId }: { titleId: string }) {
   return (
     <>
       <View style={styles.sectionRow}>
-        <SectionLabel>Reviews</SectionLabel>
+        <SectionLabel>{t('Reviews')}</SectionLabel>
         <Text style={[type.meta, styles.sectionCount, { color: c.tertiary }]}>
           {data.total}
         </Text>
@@ -512,7 +518,7 @@ function Reviews({ titleId }: { titleId: string }) {
           <Text
             style={[styles.inset, styles.reviewAction, { color: c.accent }]}
           >
-            {`Show all ${data.reviews.length}`}
+            {tf('Show all {0}', data.reviews.length)}
           </Text>
         </Pressable>
       ) : data.total > data.reviews.length ? (
@@ -525,7 +531,7 @@ function Reviews({ titleId }: { titleId: string }) {
           <Text
             style={[styles.inset, styles.reviewAction, { color: c.accent }]}
           >
-            {`All ${data.total} on TMDB ›`}
+            {tf('All {0} on TMDB ›', data.total)}
           </Text>
         </Pressable>
       ) : null}
@@ -558,7 +564,9 @@ function Review({ review }: { review: TmdbReview }) {
         {review.content}
       </Text>
       {long && !expanded ? (
-        <Text style={[type.meta, styles.more, { color: c.accent }]}>More</Text>
+        <Text style={[type.meta, styles.more, { color: c.accent }]}>
+          {t('More')}
+        </Text>
       ) : null}
     </Pressable>
   );

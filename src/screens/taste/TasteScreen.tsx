@@ -7,7 +7,7 @@ import {
   type Facet,
   type Preferences,
 } from '../../prefs/prefsStore';
-import { countryName, languageName } from '../../config/taxonomy';
+import { countryName, genreLabel, languageName } from '../../config/taxonomy';
 import {
   GroupedSection,
   Row,
@@ -17,24 +17,25 @@ import {
 import { RankedList, type RankedItem } from '../../ui/RankedList';
 import { space, type, useColors } from '../../ui/theme';
 import type { TasteStackParamList } from '../../navigation/types';
+import { t } from '../../i18n';
 
 const FACETS: { facet: Facet; label: string; add: string }[] = [
-  { facet: 'genres', label: 'Genres', add: 'Add genre…' },
-  { facet: 'topics', label: 'Topics', add: 'Add topic…' },
-  { facet: 'languages', label: 'Languages', add: 'Add language…' },
-  { facet: 'countries', label: 'Countries', add: 'Add country…' },
+  { facet: 'genres', label: t('Genres'), add: t('Add genre…') },
+  { facet: 'topics', label: t('Topics'), add: t('Add topic…') },
+  { facet: 'languages', label: t('Languages'), add: t('Add language…') },
+  { facet: 'countries', label: t('Countries'), add: t('Add country…') },
 ];
 
 const TYPES: { value: Preferences['mediaTypes']; label: string }[] = [
-  { value: 'both', label: 'Both' },
-  { value: 'movie', label: 'Movies' },
-  { value: 'tv', label: 'Shows' },
+  { value: 'both', label: t('Both') },
+  { value: 'movie', label: t('Movies') },
+  { value: 'tv', label: t('Shows') },
 ];
 
 export function facetItems(prefs: Preferences, facet: Facet): RankedItem[] {
   switch (facet) {
     case 'topics':
-      return prefs.topics.map(t => ({ key: String(t.id), label: t.name }));
+      return prefs.topics.map(tp => ({ key: String(tp.id), label: tp.name }));
     case 'languages':
       return prefs.languages.map(code => ({
         key: code,
@@ -46,7 +47,7 @@ export function facetItems(prefs: Preferences, facet: Facet): RankedItem[] {
         label: countryName(code),
       }));
     default:
-      return prefs.genres.map(name => ({ key: name, label: name }));
+      return prefs.genres.map(name => ({ key: name, label: genreLabel(name) }));
   }
 }
 
@@ -56,7 +57,7 @@ export function reorderFacet(
   keys: string[],
 ): Partial<Preferences> {
   if (facet === 'topics') {
-    const byId = new Map(prefs.topics.map(t => [String(t.id), t]));
+    const byId = new Map(prefs.topics.map(tp => [String(tp.id), tp]));
     return { topics: keys.map(k => byId.get(k)!).filter(Boolean) };
   }
   return { [facet]: keys };
@@ -89,9 +90,13 @@ export function TasteScreen() {
           onChange={mediaTypes => update({ mediaTypes })}
         />
       </View>
-      <GroupedSection footer="Recommend only what streams on the services you turned on in Settings.">
+      <GroupedSection
+        footer={t(
+          'Recommend only what streams on the services you turned on in Settings.',
+        )}
+      >
         <Row
-          label="Only on my services"
+          label={t('Only on my services')}
           toggle={{
             value: prefs.onlyMyServices,
             onChange: v => update({ onlyMyServices: v }),
@@ -107,7 +112,7 @@ export function TasteScreen() {
               <SectionLabel style={styles.label}>{label}</SectionLabel>
               {items.length > 1 ? (
                 <Text style={[type.meta, styles.hint, { color: c.tertiary }]}>
-                  drag to rank
+                  {t('drag to rank')}
                 </Text>
               ) : null}
             </View>
@@ -141,8 +146,9 @@ export function TasteScreen() {
         );
       })}
       <Text style={[type.meta, styles.footer, { color: c.secondary }]}>
-        Higher in a list counts more. Discover switches to picks for you once
-        anything is set here.
+        {t(
+          'Higher in a list counts more. Discover switches to picks for you once anything is set here.',
+        )}
       </Text>
     </ScrollView>
   );

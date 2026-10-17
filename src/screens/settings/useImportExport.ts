@@ -6,6 +6,7 @@ import {
   pickBackupFile,
 } from '../../backup/backupService';
 import { useSettingsStore } from '../../state/settingsStore';
+import { t, tf } from '../../i18n';
 
 function isCancel(error: unknown) {
   const code = (error as { code?: string })?.code;
@@ -24,7 +25,7 @@ export function useImportExport() {
     try {
       await exportCopy();
     } catch (error) {
-      Alert.alert('Export failed', message(error));
+      Alert.alert(t('Export failed'), message(error));
     } finally {
       setBusy(false);
     }
@@ -35,30 +36,37 @@ export function useImportExport() {
     try {
       const payload = await pickBackupFile();
       Alert.alert(
-        'Replace your data with this file?',
-        'Your current data is saved first to Files → On My iPhone → What to Watch.',
+        t('Replace your data with this file?'),
+        t(
+          'Your current data is saved first to Files → On My iPhone → What to Watch.',
+        ),
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: t('Cancel'), style: 'cancel' },
           {
-            text: 'Replace',
+            text: t('Replace'),
             style: 'destructive',
             onPress: async () => {
               try {
                 const n = await importPayload(payload);
                 await loadSettings();
                 Alert.alert(
-                  'Imported',
-                  `${n.rated} ratings, ${n.notes} reviews, ${n.watched} watched`,
+                  t('Imported'),
+                  tf(
+                    '{0} ratings, {1} reviews, {2} watched',
+                    n.rated,
+                    n.notes,
+                    n.watched,
+                  ),
                 );
               } catch (error) {
-                Alert.alert('Import failed', message(error));
+                Alert.alert(t('Import failed'), message(error));
               }
             },
           },
         ],
       );
     } catch (error) {
-      if (!isCancel(error)) Alert.alert('Import failed', message(error));
+      if (!isCancel(error)) Alert.alert(t('Import failed'), message(error));
     } finally {
       setBusy(false);
     }

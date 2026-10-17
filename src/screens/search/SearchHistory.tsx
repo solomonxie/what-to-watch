@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { pullToLeave } from './pullToLeave';
 import { EmptyState, SectionLabel } from '../../ui/components';
 import { space, type, useColors } from '../../ui/theme';
+import { t, tf } from '../../i18n';
 
 interface Props {
   history: string[];
@@ -27,7 +28,9 @@ export function SearchHistory({
         keyboardDismissMode="interactive"
         {...pullToLeave(onPullDown)}
       >
-        <EmptyState message="Search your library and everything on TMDB." />
+        <EmptyState
+          message={t('Search your library and everything on TMDB.')}
+        />
       </ScrollView>
     );
   }
@@ -39,9 +42,9 @@ export function SearchHistory({
       {...pullToLeave(onPullDown)}
     >
       <View style={styles.header}>
-        <SectionLabel style={styles.label}>Recent</SectionLabel>
+        <SectionLabel style={styles.label}>{t('Recent')}</SectionLabel>
         <Pressable onPress={onClear} hitSlop={8}>
-          <Text style={[type.meta, { color: c.accent }]}>Clear</Text>
+          <Text style={[type.meta, { color: c.accent }]}>{t('Clear')}</Text>
         </Pressable>
       </View>
       {history.map(q => (
@@ -63,7 +66,7 @@ export function SearchHistory({
           <Pressable
             onPress={() => onRemove(q)}
             hitSlop={10}
-            accessibilityLabel={`Remove ${q}`}
+            accessibilityLabel={tf('Remove {0}', q)}
           >
             <Text style={[styles.icon, { color: c.tertiary }]}>✕</Text>
           </Pressable>

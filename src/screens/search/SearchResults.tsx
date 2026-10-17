@@ -15,6 +15,7 @@ import { joinMeta, mediaLabel, score10 } from '../../ui/format';
 import { space, type, useColors } from '../../ui/theme';
 import { pullToLeave } from './pullToLeave';
 import type { ProviderSearchResult } from '../../types/domain';
+import { t, tf } from '../../i18n';
 
 const DEBOUNCE_MS = 350;
 
@@ -118,7 +119,9 @@ export function SearchResults({
       keyboardDismissMode="interactive"
       {...pullToLeave(onPullDown)}
     >
-      {nothing ? <EmptyState message={`No results for "${query}"`} /> : null}
+      {nothing ? (
+        <EmptyState message={tf('No results for "{0}"', query)} />
+      ) : null}
 
       {rows.map(r => (
         <ResultRow
@@ -129,7 +132,7 @@ export function SearchResults({
             r.year,
             r.mediaType && mediaLabel(r.mediaType),
             score10(r.rating) && `★ ${score10(r.rating)}`,
-            r.inLibrary && 'In library',
+            r.inLibrary && t('In library'),
           ])}
           busy={opening === r.key}
           error={openError?.key === r.key ? openError.message : undefined}
@@ -142,14 +145,14 @@ export function SearchResults({
 
       {online.kind === 'noKey' ? (
         <Text style={[styles.note, { color: c.secondary }]}>
-          Connect TMDB to search everything.
+          {t('Connect TMDB to search everything.')}
         </Text>
       ) : online.kind === 'loading' ? (
         <ActivityIndicator style={styles.spinner} />
       ) : online.kind === 'error' ? (
         <Pressable onPress={() => setAttempt(a => a + 1)}>
           <Text style={[styles.note, { color: c.danger }]}>
-            ⚠ {online.message} · Retry
+            ⚠ {online.message} · {t('Retry')}
           </Text>
         </Pressable>
       ) : null}

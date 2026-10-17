@@ -7,29 +7,22 @@ import { ICloudDrive, type ICloudStatus } from '../../native/ICloudSyncModule';
 import { useSettingsStore } from '../../state/settingsStore';
 import { backupNow, getICloudBackupInfo } from '../../backup/backupService';
 import { Row } from '../../ui/components';
+import { ago } from '../../ui/format';
 import { type, useColors } from '../../ui/theme';
+import { t, tf } from '../../i18n';
 
-const LOCATION = 'Files → iCloud Drive → What to Watch';
+const LOCATION = t('Files → iCloud Drive → What to Watch');
 const STALE_MS = 3 * 24 * 60 * 60 * 1000;
 
 const BLOCKED: Partial<Record<ICloudStatus, { reason: string; fix?: string }>> =
   {
     driveOff: {
-      reason: 'iCloud Drive is off on this device',
-      fix: 'Settings → your name → iCloud → iCloud Drive → turn on',
+      reason: t('iCloud Drive is off on this device'),
+      fix: t('Settings → your name → iCloud → iCloud Drive → turn on'),
     },
-    notEntitled: { reason: "This build of the app isn't signed for iCloud" },
-    notReady: { reason: 'iCloud is still setting up — try again shortly' },
+    notEntitled: { reason: t("This build of the app isn't signed for iCloud") },
+    notReady: { reason: t('iCloud is still setting up — try again shortly') },
   };
-
-function ago(ms: number): string {
-  const min = Math.floor((Date.now() - ms) / 60000);
-  if (min < 1) return 'just now';
-  if (min < 60) return `${min} min ago`;
-  const h = Math.floor(min / 60);
-  if (h < 24) return `${h} h ago`;
-  return `${Math.floor(h / 24)} d ago`;
-}
 
 export function ICloudRow() {
   const c = useColors();
@@ -89,14 +82,15 @@ export function ICloudRow() {
     subtitle = blocked.reason;
     fix = blocked.fix;
   } else if (enabled && working) {
-    subtitle = 'Backing up…';
+    subtitle = t('Backing up…');
   } else if (enabled && info.error) {
-    subtitle = `⚠ Last backup failed: ${info.error}`;
+    subtitle = tf('⚠ Last backup failed: {0}', info.error);
     subtitleColor = c.danger;
   } else if (enabled && info.lastAt && Date.now() - info.lastAt > STALE_MS) {
-    subtitle = `⚠ Last backup ${ago(
-      info.lastAt,
-    )} — open the app on Wi-Fi to catch up`;
+    subtitle = tf(
+      '⚠ Last backup {0} — open the app on Wi-Fi to catch up',
+      ago(info.lastAt),
+    );
     subtitleColor = c.danger;
   } else {
     subtitle = `${LOCATION}${
@@ -108,7 +102,7 @@ export function ICloudRow() {
 
   return (
     <Row
-      label="iCloud Drive"
+      label={t('iCloud Drive')}
       onPress={blocked ? undefined : () => navigation.navigate('ICloudBackups')}
       subtitle={
         <>
@@ -122,7 +116,9 @@ export function ICloudRow() {
           ) : null}
           {unprotected ? (
             <Text style={[type.meta, styles.line, { color: c.danger }]}>
-              Your marks are only on this iPhone — deleting the app deletes them
+              {t(
+                'Your marks are only on this iPhone — deleting the app deletes them',
+              )}
             </Text>
           ) : null}
         </>

@@ -1,11 +1,18 @@
 import { getKv, setKv } from '../db/repositories/kvRepo';
-import { AGES, countryName, KINDS, languageName } from '../config/taxonomy';
+import {
+  AGES,
+  countryName,
+  genreLabel,
+  KINDS,
+  languageName,
+} from '../config/taxonomy';
 import {
   DEFAULT_FILTERS,
   DEFAULT_SORT,
   countActiveFilters,
 } from './filterStore';
 import type { FilterState, SortState } from '../types/domain';
+import { t, tf } from '../i18n';
 
 const KEY = 'filters.history';
 export const MAX_FILTER_HISTORY = 10;
@@ -16,9 +23,9 @@ export interface FilterHistoryEntry {
 }
 
 const SORT_LABELS: Record<string, string> = {
-  rating: 'by rating',
-  year: 'by year',
-  title: 'A–Z',
+  rating: t('by rating'),
+  year: t('by year'),
+  title: t('A–Z'),
 };
 
 const labelOf = (options: { value: string; label: string }[], v: string) =>
@@ -29,7 +36,7 @@ function yearLabel([from, to]: [number, number]): string | null {
   if (from === anyFrom && to === anyTo) return null;
   if (from === to) return String(from);
   if (from % 10 === 0 && (to === from + 9 || to === anyTo)) return `${from}s`;
-  if (from === anyFrom) return `Before ${to + 1}`;
+  if (from === anyFrom) return tf('Before {0}', to + 1);
   return `${from}–${to}`;
 }
 
@@ -41,13 +48,13 @@ export function describeFilters({ filters: f, sort }: FilterHistoryEntry) {
     f.ratingRange[0] > 0 ? `★ ${f.ratingRange[0] / 10}+` : null,
     ...f.ages.map(a => labelOf(AGES, a)),
     ...f.certifications,
-    ...f.genres,
+    ...f.genres.map(genreLabel),
     ...f.languages.map(languageName),
     ...f.regions.map(countryName),
     ...f.cast.map(n => n.trim()).filter(Boolean),
     SORT_LABELS[sort.key],
   ];
-  return parts.filter(Boolean).join(' · ') || 'No filters';
+  return parts.filter(Boolean).join(' · ') || t('No filters');
 }
 
 const keyOf = (e: FilterHistoryEntry) =>

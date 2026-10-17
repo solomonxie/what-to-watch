@@ -12,6 +12,9 @@ import { SectionLabel } from '../../ui/components';
 import { space, useColors } from '../../ui/theme';
 import { StarRating } from './StarRating';
 import type { RootStackParamList } from '../../navigation/types';
+import { t, tf } from '../../i18n';
+
+const MARKS_SHOWN = 3;
 
 export { formatMarkDate } from '../../marks/labels';
 
@@ -24,6 +27,7 @@ export function WatchMarks({ titleId }: { titleId: string }) {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [marks, setMarks] = useState<Mark[]>([]);
+  const [showAll, setShowAll] = useState(false);
 
   const reload = useCallback(
     () =>
@@ -43,17 +47,17 @@ export function WatchMarks({ titleId }: { titleId: string }) {
   return (
     <>
       <View style={styles.header}>
-        <SectionLabel>Watch marks</SectionLabel>
+        <SectionLabel>{t('Watch marks')}</SectionLabel>
         <Pressable
           onPress={() => open()}
           hitSlop={12}
           accessibilityRole="button"
-          accessibilityLabel="Add watch mark"
+          accessibilityLabel={t('Add watch mark')}
         >
-          <Text style={[styles.add, { color: c.accent }]}>+ Add</Text>
+          <Text style={[styles.add, { color: c.accent }]}>{t('+ Add')}</Text>
         </Pressable>
       </View>
-      {marks.map((m, i) => (
+      {(showAll ? marks : marks.slice(0, MARKS_SHOWN)).map((m, i) => (
         <Pressable
           key={m.id}
           onPress={() => open(m.id!)}
@@ -76,9 +80,16 @@ export function WatchMarks({ titleId }: { titleId: string }) {
           ) : null}
         </Pressable>
       ))}
+      {!showAll && marks.length > MARKS_SHOWN ? (
+        <Pressable onPress={() => setShowAll(true)} hitSlop={8}>
+          <Text style={[styles.more, { color: c.accent }]}>
+            {tf('Show all {0}', marks.length)}
+          </Text>
+        </Pressable>
+      ) : null}
       {marks.length === 0 ? (
         <Text style={[styles.empty, { color: c.secondary }]}>
-          No marks yet.
+          {t('No marks yet.')}
         </Text>
       ) : null}
     </>
@@ -102,5 +113,11 @@ const styles = StyleSheet.create({
   line: { flexDirection: 'row', alignItems: 'center', gap: space.s },
   meta: { fontSize: 13, fontWeight: '600', flexShrink: 1 },
   review: { fontSize: 16, lineHeight: 22 },
+  more: {
+    fontSize: 15,
+    fontWeight: '600',
+    paddingHorizontal: space.l,
+    paddingVertical: space.s,
+  },
   empty: { fontSize: 15, paddingHorizontal: space.l },
 });

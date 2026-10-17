@@ -39,7 +39,7 @@ import {
   PosterGrid,
   SectionLabel,
 } from '../../ui/components';
-import { joinMeta, mediaLabel, score10 } from '../../ui/format';
+import { ago, joinMeta, mediaLabel, score10 } from '../../ui/format';
 import { space, type, useColors } from '../../ui/theme';
 import { hasServerFilters } from '../../catalog/filterQueries';
 import {
@@ -51,19 +51,12 @@ import {
   type FeedItem,
 } from './feed';
 import type { DiscoverStackParamList } from '../../navigation/types';
+import { t, tf } from '../../i18n';
 
 type Props = NativeStackScreenProps<DiscoverStackParamList, 'DiscoverHome'>;
 type Status = 'loading' | 'ready' | 'error' | 'noKey';
 
 const ALL = 'all';
-
-function ago(ms: number): string {
-  const min = Math.floor((Date.now() - ms) / 60000);
-  if (min < 1) return 'just now';
-  if (min < 60) return `${min} min ago`;
-  const h = Math.floor(min / 60);
-  return h < 24 ? `${h} h ago` : `${Math.floor(h / 24)} d ago`;
-}
 
 export function DiscoverScreen({ navigation }: Props) {
   const c = useColors();
@@ -170,7 +163,10 @@ export function DiscoverScreen({ navigation }: Props) {
     fillCertifications(titles, region)
       .then(async () => {
         const fresh = new Map(
-          (await getTitlesByIds(titles.map(t => t.id))).map(t => [t.id, t]),
+          (await getTitlesByIds(titles.map(ti => ti.id))).map(ti => [
+            ti.id,
+            ti,
+          ]),
         );
         if (!live) return;
         const withCert = (i: FeedItem): FeedItem => ({
@@ -258,21 +254,21 @@ export function DiscoverScreen({ navigation }: Props) {
       params: screen === 'ApiKey' ? { providerId: 'tmdb' } : undefined,
     });
 
-  const scopeName = scope?.name ?? 'your services';
+  const scopeName = scope?.name ?? t('your services');
   let body: React.ReactNode;
   if (platforms.length === 0) {
     body = (
       <EmptyState
-        message="Pick your services in Settings."
-        action="Choose"
+        message={t('Pick your services in Settings.')}
+        action={t('Choose')}
         onAction={() => goSettings('SettingsHome')}
       />
     );
   } else if (status === 'noKey') {
     body = (
       <EmptyState
-        message="Connect TMDB to see what's streaming."
-        action="Connect"
+        message={t("Connect TMDB to see what's streaming.")}
+        action={t('Connect')}
         onAction={() => goSettings('ApiKey')}
       />
     );
@@ -285,8 +281,8 @@ export function DiscoverScreen({ navigation }: Props) {
   } else if (status === 'error') {
     body = (
       <EmptyState
-        message={`Couldn't load ${scopeName}.`}
-        action="Try again"
+        message={tf("Couldn't load {0}.", scopeName)}
+        action={t('Try again')}
         onAction={() => load(true)}
       />
     );
@@ -294,14 +290,16 @@ export function DiscoverScreen({ navigation }: Props) {
     body =
       feed && feed.items.length > 0 ? (
         <EmptyState
-          message="Nothing matches your filters."
-          action="Clear filters"
+          message={t('Nothing matches your filters.')}
+          action={t('Clear filters')}
           onAction={resetFilters}
         />
       ) : (
         <EmptyState
-          message="Nothing matched your taste here. Try more genres in Settings → Taste."
-          action="Edit taste"
+          message={t(
+            'Nothing matched your taste here. Try more genres in Settings → Taste.',
+          )}
+          action={t('Edit taste')}
           onAction={() =>
             navigation.getParent()?.navigate('Settings', { screen: 'Taste' })
           }
@@ -313,18 +311,18 @@ export function DiscoverScreen({ navigation }: Props) {
 
   const label =
     feed?.kind === 'picks'
-      ? `Picked for you${scope ? ` · ${scope.name}` : ''}`
-      : `Most popular · ${region}`;
+      ? t('Picked for you') + (scope ? ` · ${scope.name}` : '')
+      : tf('Most popular · {0}', region);
   const note = checkingAges
-    ? 'Checking age ratings…'
+    ? t('Checking age ratings…')
     : feed?.kind !== 'picks'
     ? null
     : updating
-    ? 'Updating…'
+    ? t('Updating…')
     : updateError
-    ? "Couldn't update · showing saved picks"
+    ? t("Couldn't update · showing saved picks")
     : feed.generatedAt
-    ? `Updated ${ago(feed.generatedAt)}`
+    ? tf('Updated {0}', ago(feed.generatedAt))
     : null;
 
   return (
@@ -346,7 +344,7 @@ export function DiscoverScreen({ navigation }: Props) {
           <View style={styles.scopeChips}>
             <ChipRow scroll>
               <Chip
-                label="All"
+                label={t('All')}
                 selected={!scope}
                 onPress={() => selectScope(ALL)}
               />

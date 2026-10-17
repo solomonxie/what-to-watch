@@ -5,10 +5,11 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '../../ui/theme';
 import type { RootStackParamList } from '../../navigation/types';
+import { t } from '../../i18n';
 
 const SIZE = 32;
 // Height of the tab bar above the home indicator.
-const TAB_BAR_HEIGHT = 49;
+export const TAB_BAR_HEIGHT = 49;
 
 /** Oversized search icon drawn over the middle tab; the system caps tab icon size. */
 export function SearchTabButton() {
@@ -50,7 +51,7 @@ export function SearchTabButton() {
         }
         hitSlop={6}
         accessibilityRole="button"
-        accessibilityLabel="Search"
+        accessibilityLabel={t('Search')}
         style={({ pressed }) => pressed && styles.pressed}
       >
         <Image

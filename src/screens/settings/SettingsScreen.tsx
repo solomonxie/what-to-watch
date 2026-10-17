@@ -1,5 +1,12 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, ScrollView, StyleSheet } from 'react-native';
+import {
+  Alert,
+  DevSettings,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { getApiKey } from '../../secureStorage/apiKeyStore';
@@ -15,14 +22,24 @@ import { useImportExport } from './useImportExport';
 import { isDemo, useDataStore } from '../../demo/demoMode';
 import { resetDemoData, switchDataStore } from '../../demo/dataStore';
 import type { SettingsStackParamList } from '../../navigation/types';
+import { genreLabel } from '../../config/taxonomy';
+import { getLanguage, saveLanguage, t, type Language } from '../../i18n';
+
+const LANGUAGE_NAMES: Record<Language, string> = {
+  system: t('System'),
+  en: 'English',
+  zh: '中文',
+};
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsHome'>;
 
-const BACKUP_MORE =
-  'iCloud Drive keeps a copy for each of the last 30 days, then one a month for a year. It survives deleting the app, and a reinstall restores the newest copy that has your marks. A smaller backup never replaces a fuller one from the same day. This iPhone also keeps a copy after every change for 7 days, for undoing mistakes. API keys never leave this device.';
+const BACKUP_MORE = t(
+  'iCloud Drive keeps a copy for each of the last 30 days, then one a month for a year. It survives deleting the app, and a reinstall restores the newest copy that has your marks. A smaller backup never replaces a fuller one from the same day. This iPhone also keeps a copy after every change for 7 days, for undoing mistakes. API keys never leave this device.',
+);
 
-const DEMO_FOOTER =
-  'A sample library for trying features and taking screenshots. It lives in its own database: nothing done in demo mode touches your data or backups.';
+const DEMO_FOOTER = t(
+  'A sample library for trying features and taking screenshots. It lives in its own database: nothing done in demo mode touches your data or backups.',
+);
 
 const CSV_MORE =
   'Douban has no export, so its row takes a CSV made by scripts/douban-export.py in the app repo — or any CSV with a header row and these columns, in any order, only title required:\n' +
@@ -36,41 +53,62 @@ export function SettingsScreen({ navigation }: Props) {
   const { exportCopy, importFile, busy } = useImportExport();
   const { prefs, load: loadPrefs } = usePrefsStore();
   useDataStore(s => s.generation);
+  const [language, setLanguage] = useState(getLanguage());
+  const pickLanguage = () =>
+    Alert.alert(t('Language'), undefined, [
+      ...(Object.keys(LANGUAGE_NAMES) as Language[]).map(l => ({
+        text: LANGUAGE_NAMES[l],
+        onPress: async () => {
+          if (l === language) return;
+          await saveLanguage(l);
+          setLanguage(l);
+          Alert.alert(t('Restart to apply the language'), undefined, [
+            { text: t('Later'), style: 'cancel' },
+            { text: t('Restart'), onPress: () => DevSettings.reload() },
+          ]);
+        },
+      })),
+      { text: t('Cancel'), style: 'cancel' },
+    ]);
   const demo = isDemo();
   const [switching, setSwitching] = useState(false);
 
   const swap = (work: () => Promise<void>) => {
     setSwitching(true);
     work()
-      .catch(e => Alert.alert("Couldn't switch data", String(e)))
+      .catch(e => Alert.alert(t("Couldn't switch data"), String(e)))
       .finally(() => setSwitching(false));
   };
   const setDemo = (on: boolean) => swap(() => switchDataStore(on));
   const confirmReset = () =>
-    Alert.alert('Reset demo data?', 'Undoes every change made in demo mode.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Reset',
-        style: 'destructive',
-        onPress: () => swap(resetDemoData),
-      },
-    ]);
+    Alert.alert(
+      t('Reset demo data?'),
+      t('Undoes every change made in demo mode.'),
+      [
+        { text: t('Cancel'), style: 'cancel' },
+        {
+          text: t('Reset'),
+          style: 'destructive',
+          onPress: () => swap(resetDemoData),
+        },
+      ],
+    );
 
   useFocusEffect(
     useCallback(() => {
       if (!settings) load();
       loadPrefs();
-      Promise.all([getApiKey('tmdb'), getApiKey('omdb')]).then(([t, o]) =>
-        setKeys({ tmdb: !!t, omdb: !!o }),
+      Promise.all([getApiKey('tmdb'), getApiKey('omdb')]).then(([tm, o]) =>
+        setKeys({ tmdb: !!tm, omdb: !!o }),
       );
     }, [settings, load, loadPrefs]),
   );
 
   const enabled = new Set(settings?.enabledPlatformIds ?? []);
   const tasteSummary = prefs?.genres.length
-    ? prefs.genres.slice(0, 2).join(', ') +
+    ? prefs.genres.slice(0, 2).map(genreLabel).join(', ') +
       (prefs.genres.length > 2 ? ', …' : '')
-    : 'Not set';
+    : t('Not set');
 
   return (
     <ScrollView
@@ -84,19 +122,27 @@ export function SettingsScreen({ navigation }: Props) {
       >
         <Row
           label="TMDB"
-          value={keys.tmdb ? 'Connected' : 'Not set'}
+          value={keys.tmdb ? t('Connected') : t('Not set')}
           onPress={() => navigation.navigate('ApiKey', { providerId: 'tmdb' })}
         />
         <Row
           label="OMDb"
-          value={keys.omdb ? 'Connected' : 'Not set'}
+          value={keys.omdb ? t('Connected') : t('Not set')}
           onPress={() => navigation.navigate('ApiKey', { providerId: 'omdb' })}
         />
       </GroupedSection>
 
-      <GroupedSection header="Streaming">
+      <GroupedSection header={t('Language')}>
         <Row
-          label="Region"
+          label={t('Language')}
+          value={LANGUAGE_NAMES[language]}
+          onPress={pickLanguage}
+        />
+      </GroupedSection>
+
+      <GroupedSection header={t('Streaming')}>
+        <Row
+          label={t('Region')}
           value={settings?.defaultRegion ?? DEFAULT_REGION}
           onPress={() => navigation.navigate('Region')}
         />
@@ -113,24 +159,28 @@ export function SettingsScreen({ navigation }: Props) {
       </GroupedSection>
 
       <GroupedSection
-        header="Taste"
-        footer="Set tastes to turn Discover into picks for you. Leave empty for what's popular."
+        header={t('Taste')}
+        footer={t(
+          "Set tastes to turn Discover into picks for you. Leave empty for what's popular.",
+        )}
       >
         <Row
-          label="Taste"
+          label={t('Taste')}
           value={tasteSummary}
           onPress={() => navigation.navigate('Taste')}
         />
       </GroupedSection>
 
       <GroupedSection
-        header="Import data"
-        footer="Ratings and watch history from other apps."
+        header={t('Import data')}
+        footer={t('Ratings and watch history from other apps.')}
         more={CSV_MORE}
       >
         <CsvImportRow
-          label="IMDb CSV…"
-          hint="Official export: imdb.com → Your Ratings or Watchlist → ⋮ → Export"
+          label={t('IMDb CSV…')}
+          hint={t(
+            'Official export: imdb.com → Your Ratings or Watchlist → ⋮ → Export',
+          )}
           format="IMDb"
           source="IMDb"
         />
@@ -143,26 +193,29 @@ export function SettingsScreen({ navigation }: Props) {
       </GroupedSection>
 
       <GroupedSection
-        header="Backup"
-        footer="Your ratings, reviews, notes and watch history."
+        header={t('Backup')}
+        footer={t('Your ratings, reviews, notes and watch history.')}
         more={BACKUP_MORE}
       >
         {demo ? null : <ICloudRow />}
-        <Row label="Export a copy…" onPress={busy ? undefined : exportCopy} />
         <Row
-          label="Import from file…"
+          label={t('Export a copy…')}
+          onPress={busy ? undefined : exportCopy}
+        />
+        <Row
+          label={t('Import from file…')}
           onPress={busy ? undefined : importFile}
         />
       </GroupedSection>
 
-      <GroupedSection header="Demo" footer={DEMO_FOOTER}>
+      <GroupedSection header={t('Demo')} footer={DEMO_FOOTER}>
         <Row
-          label="Demo mode"
+          label={t('Demo mode')}
           toggle={{ value: demo, onChange: setDemo, disabled: switching }}
         />
         {demo ? (
           <Row
-            label="Reset demo data"
+            label={t('Reset demo data')}
             destructive
             onPress={switching ? undefined : confirmReset}
           />

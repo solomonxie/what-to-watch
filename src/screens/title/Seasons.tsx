@@ -24,6 +24,7 @@ import {
 import { SectionLabel } from '../../ui/components';
 import { formatDate, joinMeta, year } from '../../ui/format';
 import { space, type, useColors } from '../../ui/theme';
+import { t, tf } from '../../i18n';
 
 const today = () => new Date().toISOString().slice(0, 10);
 const aired = (e: TmdbEpisode) => !!e.airDate && e.airDate <= today();
@@ -120,7 +121,7 @@ export function Seasons({
   return (
     <>
       <View style={styles.sectionRow}>
-        <SectionLabel>Seasons</SectionLabel>
+        <SectionLabel>{t('Seasons')}</SectionLabel>
         <Text style={[type.meta, styles.sectionCount, { color: c.tertiary }]}>
           {seasons.filter(s => s.number > 0).length}
         </Text>
@@ -264,7 +265,7 @@ function Season({
         <Check
           state={state}
           onPress={toggleSeason}
-          label={`${season.name} watched`}
+          label={tf('{0} watched', season.name)}
         />
         <View style={styles.rowText}>
           <Text style={[styles.seasonName, { color: c.text }]}>
@@ -273,12 +274,13 @@ function Season({
           <Text style={[type.meta, { color: c.secondary }]}>
             {joinMeta([
               year(season.airDate),
-              `${season.episodeCount} episode${
-                season.episodeCount === 1 ? '' : 's'
-              }`,
+              tf(
+                season.episodeCount === 1 ? '{0} episode' : '{0} episodes',
+                season.episodeCount,
+              ),
               state === 'all'
-                ? 'Watched'
-                : state === 'some' && `${seenCount} watched`,
+                ? t('Watched')
+                : state === 'some' && tf('{0} watched', seenCount),
             ])}
           </Text>
         </View>
@@ -300,7 +302,7 @@ function Season({
           {failed ? (
             <Pressable onPress={loadEpisodes} hitSlop={8}>
               <Text style={[type.meta, { color: c.accent }]}>
-                Couldn't load episodes · Try again
+                {t("Couldn't load episodes · Try again")}
               </Text>
             </Pressable>
           ) : !episodes ? (
@@ -354,7 +356,7 @@ function Episode({
           <Check
             state={watched ? 'all' : 'none'}
             onPress={() => onToggle(!watched)}
-            label={`Episode ${episode.number} watched`}
+            label={tf('Episode {0} watched', episode.number)}
           />
         )}
         <Text style={[styles.episodeNumber, { color: c.tertiary }]}>
@@ -370,8 +372,10 @@ function Episode({
           <Text style={[type.meta, { color: c.secondary }]}>
             {joinMeta([
               episode.airDate &&
-                `${upcoming ? 'Airs ' : ''}${formatDate(episode.airDate)}`,
-              episode.runtime && `${episode.runtime} min`,
+                (upcoming
+                  ? tf('Airs {0}', formatDate(episode.airDate))
+                  : formatDate(episode.airDate)),
+              episode.runtime && tf('{0} min', episode.runtime),
             ])}
           </Text>
         </View>

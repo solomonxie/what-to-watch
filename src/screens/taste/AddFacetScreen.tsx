@@ -9,19 +9,25 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { usePrefsStore, type Topic } from '../../prefs/prefsStore';
-import { COUNTRIES, GENRES, LANGUAGES } from '../../config/taxonomy';
+import {
+  COUNTRIES,
+  GENRES,
+  LANGUAGES,
+  genreLabel,
+} from '../../config/taxonomy';
 import { searchKeywords } from '../../providers/tmdbProvider';
 import { GroupedSection, Row } from '../../ui/components';
 import { space, type, useColors } from '../../ui/theme';
 import type { TasteStackParamList } from '../../navigation/types';
+import { t } from '../../i18n';
 
 type Props = NativeStackScreenProps<TasteStackParamList, 'AddFacet'>;
 
 const TITLES = {
-  genres: 'Add genre',
-  topics: 'Add topic',
-  languages: 'Add language',
-  countries: 'Add country',
+  genres: t('Add genre'),
+  topics: t('Add topic'),
+  languages: t('Add language'),
+  countries: t('Add country'),
 };
 
 export function AddFacetScreen({ route, navigation }: Props) {
@@ -69,29 +75,35 @@ export function AddFacetScreen({ route, navigation }: Props) {
     const match = (label: string) => !q || label.toLowerCase().includes(q);
     switch (facet) {
       case 'genres':
-        return GENRES.filter(g => match(g.name)).map(g => ({
+        return GENRES.filter(
+          g => match(g.name) || match(genreLabel(g.name)),
+        ).map(g => ({
           key: g.name,
-          label: g.name,
+          label: genreLabel(g.name),
         }));
       case 'languages':
-        return LANGUAGES.filter(([, n]) => match(n)).map(([k, n]) => ({
-          key: k,
-          label: n,
-        }));
+        return LANGUAGES.filter(([, n]) => match(n) || match(t(n))).map(
+          ([k, n]) => ({
+            key: k,
+            label: t(n),
+          }),
+        );
       case 'countries':
-        return COUNTRIES.filter(([, n]) => match(n)).map(([k, n]) => ({
-          key: k,
-          label: n,
-        }));
+        return COUNTRIES.filter(([, n]) => match(n) || match(t(n))).map(
+          ([k, n]) => ({
+            key: k,
+            label: t(n),
+          }),
+        );
       default:
-        return topics.map(t => ({ key: String(t.id), label: t.name }));
+        return topics.map(tp => ({ key: String(tp.id), label: tp.name }));
     }
   }, [facet, query, topics]);
 
   if (!prefs) return null;
 
   const selected = new Set<string>(
-    facet === 'topics' ? prefs.topics.map(t => String(t.id)) : prefs[facet],
+    facet === 'topics' ? prefs.topics.map(tp => String(tp.id)) : prefs[facet],
   );
 
   const toggle = (key: string, label: string) => {
@@ -99,7 +111,7 @@ export function AddFacetScreen({ route, navigation }: Props) {
       const id = Number(key);
       update({
         topics: selected.has(key)
-          ? prefs.topics.filter(t => t.id !== id)
+          ? prefs.topics.filter(tp => tp.id !== id)
           : [...prefs.topics, { id, name: label }],
       });
     } else {
@@ -124,7 +136,9 @@ export function AddFacetScreen({ route, navigation }: Props) {
         <TextInput
           style={[type.body, styles.input, { color: c.text }]}
           placeholder={
-            facet === 'topics' ? 'Search topics, e.g. time travel' : 'Filter'
+            facet === 'topics'
+              ? t('Search topics, e.g. time travel')
+              : t('Filter')
           }
           placeholderTextColor={c.tertiary}
           value={query}
@@ -142,7 +156,7 @@ export function AddFacetScreen({ route, navigation }: Props) {
       ) : null}
       {facet === 'topics' && !query.trim() ? (
         <Text style={[type.meta, styles.note, { color: c.secondary }]}>
-          Topics are TMDB keywords — heist, time travel, based on novel…
+          {t('Topics are TMDB keywords — heist, time travel, based on novel…')}
         </Text>
       ) : null}
       {options.length ? (

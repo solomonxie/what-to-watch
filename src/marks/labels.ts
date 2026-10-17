@@ -1,10 +1,11 @@
+import { t } from '../i18n';
 import type { Mark, MarkStatus } from './derive';
 
 export const STATUS_LABELS: Record<MarkStatus, string> = {
-  interested: 'Watch next',
-  watching: 'Watching',
-  watched: 'Watched',
-  dropped: 'Dropped',
+  interested: t('Watch next'),
+  watching: t('Watching'),
+  watched: t('Watched'),
+  dropped: t('Dropped'),
 };
 
 export function formatMarkDate(at: number) {
@@ -20,7 +21,7 @@ export function markLine(m: Mark): string {
   const place =
     m.season === null
       ? null
-      : (m.season === 0 ? 'Specials' : `S${m.season}`) +
+      : (m.season === 0 ? t('Specials') : t('S') + m.season) +
         (m.episode !== null ? ` · E${m.episode}` : '');
   return [
     place,

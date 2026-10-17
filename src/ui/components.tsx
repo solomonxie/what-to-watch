@@ -13,6 +13,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { space, type, useColors } from './theme';
+import { t, tf } from '../i18n';
 
 export function SectionLabel({
   children,
@@ -88,7 +89,7 @@ export function ChipGrid<T extends string>({
           style={styles.moreButton}
         >
           <Text style={[type.meta, styles.more, { color: c.accent }]}>
-            {open ? 'Less' : `More (${options.length - FOLDED_COUNT})`}
+            {open ? t('Less') : tf('More ({0})', options.length - FOLDED_COUNT)}
           </Text>
         </Pressable>
       ) : null}
@@ -111,7 +112,7 @@ export function FilterButton({
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={on ? `Filters, ${count} active` : 'Filters'}
+      accessibilityLabel={on ? tf('Filters, {0} active', count) : t('Filters')}
       style={({ pressed }) => [
         styles.filterButton,
         {
@@ -130,7 +131,7 @@ export function FilterButton({
         ))}
       </View>
       <Text style={[styles.chipText, { color: fg }]}>
-        {on ? `Filters · ${count}` : 'Filters'}
+        {on ? tf('Filters · {0}', count) : t('Filters')}
       </Text>
     </Pressable>
   );
@@ -242,13 +243,17 @@ export function GroupedSection({
           <Text style={[styles.groupFooter, { color: c.secondary }]}>
             {footer}
             {more && !expanded ? (
-              <Text style={[styles.more, { color: c.accent }]}>{'  More'}</Text>
+              <Text style={[styles.more, { color: c.accent }]}>{`  ${t(
+                'More',
+              )}`}</Text>
             ) : null}
           </Text>
           {more && expanded ? (
             <Text style={[styles.groupFooter, { color: c.secondary }]}>
               {more}
-              <Text style={[styles.more, { color: c.accent }]}>{'  Less'}</Text>
+              <Text style={[styles.more, { color: c.accent }]}>{`  ${t(
+                'Less',
+              )}`}</Text>
             </Text>
           ) : null}
         </Pressable>

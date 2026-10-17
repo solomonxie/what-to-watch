@@ -30,6 +30,7 @@ import {
 import { joinMeta, mediaLabel, year } from '../../ui/format';
 import { space, type, useColors } from '../../ui/theme';
 import type { LibraryStackParamList } from '../../navigation/types';
+import { t, tf } from '../../i18n';
 
 type Props = NativeStackScreenProps<LibraryStackParamList, 'LibraryHome'>;
 
@@ -67,7 +68,7 @@ export async function loadSections(): Promise<Section[]> {
     const ep = latest.get(h.titleId);
     return {
       titleId: h.titleId,
-      meta: ep ? `S${ep.season} · E${ep.episode}` : undefined,
+      meta: ep ? `${t('S')}${ep.season} · E${ep.episode}` : undefined,
     };
   });
   const watchNext: Entry[] = byActivity
@@ -92,12 +93,12 @@ export async function loadSections(): Promise<Section[]> {
     .map(h => ({ titleId: h.titleId }));
 
   const groups: [string, Entry[]][] = [
-    ['Continue watching', continueWatching],
-    ['My next watch', watchNext],
-    ['My top rated', bucket(TOP, Infinity)],
-    ['I feel so-so', bucket(SO_SO, TOP)],
-    ['Waste of time', bucket(-Infinity, SO_SO)],
-    ['To be rated', unrated],
+    [t('Continue watching'), continueWatching],
+    [t('My next watch'), watchNext],
+    [t('My top rated'), bucket(TOP, Infinity)],
+    [t('I feel so-so'), bucket(SO_SO, TOP)],
+    [t('Waste of time'), bucket(-Infinity, SO_SO)],
+    [t('To be rated'), unrated],
   ];
 
   const titles = new Map(
@@ -105,28 +106,30 @@ export async function loadSections(): Promise<Section[]> {
       await getTitlesByIds(
         groups.flatMap(([, entries]) => entries).map(e => e.titleId),
       )
-    ).map(t => [t.id, t]),
+    ).map(ti => [ti.id, ti]),
   );
   return groups
     .map(([title, entries]) => ({
       title,
       items: entries
         .flatMap(e => {
-          const t = titles.get(e.titleId);
-          return t ? [{ e, t }] : [];
+          const ti = titles.get(e.titleId);
+          return ti ? [{ e, ti }] : [];
         })
-        .sort((x, y) => (changed.get(y.t.id) ?? 0) - (changed.get(x.t.id) ?? 0))
-        .flatMap(({ e, t }) => {
+        .sort(
+          (x, y) => (changed.get(y.ti.id) ?? 0) - (changed.get(x.ti.id) ?? 0),
+        )
+        .flatMap(({ e, ti }) => {
           return [
             {
-              id: t.id,
-              title: t.title,
-              posterPath: t.posterPath,
+              id: ti.id,
+              title: ti.title,
+              posterPath: ti.posterPath,
               badge: e.badge,
               badgeCorner: 'right' as const,
               meta:
                 e.meta ??
-                joinMeta([year(t.releaseDate), mediaLabel(t.mediaType)]),
+                joinMeta([year(ti.releaseDate), mediaLabel(ti.mediaType)]),
             },
           ];
         }),
@@ -151,8 +154,8 @@ export function LibraryScreen({ navigation }: Props) {
 
   const facetGroups: [string, LibraryFacet['kind'], FacetCount[]][] = facets
     ? [
-        ['Genres', 'genre', facets.genres],
-        ['Languages', 'language', facets.languages],
+        [t('Genres'), 'genre', facets.genres],
+        [t('Languages'), 'language', facets.languages],
       ]
     : [];
 
@@ -167,7 +170,11 @@ export function LibraryScreen({ navigation }: Props) {
       {sections === null ? (
         <EmptyState loading />
       ) : sections.length === 0 ? (
-        <EmptyState message="Mark titles Interested, track episodes, or rate what you've watched." />
+        <EmptyState
+          message={t(
+            "Mark titles Interested, track episodes, or rate what you've watched.",
+          )}
+        />
       ) : (
         sections.map(section => (
           <View key={section.title}>
@@ -181,7 +188,11 @@ export function LibraryScreen({ navigation }: Props) {
                 }
                 hitSlop={12}
                 accessibilityRole="button"
-                accessibilityLabel={`See all ${section.items.length} in ${section.title}`}
+                accessibilityLabel={tf(
+                  'See all {0} in {1}',
+                  section.items.length,
+                  section.title,
+                )}
                 style={({ pressed }) => pressed && styles.pressed}
               >
                 <Text style={[type.meta, styles.count, { color: c.accent }]}>

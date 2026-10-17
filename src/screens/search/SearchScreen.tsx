@@ -14,6 +14,7 @@ import { DEFAULT_REGION } from '../../config/platforms';
 import { space, useColors } from '../../ui/theme';
 import { SearchResults } from './SearchResults';
 import { SearchHistory } from './SearchHistory';
+import { TAB_BAR_HEIGHT } from './SearchTabButton';
 import {
   getSearchHistory,
   saveSearchHistory,
@@ -24,6 +25,7 @@ import { getAllUserRatings } from '../../db/repositories/ratingsRepo';
 import { refreshSearchIndex } from '../../catalog/catalogService';
 import { isSearchIndexBuilt } from '../../search/titleIndex';
 import type { SearchStackParamList } from '../../navigation/types';
+import { t } from '../../i18n';
 
 type Props = NativeStackScreenProps<SearchStackParamList, 'SearchHome'>;
 
@@ -53,11 +55,13 @@ export function SearchScreen({ navigation, route }: Props) {
   };
   const input = useRef<React.ElementRef<typeof TextInput>>(null);
 
-  // Ready to type whenever the tab is opened or its button tapped again.
+  // Ready to type whenever the tab is opened or its button tapped again;
+  // a linked query (`search?q=`) shows its results without the keyboard.
+  const linkedQuery = !!route.params?.q;
   useFocusEffect(
     useCallback(() => {
-      input.current?.focus();
-    }, []),
+      if (!linkedQuery) input.current?.focus();
+    }, [linkedQuery]),
   );
   const focusRequest = route.params?.focus;
   useEffect(() => {
@@ -122,7 +126,7 @@ export function SearchScreen({ navigation, route }: Props) {
             borderTopColor: c.separator,
             paddingBottom: keyboard
               ? space.m
-              : Math.max(insets.bottom, space.m),
+              : insets.bottom + TAB_BAR_HEIGHT + space.m,
           },
         ]}
       >
@@ -130,7 +134,7 @@ export function SearchScreen({ navigation, route }: Props) {
           style={[styles.input, { backgroundColor: c.chip, color: c.text }]}
           value={query}
           onChangeText={setQuery}
-          placeholder="Movies, shows, cast"
+          placeholder={t('Movies, shows, cast')}
           placeholderTextColor={c.secondary}
           ref={input}
           autoCorrect={false}

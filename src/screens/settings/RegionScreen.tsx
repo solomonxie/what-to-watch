@@ -5,6 +5,7 @@ import { useSettingsStore } from '../../state/settingsStore';
 import { GroupedSection, Row } from '../../ui/components';
 import { useColors } from '../../ui/theme';
 import type { SettingsStackParamList } from '../../navigation/types';
+import { t } from '../../i18n';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'Region'>;
 
@@ -40,11 +41,13 @@ export function RegionScreen({ navigation }: Props) {
       style={{ backgroundColor: c.groupedBackground }}
       contentInsetAdjustmentBehavior="automatic"
     >
-      <GroupedSection footer="Sets which catalogue rankings and availability come from.">
+      <GroupedSection
+        footer={t('Sets which catalogue rankings and availability come from.')}
+      >
         {REGIONS.map(([code, name]) => (
           <Row
             key={code}
-            label={name}
+            label={t(name)}
             value={code === current ? '✓' : undefined}
             onPress={async () => {
               await setRegion(code);

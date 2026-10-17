@@ -1,6 +1,7 @@
 import {
   GENRES,
   countryName,
+  genreLabel,
   languageName,
   unifiedGenres,
 } from '../config/taxonomy';
@@ -163,7 +164,10 @@ export function scoreCandidates(
     const country = bestMatch(prefs.countries, countries);
 
     const parts = [
-      { w: WEIGHTS.genre * genre.weight, label: genre.name },
+      {
+        w: WEIGHTS.genre * genre.weight,
+        label: genre.name && genreLabel(genre.name),
+      },
       { w: WEIGHTS.topic * topic.weight, label: topic.name },
       {
         w: WEIGHTS.language * language.weight,

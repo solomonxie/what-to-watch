@@ -15,18 +15,19 @@ import { lastChanges, loadFacetItems } from './libraryFacets';
 import { getAllUserRatings } from '../../db/repositories/ratingsRepo';
 import { getTitlesByIds } from '../../db/repositories/titlesRepo';
 import type { LibraryStackParamList } from '../../navigation/types';
+import { t } from '../../i18n';
 
 type Props = NativeStackScreenProps<LibraryStackParamList, 'LibrarySection'>;
 
 type SortKey = 'changed' | 'mine' | 'score' | 'popularity' | 'year' | 'title';
 
 const SORTS: { key: SortKey; label: string }[] = [
-  { key: 'changed', label: 'Recently rated or marked' },
-  { key: 'mine', label: 'My rating' },
-  { key: 'score', label: 'TMDB rating' },
-  { key: 'popularity', label: 'Popularity' },
-  { key: 'year', label: 'Release year' },
-  { key: 'title', label: 'Title A–Z' },
+  { key: 'changed', label: t('Recently rated or marked') },
+  { key: 'mine', label: t('My rating') },
+  { key: 'score', label: t('TMDB rating') },
+  { key: 'popularity', label: t('Popularity') },
+  { key: 'year', label: t('Release year') },
+  { key: 'title', label: t('Title A–Z') },
 ];
 
 interface SortFacts {
@@ -46,15 +47,15 @@ async function sortFacts(ids: string[]): Promise<Map<string, SortFacts>> {
   ]);
   const mine = new Map(ratings.map(r => [r.titleId, r.rating]));
   return new Map(
-    titles.map(t => [
-      t.id,
+    titles.map(ti => [
+      ti.id,
       {
-        changed: changes.get(t.id),
-        mine: mine.get(t.id),
-        score: t.primaryRatingScore,
-        popularity: t.popularity,
-        year: Number(t.releaseDate?.slice(0, 4)) || 0,
-        title: t.title,
+        changed: changes.get(ti.id),
+        mine: mine.get(ti.id),
+        score: ti.primaryRatingScore,
+        popularity: ti.popularity,
+        year: Number(ti.releaseDate?.slice(0, 4)) || 0,
+        title: ti.title,
       },
     ]),
   );
@@ -79,10 +80,10 @@ export function LibrarySectionScreen({ navigation, route }: Props) {
       unstable_headerRightItems: () => [
         {
           type: 'menu',
-          label: 'Sort',
+          label: t('Sort'),
           icon: { type: 'sfSymbol', name: 'arrow.up.arrow.down' },
           menu: {
-            title: 'Sort by',
+            title: t('Sort by'),
             items: SORTS.map(o => ({
               type: 'action' as const,
               label: o.label,
@@ -131,7 +132,7 @@ export function LibrarySectionScreen({ navigation, route }: Props) {
       contentContainerStyle={styles.content}
       initialNumToRender={18}
       windowSize={7}
-      ListEmptyComponent={<EmptyState message="Nothing here any more." />}
+      ListEmptyComponent={<EmptyState message={t('Nothing here any more.')} />}
       renderItem={({ item }) => (
         <PosterTile
           item={item}
