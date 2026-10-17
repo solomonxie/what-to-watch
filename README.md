@@ -33,8 +33,8 @@ Install a release build on a connected iPhone:
 ```sh
 cd ios
 xcodebuild -workspace WhatToWatch.xcworkspace -scheme WhatToWatch -configuration Release \
-  -destination 'generic/platform=iOS' -derivedDataPath build/dd -allowProvisioningUpdates build
-xcrun devicectl device install app --device <UDID> build/dd/Build/Products/Release-iphoneos/WhatToWatch.app
+  -destination 'generic/platform=iOS' -derivedDataPath /tmp/whattowatch-build/dd -allowProvisioningUpdates build
+xcrun devicectl device install app --device <UDID> /tmp/whattowatch-build/dd/Build/Products/Release-iphoneos/WhatToWatch.app
 ```
 
 Store region: `make ios STORE=cn` / `make release STORE=cn` (default `us` = Canada/US). Written to gitignored `ios/Install.xcconfig` → Info.plist `AppStoreRegion` → `storeRegion()` (`src/config/storeRegion.ts`). Plain `xcodebuild`/Xcode builds use the last one written, else `us`.
