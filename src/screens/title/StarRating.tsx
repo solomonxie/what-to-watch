@@ -9,11 +9,14 @@ export function StarRating({
   onChange,
   size = 32,
   showValue = true,
+  cycle = false,
 }: {
   value: number;
   onChange?: (value: number) => void;
   size?: number;
   showValue?: boolean;
+  /** A tap steps that star full → half → empty, instead of picking the half by where it lands. */
+  cycle?: boolean;
 }) {
   const c = useColors();
   const box = { width: size, height: size };
@@ -28,7 +31,15 @@ export function StarRating({
             disabled={!onChange}
             accessibilityLabel={tf(i ? '{0} stars' : '{0} star', i + 1)}
             onPress={e =>
-              onChange?.(i * 2 + (e.nativeEvent.locationX < size / 2 ? 1 : 2))
+              onChange?.(
+                cycle
+                  ? value === i * 2 + 2
+                    ? i * 2 + 1
+                    : value === i * 2 + 1
+                    ? i * 2
+                    : i * 2 + 2
+                  : i * 2 + (e.nativeEvent.locationX < size / 2 ? 1 : 2),
+              )
             }
             style={[styles.box, box]}
           >

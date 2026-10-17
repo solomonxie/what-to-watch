@@ -1,5 +1,5 @@
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
-import type { cachedTitles, settings } from '../db/schema';
+import type { cachedTitles, scoreCards, settings } from '../db/schema';
 import {
   FROM_WATCH_STATUS,
   groupByTitle,
@@ -28,6 +28,7 @@ export interface BackupPayload {
   version: number;
   exportedAt: string;
   marks: NoId<Mark>[];
+  scoreCards?: (typeof scoreCards.$inferInsert)[];
   settings?: NoId<typeof settings.$inferInsert>;
   titles?: (typeof cachedTitles.$inferInsert)[];
   /** Taste profile (JSON of Preferences). */
@@ -50,6 +51,7 @@ export function parsePayload(text: string): BackupPayload {
     version: data.version,
     exportedAt: data.exportedAt ?? '',
     marks: data.marks ?? legacyMarks(data),
+    scoreCards: data.scoreCards ?? [],
     settings: data.settings ?? undefined,
     titles: data.titles ?? [],
     preferences: data.preferences ?? undefined,

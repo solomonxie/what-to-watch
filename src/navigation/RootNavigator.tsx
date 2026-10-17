@@ -10,6 +10,7 @@ import { LibraryScreen } from '../screens/library/LibraryScreen';
 import { LibrarySectionScreen } from '../screens/library/LibrarySectionScreen';
 import { TitleScreen } from '../screens/title/TitleScreen';
 import { WatchMarkSheet } from '../screens/title/WatchMarkSheet';
+import { ScoreCardScreen } from '../screens/title/ScoreCardScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { ApiKeyScreen } from '../screens/settings/ApiKeyScreen';
 import { RegionScreen } from '../screens/settings/RegionScreen';
@@ -209,6 +210,11 @@ export function RootNavigator() {
       <Root.Screen
         name="Settings"
         component={SettingsNavigator}
+        options={{ presentation: 'modal' }}
+      />
+      <Root.Screen
+        name="ScoreCard"
+        component={ScoreCardScreen}
         options={{ presentation: 'modal' }}
       />
       <Root.Screen

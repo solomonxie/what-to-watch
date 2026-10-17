@@ -2,8 +2,9 @@ import RNFS from 'react-native-fs';
 import { AppState, Share } from 'react-native';
 import { pick, keepLocalCopy } from '@react-native-documents/picker';
 import { db, withTransaction } from '../db/client';
-import { cachedTitles, marks, settings } from '../db/schema';
+import { cachedTitles, marks, scoreCards, settings } from '../db/schema';
 import { getAllMarks } from '../db/repositories/marksRepo';
+import { getAllScoreCards } from '../db/repositories/scoreCardsRepo';
 import { getSettings, updateSettings } from '../db/repositories/settingsRepo';
 import { getTitlesByIds } from '../db/repositories/titlesRepo';
 import { getKv, setKv } from '../db/repositories/kvRepo';
@@ -70,9 +71,10 @@ const LAUNCH_DELAY_MS = 8 * 1000;
 const DOCS = RNFS.DocumentDirectoryPath;
 
 export async function buildPayload(): Promise<BackupPayload> {
-  const [allMarks, appSettings] = await Promise.all([
+  const [allMarks, appSettings, cards] = await Promise.all([
     getAllMarks(),
     getSettings(),
+    getAllScoreCards(),
   ]);
   const titleIds = Array.from(new Set(allMarks.map(m => m.titleId)));
   const titles = await getTitlesByIds(titleIds);
@@ -80,6 +82,7 @@ export async function buildPayload(): Promise<BackupPayload> {
     version: PAYLOAD_VERSION,
     exportedAt: new Date().toISOString(),
     marks: allMarks.map(stripId),
+    scoreCards: cards,
     settings: stripId(appSettings),
     titles,
     preferences: await readPreferences(),
@@ -408,6 +411,9 @@ export async function replaceAllData(payload: BackupPayload): Promise<void> {
     // Under SQLite's bound-variable limit.
     for (let i = 0; i < rows.length; i += 500)
       await tx.insert(marks).values(rows.slice(i, i + 500));
+    await tx.delete(scoreCards);
+    for (const card of payload.scoreCards ?? [])
+      await tx.insert(scoreCards).values(card);
     if (payload.settings) {
       await tx.delete(settings);
       await tx.insert(settings).values(stripId(payload.settings));

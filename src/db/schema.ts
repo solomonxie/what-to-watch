@@ -77,6 +77,18 @@ export const marks = sqliteTable('marks', {
   updatedAt: integer('updated_at').notNull(),
 });
 
+/** A title's detailed score (see scoring/formula.ts), apart from its star rating. */
+export const scoreCards = sqliteTable('score_cards', {
+  titleId: text('title_id').primaryKey(),
+  /** film | anime | comic | novel */
+  kind: text('kind').notNull(),
+  scores: text('scores', { mode: 'json' })
+    .$type<Record<string, number>>()
+    .notNull(),
+  finalScore: real('final_score').notNull(),
+  scoredAt: integer('scored_at').notNull(),
+});
+
 export const settings = sqliteTable('settings', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   enabledPlatformIds: text('enabled_platform_ids', { mode: 'json' })

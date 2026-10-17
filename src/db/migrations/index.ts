@@ -11,6 +11,7 @@ import { POPULARITY_STATEMENTS } from './0009_popularity';
 import { RATED_MARKS_STATEMENTS } from './0010_rated_marks';
 import { MARKS_STATEMENTS } from './0011_marks';
 import { ZH_TITLE_STATEMENTS } from './0012_zh_title';
+import { SCORE_CARDS_STATEMENTS } from './0013_score_cards';
 
 // Index + 1 = the PRAGMA user_version after that step runs.
 export const MIGRATIONS: string[][] = [
@@ -27,6 +28,7 @@ export const MIGRATIONS: string[][] = [
   RATED_MARKS_STATEMENTS,
   MARKS_STATEMENTS,
   ZH_TITLE_STATEMENTS,
+  SCORE_CARDS_STATEMENTS,
 ];
 
 export interface MigrationDb {

@@ -43,5 +43,6 @@ export type TabParamList = {
 export type RootStackParamList = {
   Tabs: NavigatorScreenParams<TabParamList>;
   Settings: NavigatorScreenParams<SettingsStackParamList>;
+  ScoreCard: { titleId: string; mediaType: 'movie' | 'tv' };
   WatchMark: { titleId: string; markId?: number; rating?: number };
 };

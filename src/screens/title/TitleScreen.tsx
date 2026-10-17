@@ -44,6 +44,11 @@ import { StarRating } from './StarRating';
 import {
   getMarksForTitle,
   onMarksChanged,
+import {
+  getScoreCard,
+  onScoreCardChanged,
+  type ScoreCard,
+} from '../../db/repositories/scoreCardsRepo';
 } from '../../db/repositories/marksRepo';
 import { seasonRatings, titleRating } from '../../marks/derive';
 import { useSettingsStore } from '../../state/settingsStore';
@@ -223,6 +228,9 @@ export function TitleScreen({ route }: Props) {
       <OpenIn title={title} providers={providers} />
 
       <WatchState titleId={titleId} entry={entry} onChange={reloadEntry} />
+      <DetailedScore titleId={titleId} mediaType={title.mediaType} />
+      <WatchMarks titleId={titleId} />
+      <Reviews titleId={titleId} />
       <MyRating titleId={titleId} />
 
       {title.overview ? <Overview text={title.overview} /> : null}
@@ -246,9 +254,6 @@ export function TitleScreen({ route }: Props) {
         </>
       ) : null}
 
-      <Reviews titleId={titleId} />
-
-      <WatchMarks titleId={titleId} />
     </ScrollView>
   );
 }
@@ -455,6 +460,54 @@ function MyRating({ titleId }: { titleId: string }) {
         ) : null}
       </View>
     </>
+/** The second rating: the aspect-by-aspect score, apart from the stars. */
+function DetailedScore({
+  titleId,
+  mediaType,
+}: {
+  titleId: string;
+  mediaType: string;
+}) {
+  const c = useColors();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [card, setCard] = useState<ScoreCard>();
+
+  useEffect(() => {
+    const load = () => getScoreCard(titleId).then(setCard);
+    load();
+    return onScoreCardChanged(id => id === titleId && load());
+  }, [titleId]);
+
+  return (
+    <>
+      <SectionLabel>{t('Detailed score')}</SectionLabel>
+      <Pressable
+        onPress={() =>
+          navigation.navigate('ScoreCard', {
+            titleId,
+            mediaType: mediaType === 'tv' ? 'tv' : 'movie',
+          })
+        }
+        style={({ pressed }) => [styles.inset, pressed && styles.pressed]}
+      >
+        {card ? (
+          <Text style={[styles.statValue, { color: c.text }]}>
+            {card.finalScore.toFixed(1)}
+            <Text style={[type.meta, { color: c.secondary }]}>
+              {`  ·  ${formatMarkDate(card.scoredAt)}  ·  ${t('Edit')}`}
+            </Text>
+          </Text>
+        ) : (
+          <Text style={[styles.reviewAction, { color: c.accent }]}>
+            {t('Score in detail ›')}
+          </Text>
+        )}
+      </Pressable>
+    </>
+  );
+}
+
   );
 }
 
