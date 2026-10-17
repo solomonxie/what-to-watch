@@ -1,18 +1,19 @@
 # Privacy Policy — What to Watch
 
-_Last updated: 2026-09-26_
+_Last updated: 2026-10-02_
 
 What to Watch does not collect, transmit, or store your personal data on any server we control. We operate no server, and there is no account to create.
 
 ## What the app stores
-Your ratings, reviews, notes, watch history, episode progress, taste preferences, streaming services, region and settings are kept in a database on your device, with cached title information (posters, cast, overviews) so lists open offline. They stay there unless you back them up or export them.
+Your watch marks (status, date, rating, review), episode progress, taste preferences, streaming services, region, recent searches and filters, and settings are kept in a database on your device, with cached title information (posters, cast, overviews) so lists open offline. They stay there unless you back them up or export them.
 
 ## What leaves your device
 - **TMDB (The Movie Database)** — the app needs your own free TMDB API key. With it, the app asks TMDB for popular and recommended titles on your streaming services in your region, the details, seasons and public reviews of titles you open, what you type into search, and — when you import a CSV — the titles and IMDb ids in that file, to match them. Requests carry your key and nothing that identifies you. Posters and photos load from TMDB's image server. TMDB's privacy policy governs that data.
 - **OMDb** — optional. If you add your own OMDb key, the IMDb id of a title you open is sent to omdbapi.com to fetch IMDb and Rotten Tomatoes ratings.
-- **iCloud backup** — on by default, switchable in Settings. A daily backup of your library (ratings, reviews, notes, watch history, taste, settings and cached title info) is written to the app's own folder in your iCloud Drive, in your Apple account and your storage quota. A fresh install restores from it. We have no access to it.
+- **iCloud backup** — on by default, switchable in Settings. A daily backup of your library (watch marks, taste, settings and cached title info) is written to the app's own folder in your iCloud Drive, in your Apple account and your storage quota. A fresh install restores from it. We have no access to it.
 - **Export / import** — files you create and place wherever you choose.
-- **Links** — "Watch on" and "More on" buttons open Netflix, Prime Video, Disney+, Apple TV, Max, Hulu, Crave, Paramount+, Peacock, IMDb or TMDB in their app or in Safari, with the title in the address. Nothing is sent until you tap.
+- **Links** — "Watch on" and "More on" buttons and the title links open Netflix, Prime Video, Disney+, Apple TV, Max, Hulu, Crave, Paramount+, Peacock, IMDb, TMDB, Douban or YouTube in their app or in Safari, with the title (for Douban, its IMDb id or title) in the address. Nothing is sent to them until you tap.
+- **Spotlight** — titles the app has cached (your library, titles you opened, and titles in Discover lists) are added to your iPhone's on-device Spotlight index so you can find them from search. It stays on your device; switching to demo mode keeps them out.
 
 No part of this passes through us. There is no intermediary service.
 
