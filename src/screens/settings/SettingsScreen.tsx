@@ -53,12 +53,6 @@ const CSV_MORE =
   );
 
 export function SettingsScreen({ navigation }: Props) {
-  const c = useColors();
-  const { settings, load, togglePlatform } = useSettingsStore();
-  const [keys, setKeys] = useState({ tmdb: false, omdb: false });
-  const { exportCopy, importFile, busy } = useImportExport();
-  const { prefs, load: loadPrefs } = usePrefsStore();
-  useDataStore(s => s.generation);
   const [language, setLanguage] = useState(getLanguage());
   const pickLanguage = () =>
     Alert.alert(t('Language'), undefined, [
@@ -76,6 +70,12 @@ export function SettingsScreen({ navigation }: Props) {
       })),
       { text: t('Cancel'), style: 'cancel' },
     ]);
+  const c = useColors();
+  const { settings, load, togglePlatform } = useSettingsStore();
+  const [keys, setKeys] = useState({ tmdb: false, omdb: false });
+  const { exportCopy, importFile, busy } = useImportExport();
+  const { prefs, load: loadPrefs } = usePrefsStore();
+  useDataStore(s => s.generation);
   const demo = isDemo();
   const [switching, setSwitching] = useState(false);
 
@@ -123,8 +123,24 @@ export function SettingsScreen({ navigation }: Props) {
       contentContainerStyle={styles.content}
     >
       <GroupedSection
-        header="Data sources"
-        footer="TMDB powers search and rankings. OMDb adds IMDb & Rotten Tomatoes ratings. This product uses the TMDB API but is not endorsed or certified by TMDB. Streaming availability by JustWatch."
+        header={t('Data sources')}
+        footer={t(
+          'TMDB powers search and rankings. OMDb adds IMDb & Rotten Tomatoes ratings. Streaming availability by JustWatch.',
+        )}
+        below={
+          <>
+            <Image
+              source={require('../../assets/tmdb-logo.png')}
+              style={styles.tmdbLogo}
+              accessibilityLabel="TMDB"
+            />
+            <Text style={[styles.notice, { color: c.secondary }]}>
+              {t(
+                'This product uses the TMDB API but is not endorsed or certified by TMDB.',
+              )}
+            </Text>
+          </>
+        }
       >
         <Row
           label="TMDB"
@@ -243,4 +259,6 @@ export function SettingsScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   content: { paddingBottom: BOTTOM_CLEARANCE },
+  tmdbLogo: { width: 108, height: 14 },
+  notice: { fontSize: 13, lineHeight: 18, paddingTop: 6 },
 });

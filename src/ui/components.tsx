@@ -204,12 +204,15 @@ export function GroupedSection({
   header,
   footer,
   more,
+  below,
   children,
 }: {
   header?: string;
   footer?: string;
   /** Longer footer text, revealed by a "More" link. */
   more?: string;
+  /** Shown under the footer, e.g. an attribution logo. */
+  below?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const c = useColors();
@@ -258,6 +261,7 @@ export function GroupedSection({
           ) : null}
         </Pressable>
       ) : null}
+      {below ? <View style={styles.groupBelow}>{below}</View> : null}
     </View>
   );
 }
@@ -537,6 +541,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   more: { fontWeight: '600' },
+  groupBelow: { paddingHorizontal: space.l * 2, paddingTop: space.s },
   separator: { height: StyleSheet.hairlineWidth, marginLeft: space.l },
   row: {
     flexDirection: 'row',
