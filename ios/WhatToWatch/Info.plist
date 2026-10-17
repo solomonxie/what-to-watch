@@ -73,6 +73,13 @@
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 	<key>AppStoreRegion</key>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict/>
+	</dict>
 	<string>$(APP_STORE_REGION)</string>
 	<key>WTWDemoOMDBKey</key>
 	<string>$(WTW_DEMO_OMDB_KEY)</string>

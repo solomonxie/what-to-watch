@@ -5,8 +5,6 @@ import ReactAppDependencyProvider
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-  var window: UIWindow?
-
   var reactNativeDelegate: ReactNativeDelegate?
   var reactNativeFactory: RCTReactNativeFactory?
 
@@ -29,23 +27,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     reactNativeDelegate = delegate
     reactNativeFactory = factory
 
-    window = UIWindow(frame: UIScreen.main.bounds)
-
-    factory.startReactNative(
-      withModuleName: "WhatToWatch",
-      in: window,
-      launchOptions: launchOptions
-    )
-
     return true
   }
 
   func application(
-    _ app: UIApplication,
-    open url: URL,
-    options: [UIApplication.OpenURLOptionsKey: Any] = [:]
-  ) -> Bool {
-    RCTLinkingManager.application(app, open: url, options: options)
+    _ application: UIApplication,
+    configurationForConnecting connectingSceneSession: UISceneSession,
+    options: UIScene.ConnectionOptions
+  ) -> UISceneConfiguration {
+    let config = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
+    config.delegateClass = SceneDelegate.self
+    return config
   }
 
   /// Build-time Info.plist values (scripts/install-config.sh), handed to JS through RN Settings.
@@ -59,17 +51,45 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       defaults.set(Bundle.main.object(forInfoDictionaryKey: plistKey) as? String ?? "", forKey: defaultsKey)
     }
   }
+}
+
+class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+  var window: UIWindow?
+
+  func scene(
+    _ scene: UIScene,
+    willConnectTo session: UISceneSession,
+    options connectionOptions: UIScene.ConnectionOptions
+  ) {
+    guard
+      let windowScene = scene as? UIWindowScene,
+      let factory = (UIApplication.shared.delegate as? AppDelegate)?.reactNativeFactory
+    else { return }
+    // Cold start: JS isn't listening yet and asks for it once it is.
+    var launchURL =
+      connectionOptions.userActivities.lazy.compactMap(SpotlightModule.url(forActivity:)).first
+      ?? connectionOptions.urlContexts.first?.url
+    #if SCREENSHOTS
+    // `-openURL <link>` launch argument; only in builds passed SWIFT_ACTIVE_COMPILATION_CONDITIONS=SCREENSHOTS.
+    launchURL = launchURL ?? UserDefaults.standard.string(forKey: "openURL").flatMap(URL.init(string:))
+    #endif
+    SpotlightModule.pendingURL = launchURL
+
+    let window = UIWindow(windowScene: windowScene)
+    self.window = window
+    factory.startReactNative(withModuleName: "WhatToWatch", in: window, launchOptions: nil)
+  }
+
+  func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+    for context in URLContexts {
+      RCTLinkingManager.application(UIApplication.shared, open: context.url, options: [:])
+    }
+  }
 
   /// A tapped Spotlight result: open its title like a whattowatch:// link.
-  func application(
-    _ application: UIApplication,
-    continue userActivity: NSUserActivity,
-    restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
-  ) -> Bool {
-    guard let url = SpotlightModule.url(forActivity: userActivity) else { return false }
-    // Cold start: JS isn't listening yet and asks for it once it is.
-    SpotlightModule.pendingURL = url
-    return RCTLinkingManager.application(application, open: url, options: [:])
+  func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+    guard let url = SpotlightModule.url(forActivity: userActivity) else { return }
+    RCTLinkingManager.application(UIApplication.shared, open: url, options: [:])
   }
 }
 

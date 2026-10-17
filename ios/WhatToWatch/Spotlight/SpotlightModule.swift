@@ -7,7 +7,7 @@ import UniformTypeIdentifiers
 @objc(SpotlightModule)
 class SpotlightModule: NSObject {
 
-  /// Set by AppDelegate when a Spotlight tap launches the app, read once by JS.
+  /// Set by SceneDelegate when a link or Spotlight tap launches the app, read once by JS.
   static var pendingURL: URL?
 
   private static let batchSize = 500
