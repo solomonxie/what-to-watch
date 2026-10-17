@@ -59,63 +59,14 @@ export function openInSafari(url: string) {
   );
 }
 
-// Douban has no public API; its search resolves an IMDb id to the exact subject.
-function doubanSearchUrl(query: string) {
+/** Douban's search for the title; an IMDb id usually lands on the one subject. */
+export function doubanSearchUrl(
+  imdbId: string | null | undefined,
+  title: string,
+  year?: string,
+) {
+  const query = imdbId ?? `${title} ${year ?? ''}`.trim();
   return `https://m.douban.com/search/?query=${encodeURIComponent(
     query,
   )}&type=movie`;
-}
-
-const LOOKUP_TIMEOUT_MS = 4000;
-
-async function findDoubanSubject(query: string) {
-  const abort = new AbortController();
-  const timer = setTimeout(() => abort.abort(), LOOKUP_TIMEOUT_MS);
-  try {
-    const res = await fetch(doubanSearchUrl(query), { signal: abort.signal });
-    const found = (await res.text()).match(/\/movie\/subject\/(\d+)/);
-    return found?.[1] ?? null;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-const doubanQuery = (
-  imdbId: string | null | undefined,
-  title: string,
-  year?: string,
-) => imdbId ?? `${title} ${year ?? ''}`.trim();
-
-const doubanSubjects = new Map<string, string>();
-const doubanLookups = new Set<string>();
-
-/** Looks up the title's Douban page ahead of a tap; call when the page opens. */
-export function prefetchDouban(
-  imdbId: string | null | undefined,
-  title: string,
-  year?: string,
-) {
-  const query = doubanQuery(imdbId, title, year);
-  if (doubanSubjects.has(query) || doubanLookups.has(query)) return;
-  doubanLookups.add(query);
-  findDoubanSubject(query).then(subject => {
-    doubanLookups.delete(query);
-    if (subject)
-      doubanSubjects.set(
-        query,
-        `https://m.douban.com/movie/subject/${subject}/`,
-      );
-  });
-}
-
-/** Douban's page for the title if already found, else its search, in Safari. */
-export function openDouban(
-  imdbId: string | null | undefined,
-  title: string,
-  year?: string,
-) {
-  const query = doubanQuery(imdbId, title, year);
-  return openInSafari(doubanSubjects.get(query) ?? doubanSearchUrl(query));
 }

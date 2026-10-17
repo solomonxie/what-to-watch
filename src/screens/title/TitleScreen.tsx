@@ -14,9 +14,8 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 import {
-  openDouban,
+  doubanSearchUrl,
   openInSafari,
-  prefetchDouban,
   imdbSearchUrl,
   imdbUrl,
   platformUrl,
@@ -36,28 +35,28 @@ import {
 import { getUserRatingForTitle } from '../../db/repositories/ratingsRepo';
 import { fetchAndCacheTitle, parseTitleId } from '../../catalog/catalogService';
 import { isProviderActive } from '../../providers/providerRegistry';
-import { t, tf } from '../../i18n';
 import { getReviews, type TmdbReview } from '../../providers/tmdbProvider';
+import { t, tf } from '../../i18n';
 import { Seasons } from './Seasons';
 import { formatMarkDate, WatchMarks } from './WatchMarks';
 import { StarRating } from './StarRating';
 import {
   getMarksForTitle,
   onMarksChanged,
+} from '../../db/repositories/marksRepo';
 import {
   getScoreCard,
   onScoreCardChanged,
   type ScoreCard,
 } from '../../db/repositories/scoreCardsRepo';
-} from '../../db/repositories/marksRepo';
 import { seasonRatings, titleRating } from '../../marks/derive';
 import { useSettingsStore } from '../../state/settingsStore';
 import { DEFAULT_REGION } from '../../config/platforms';
+import { countryName, genreLabel, languageName } from '../../config/taxonomy';
 import {
   EmptyState,
   Poster,
   SectionLabel,
-import { countryName, genreLabel, languageName } from '../../config/taxonomy';
   BOTTOM_CLEARANCE,
 } from '../../ui/components';
 import { formatDate, joinMeta, mediaLabel, year } from '../../ui/format';
@@ -228,10 +227,10 @@ export function TitleScreen({ route }: Props) {
       <OpenIn title={title} providers={providers} />
 
       <WatchState titleId={titleId} entry={entry} onChange={reloadEntry} />
+      <MyRating titleId={titleId} />
       <DetailedScore titleId={titleId} mediaType={title.mediaType} />
       <WatchMarks titleId={titleId} />
       <Reviews titleId={titleId} />
-      <MyRating titleId={titleId} />
 
       {title.overview ? <Overview text={title.overview} /> : null}
 
@@ -261,9 +260,6 @@ export function TitleScreen({ route }: Props) {
 function OpenIn({ title, providers }: { title: Title; providers: Provider[] }) {
   const c = useColors();
   const released = year(title.releaseDate);
-  useEffect(() => {
-    prefetchDouban(title.imdbId, title.title, released);
-  }, [title.imdbId, title.title, released]);
   const unique = Array.from(
     new Map(
       providers
@@ -310,12 +306,13 @@ function OpenIn({ title, providers }: { title: Title; providers: Provider[] }) {
   ]
     .filter(l => l.url)
     .map(l => ({ ...l, open: () => Linking.openURL(l.url!) }));
+  const douban = doubanSearchUrl(title.imdbId, title.title, released);
   links.push({
     key: 'douban',
     label: 'Douban',
     logo: null,
-    url: null,
-    open: () => openDouban(title.imdbId, title.title, released),
+    url: douban,
+    open: () => openInSafari(douban),
   });
   const youtube = youtubeSearchUrl(title.title, title.mediaType, released);
   links.push({
@@ -460,6 +457,9 @@ function MyRating({ titleId }: { titleId: string }) {
         ) : null}
       </View>
     </>
+  );
+}
+
 /** The second rating: the aspect-by-aspect score, apart from the stars. */
 function DetailedScore({
   titleId,
@@ -505,9 +505,6 @@ function DetailedScore({
         )}
       </Pressable>
     </>
-  );
-}
-
   );
 }
 
