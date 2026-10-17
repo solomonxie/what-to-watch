@@ -42,9 +42,15 @@ const DEMO_FOOTER = t(
 );
 
 const CSV_MORE =
-  'Douban has no export, so its row takes a CSV made by scripts/douban-export.py in the app repo — or any CSV with a header row and these columns, in any order, only title required:\n' +
+  t(
+    'The CSV row takes any CSV with a header row and these columns, in any order, only title required (Chinese headers work too):',
+  ) +
+  '\n' +
   CSV_COLUMNS.map(c => `• ${c}`).join('\n') +
-  '\nIMDb rows match exactly by their IMDb id; your ratings and watchlist are separate exports, import both.';
+  '\n' +
+  t(
+    'IMDb rows match exactly by their IMDb id. IMDb and Letterboxd keep ratings and watchlist in separate files; import each.',
+  );
 
 export function SettingsScreen({ navigation }: Props) {
   const c = useColors();
@@ -185,10 +191,20 @@ export function SettingsScreen({ navigation }: Props) {
           source="IMDb"
         />
         <CsvImportRow
-          label="Douban CSV…"
-          hint="Made with scripts/douban-export.py, or any CSV with a title column"
+          label={t('Letterboxd CSV…')}
+          hint={t(
+            'letterboxd.com → Settings → Data → Export; pick ratings.csv, watched.csv or watchlist.csv from the unzipped folder',
+          )}
+          format="Letterboxd"
+          source="Letterboxd"
+        />
+        <CsvImportRow
+          label={t('Other CSV…')}
+          hint={t(
+            'Any CSV with a title column; year, IMDb id, rating, review and date are optional — see More',
+          )}
           format="CSV"
-          source="Douban"
+          source="CSV"
         />
       </GroupedSection>
 

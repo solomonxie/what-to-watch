@@ -41,7 +41,7 @@ Store region: `make ios STORE=cn` / `make release STORE=cn` (default `us` = Cana
 
 App Store: `make release` archives and uploads; every listing field, the privacy policy and the checklist are in `docs/release/`. `make help` lists the rest.
 
-Import history: Settings → Import CSV… reads any CSV with a `title` column (optional `year, imdb, tmdb, type, status, rating (0.5–5), review, date`); IMDb and Letterboxd exports work as-is. A row with `tmdb` + `type` matches exactly.
+Import history: Settings → Import data → IMDb CSV… / Letterboxd CSV… take those exports as-is; Other CSV… reads any CSV with a `title` column (optional `year, imdb, tmdb, type, status, rating (0.5–5), review, date`). A row with `tmdb` + `type` matches exactly.
 
 Douban (no official export) → a CSV pinned to TMDB ids:
 
@@ -54,7 +54,7 @@ python3 scripts/douban-export.py <profile id> -o ~/Downloads/douban.csv --from ~
 MATCH_CSV=~/Downloads/douban.csv MATCH_OUT=~/Downloads/douban-matched.csv npx jest scripts/match-csv.test.js
 ```
 
-Import `douban-matched.csv`; `douban-matched.unmatched.csv` lists what TMDB doesn't have.
+Import `douban-matched.csv` with Other CSV…; `douban-matched.unmatched.csv` lists what TMDB doesn't have.
 
 Live end-to-end test (real TMDB/OMDb, SQLite via `node:sqlite`) — keys from env or gitignored `.env.local` (`TMDB_API_KEY=…`, `OMDB_API_KEY=…`); skipped without them:
 

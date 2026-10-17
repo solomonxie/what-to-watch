@@ -1,6 +1,10 @@
 import { parseCsv } from '../src/libraryImport/csv';
 import { parseImportCsv } from '../src/libraryImport/formats';
-import { bestMatch, matchScore, normalizeTitle } from '../src/libraryImport/matcher';
+import {
+  bestMatch,
+  matchScore,
+  normalizeTitle,
+} from '../src/libraryImport/matcher';
 import { UnsupportedImportError } from '../src/libraryImport/types';
 import type { DiscoveredTitleMeta } from '../src/providers/tmdbProvider';
 
@@ -46,7 +50,12 @@ describe('parseImportCsv', () => {
       'tt0111161,9,2020-01-01,The Shawshank Redemption,,url,Movie,9.3,142,1994\n' +
       'tt0903747,10,2020-01-01,Breaking Bad,,url,TV Series,9.5,49,2008\n';
     const r = parseImportCsv(ratings, 'ratings.csv').entries;
-    expect(r[0]).toMatchObject({ imdbId: 'tt0111161', rating: 9, status: 'completed', mediaType: 'movie' });
+    expect(r[0]).toMatchObject({
+      imdbId: 'tt0111161',
+      rating: 9,
+      status: 'completed',
+      mediaType: 'movie',
+    });
     expect(r[1].mediaType).toBe('tv');
     const wl = parseImportCsv(
       'Position,Const,Created,Modified,Description,Title,URL,Title Type,Year\n1,tt1,2021-01-01,,,Dune,u,Movie,2021\n',
@@ -56,21 +65,41 @@ describe('parseImportCsv', () => {
   });
 
   it('reads Letterboxd ratings (0.5-5 → 1-10) and watchlist by file name', () => {
-    const csv = 'Date,Name,Year,Letterboxd URI,Rating\n2024-01-01,Past Lives,2023,https://boxd.it/x,4.5\n';
+    const csv =
+      'Date,Name,Year,Letterboxd URI,Rating\n2024-01-01,Past Lives,2023,https://boxd.it/x,4.5\n';
     expect(parseImportCsv(csv, 'ratings.csv').entries[0]).toMatchObject({
       titles: ['Past Lives'],
       rating: 9,
       status: 'completed',
     });
-    const wl = 'Date,Name,Year,Letterboxd URI\n2024-01-01,Dune,2021,https://boxd.it/y\n';
-    expect(parseImportCsv(wl, 'watchlist.csv').entries[0].status).toBe('toWatch');
+    const wl =
+      'Date,Name,Year,Letterboxd URI\n2024-01-01,Dune,2021,https://boxd.it/y\n';
+    expect(parseImportCsv(wl, 'watchlist.csv').entries[0].status).toBe(
+      'toWatch',
+    );
   });
 
   it('rejects a file from a different source than the row chosen', () => {
-    const lb = 'Date,Name,Year,Letterboxd URI,Rating\n2024-01-01,Past Lives,2023,https://boxd.it/x,4.5\n';
-    expect(() => parseImportCsv(lb, 'ratings.csv', 'IMDb')).toThrow(/Letterboxd export/);
-    expect(() => parseImportCsv('title\nDune\n', 'x.csv', 'IMDb')).toThrow(/isn't an IMDb export/);
-    expect(parseImportCsv('title\nDune\n', 'x.csv', 'CSV').entries).toHaveLength(1);
+    const lb =
+      'Date,Name,Year,Letterboxd URI,Rating\n2024-01-01,Past Lives,2023,https://boxd.it/x,4.5\n';
+    expect(() => parseImportCsv(lb, 'ratings.csv', 'IMDb')).toThrow(
+      /Letterboxd export/,
+    );
+    expect(() => parseImportCsv('title\nDune\n', 'x.csv', 'IMDb')).toThrow(
+      /isn't an IMDb export/,
+    );
+    expect(
+      parseImportCsv('title\nDune\n', 'x.csv', 'CSV').entries,
+    ).toHaveLength(1);
+    expect(() =>
+      parseImportCsv('title\nDune\n', 'x.csv', 'Letterboxd'),
+    ).toThrow(/isn't a Letterboxd export/);
+    expect(() => parseImportCsv(lb, 'ratings.csv', 'CSV')).toThrow(
+      /Letterboxd export/,
+    );
+    expect(parseImportCsv(lb, 'ratings.csv', 'Letterboxd').source).toBe(
+      'Letterboxd',
+    );
   });
 
   it('skips video games and flags single episodes in IMDb exports', () => {
@@ -114,7 +143,11 @@ describe('parseImportCsv', () => {
 });
 
 describe('matcher', () => {
-  const c = (title: string, date: string, originalTitle?: string): DiscoveredTitleMeta => ({
+  const c = (
+    title: string,
+    date: string,
+    originalTitle?: string,
+  ): DiscoveredTitleMeta => ({
     details: {
       providerId: 'tmdb',
       externalId: title,
@@ -137,20 +170,38 @@ describe('matcher', () => {
   });
 
   it('prefers exact title with matching year; rejects wrong-year remakes', () => {
-    const entry = { titles: ['Dune'], year: 2021, status: 'completed' as const };
-    const best = bestMatch(entry, [c('Dune', '1984-12-14'), c('Dune', '2021-09-15')]);
+    const entry = {
+      titles: ['Dune'],
+      year: 2021,
+      status: 'completed' as const,
+    };
+    const best = bestMatch(entry, [
+      c('Dune', '1984-12-14'),
+      c('Dune', '2021-09-15'),
+    ]);
     expect(best?.details.releaseDate).toBe('2021-09-15');
     expect(matchScore(entry, c('Dune', '1984-12-14'))).toBeLessThan(0.6);
   });
 
   it('matches on original title (Chinese entries)', () => {
-    const entry = { titles: ['霸王别姬'], year: 1993, status: 'completed' as const };
-    expect(bestMatch(entry, [c('Farewell My Concubine', '1993-01-01', '霸王别姬')])).not.toBeNull();
+    const entry = {
+      titles: ['霸王别姬'],
+      year: 1993,
+      status: 'completed' as const,
+    };
+    expect(
+      bestMatch(entry, [c('Farewell My Concubine', '1993-01-01', '霸王别姬')]),
+    ).not.toBeNull();
   });
 });
 
 describe('season and series names', () => {
-  const { seasonOf, seriesNames, remakeOf, sequelNumber } = require('../src/libraryImport/matcher');
+  const {
+    seasonOf,
+    seriesNames,
+    remakeOf,
+    sequelNumber,
+  } = require('../src/libraryImport/matcher');
 
   it('reads a trailing sequel number, not a year or a 1', () => {
     expect(sequelNumber(['龙樱2'])).toBe(2);
@@ -160,11 +211,21 @@ describe('season and series names', () => {
   });
 
   it('reads the season and strips its marker', () => {
-    expect(seasonOf(['葬送的芙莉莲 第二季', "Frieren: Beyond Journey's End Season 2"])).toEqual({
+    expect(
+      seasonOf([
+        '葬送的芙莉莲 第二季',
+        "Frieren: Beyond Journey's End Season 2",
+      ]),
+    ).toEqual({
       season: 2,
       titles: ['葬送的芙莉莲', "Frieren: Beyond Journey's End"],
     });
-    expect(seasonOf(['欢迎来到实力至上主义教室 第四季', 'Classroom of the Elite 4th Season']).season).toBe(4);
+    expect(
+      seasonOf([
+        '欢迎来到实力至上主义教室 第四季',
+        'Classroom of the Elite 4th Season',
+      ]).season,
+    ).toBe(4);
     expect(seasonOf(['无职转生Ⅲ 到了异世界就拿出真本事']).season).toBe(3);
     expect(seasonOf(['外星居民最终季']).titles).toEqual(['外星居民']);
     expect(seasonOf(['记忆月台'])).toBeNull();
@@ -179,7 +240,10 @@ describe('season and series names', () => {
   });
 
   it('treats a trailing year as a remake of that year', () => {
-    expect(remakeOf(['辛巴达历险记2013'])).toEqual({ titles: ['辛巴达历险记'], year: 2013 });
+    expect(remakeOf(['辛巴达历险记2013'])).toEqual({
+      titles: ['辛巴达历险记'],
+      year: 2013,
+    });
     expect(remakeOf(['记忆月台'])).toBeNull();
   });
 });

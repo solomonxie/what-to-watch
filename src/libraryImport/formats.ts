@@ -177,7 +177,9 @@ export function parseImportCsv(
   if (expected && format.name !== expected) {
     throw new UnsupportedImportError(
       format.name === 'CSV'
-        ? `This isn't an IMDb export. Use the other import row for it.`
+        ? `This isn't ${
+            expected === 'IMDb' ? 'an' : 'a'
+          } ${expected} export. Use the Other CSV row for it.`
         : `This looks like a ${format.name} export. Use its own import row.`,
     );
   }
